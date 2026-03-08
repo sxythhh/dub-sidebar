@@ -1,0 +1,33 @@
+"use client";
+import { PageShell } from "@/components/page-shell";
+
+const PARTNERS = [
+  { id: 1, name: "Alice Chen", clicks: 1240, conversions: 89, revenue: "$4,230", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=64&h=64&fit=crop&crop=face" },
+  { id: 2, name: "Bob Smith", clicks: 890, conversions: 45, revenue: "$2,100", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=64&h=64&fit=crop&crop=face" },
+  { id: 3, name: "Clara Davis", clicks: 567, conversions: 23, revenue: "$1,050", avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=64&h=64&fit=crop&crop=face" },
+];
+
+export default function PartnersPage() {
+  return (
+    <PageShell title="All Partners" description="View and manage your affiliate partners.">
+      <div className="mt-4 divide-y divide-neutral-100 rounded-lg border border-neutral-200">
+        <div className="grid grid-cols-[40px_1fr_80px_100px_100px] gap-3 px-4 py-2 text-xs font-medium text-neutral-500">
+          <span></span>
+          <span>Partner</span>
+          <span>Clicks</span>
+          <span>Conversions</span>
+          <span className="text-right">Revenue</span>
+        </div>
+        {PARTNERS.map((p) => (
+          <div key={p.id} className="grid grid-cols-[40px_1fr_80px_100px_100px] items-center gap-3 px-4 py-3 text-sm transition-colors hover:bg-neutral-50">
+            <img src={p.avatar} alt="" className="size-8 rounded-full object-cover" />
+            <span className="font-medium text-neutral-900">{p.name}</span>
+            <span className="text-neutral-600">{p.clicks.toLocaleString()}</span>
+            <span className="text-neutral-600">{p.conversions}</span>
+            <span className="text-right font-medium text-neutral-900">{p.revenue}</span>
+          </div>
+        ))}
+      </div>
+    </PageShell>
+  );
+}

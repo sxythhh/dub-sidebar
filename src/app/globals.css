@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+@theme {
+  --animate-fade-in: fade-in 0.2s ease-out forwards;
+  --animate-slide-up-fade: slide-up-fade 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+
+  @keyframes fade-in {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slide-up-fade {
+    0% {
+      opacity: 0;
+      transform: translateY(var(--offset, 2px));
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+@keyframes star-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0) rotate(-30deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+/* Active nav item icons: override SVG fill-opacity */
+[data-active="true"] svg path {
+  fill-opacity: 1 !important;
+}
+
+/* Hide scrollbar but keep scroll functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Apple-style smooth corners (superellipse/squircle) */
+.rounded-xl,
+.rounded-2xl,
+.rounded-lg,
+.rounded-\[10px\] {
+  corner-shape: squircle;
+}
