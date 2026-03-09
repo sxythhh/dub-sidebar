@@ -14,17 +14,17 @@ export default function TagsPage() {
   return (
     <PageShell title="Tags" description="Label and categorize your links with tags.">
       <div className="mt-4 flex justify-end">
-        <button className="flex items-center gap-1.5 rounded-lg bg-neutral-900 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-neutral-800 active:scale-[0.98]">
+        <button className="flex items-center gap-1.5 rounded-lg bg-foreground px-3 py-2 text-sm font-medium text-page-bg transition-colors hover:bg-foreground/90 active:scale-[0.98]">
           <IconPlus size={16} />
           New tag
         </button>
       </div>
       <div className="mt-4 flex flex-wrap gap-2">
         {TAGS.map((t) => (
-          <div key={t.id} className="flex items-center gap-2 rounded-lg border border-neutral-200 px-3 py-2 transition-colors hover:bg-neutral-50">
+          <div key={t.id} className="flex items-center gap-2 rounded-lg border border-border px-3 py-2 transition-colors hover:bg-accent">
             <div className={`size-2.5 rounded-full ${t.color}`} />
-            <span className="text-sm font-medium text-neutral-900">{t.name}</span>
-            <span className="text-xs text-neutral-400">{t.links}</span>
+            <span className="text-sm font-medium text-foreground">{t.name}</span>
+            <span className="text-xs text-muted-foreground">{t.links}</span>
           </div>
         ))}
       </div>

@@ -19,19 +19,13 @@ import { usePathname } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import {
   SidebarNav,
-  type NavGroupType,
   type SidebarNavAreas,
   type AnimatedIcon,
 } from "./sidebar-nav";
-import { WorkspaceDropdown } from "./workspace-dropdown";
-import { HelpButton } from "./help-button";
-import { ReferButton } from "./refer-button";
 import { SidebarUsage } from "./sidebar-usage";
 import { News } from "./news";
 
 // Animated icons
-import { Compass } from "./icons/compass";
-import { ConnectedDots } from "./icons/connected-dots";
 import { Hyperlink } from "./icons/hyperlink";
 import { LinesY } from "./icons/lines-y";
 import { CursorRays } from "./icons/cursor-rays";
@@ -46,8 +40,9 @@ import { Robot } from "./icons/robot";
 import { NotificationBell } from "./icons/notification-bell";
 import { Home } from "./icons/home";
 import { Paperclip } from "./icons/paperclip";
-import { Search } from "./icons/search";
-import { NewCampaignButton } from "./new-campaign-dropdown";
+import { Payouts } from "./icons/payouts";
+
+import { WorkspaceCard } from "./workspace-card";
 
 // Wrap Tabler icons to match AnimatedIcon type
 function wrapTabler(TablerIcon: typeof IconWorld): AnimatedIcon {
@@ -72,50 +67,22 @@ const AppsIcon = wrapTabler(IconApps);
 const GiftIcon = wrapTabler(IconGift);
 const IntegrationsIcon = wrapTabler(IconPlugConnected);
 
-const NAV_GROUPS: NavGroupType[] = [
-  {
-    name: "Home",
-    description:
-      "Create, organize, and measure the performance of your short links.",
-    learnMoreHref: "https://dub.co/links",
-    icon: Compass,
-    href: "/submissions",
-    active: true,
-  },
-  {
-    name: "Partner Program",
-    description:
-      "Kickstart viral product-led growth with powerful referral and affiliate programs.",
-    learnMoreHref: "https://dub.co/partners",
-    icon: ConnectedDots,
-    href: "/program",
-    active: false,
-  },
-];
-
 const NAV_AREAS: SidebarNavAreas = {
   default: () => ({
     headerContent: (
-      <div className="flex items-center gap-2">
-        <NewCampaignButton />
-        <button
-          type="button"
-          className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-xl text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-700"
-        >
-          <Search className="size-3.5" />
-        </button>
-      </div>
+      <WorkspaceCard />
     ),
     direction: "left",
     showNews: true,
     content: [
       {
         items: [
-          { name: "Home", icon: Home, href: "/links" },
-          { name: "Submissions", icon: Submissions, href: "/submissions" },
-          { name: "Creators", icon: Creators, href: "/creators" },
-          { name: "Analytics", icon: PieChart, href: "/analytics" },
-          { name: "Applications", icon: Paperclip, href: "/applications" },
+          { name: "Home", icon: Home, href: "/", exact: true, description: "Your dashboard overview and short links." },
+          { name: "Submissions", icon: Submissions, href: "/submissions", description: "Review and manage creator content submissions." },
+          { name: "Creators", icon: Creators, href: "/creators", description: "Browse and manage your creator network." },
+          { name: "Payouts", icon: Payouts, href: "/payouts", description: "Track earnings and process creator payments." },
+          { name: "Analytics", icon: PieChart, href: "/analytics", description: "Performance metrics across all campaigns." },
+          { name: "Applications", icon: Paperclip, href: "/applications", description: "Manage incoming creator applications." },
         ],
       },
       {
@@ -125,14 +92,15 @@ const NAV_AREAS: SidebarNavAreas = {
             name: "Messages",
             icon: ChatBubble,
             href: "/messages",
+            description: "Direct messages with creators.",
             badge: (
               <span className="flex size-3.5 items-center justify-center rounded-full bg-[rgba(255,37,37,0.1)] text-[10px] font-semibold leading-none tracking-[-0.02em] text-[#FF2525]">
                 2
               </span>
             ),
           },
-          { name: "AI Assistant", icon: Robot, href: "/ai-assistant" },
-          { name: "Notifications", icon: NotificationBell, href: "/notifications" },
+          { name: "AI Assistant", icon: Robot, href: "/ai-assistant", description: "Get AI-powered help with your campaigns." },
+          { name: "Notifications", icon: NotificationBell, href: "/notifications", description: "Activity alerts and updates." },
         ],
       },
     ],
@@ -264,30 +232,11 @@ export function AppSidebarNav() {
     return "default";
   }, [pathname]);
 
-  const groups = useMemo(
-    () =>
-      NAV_GROUPS.map((group) => ({
-        ...group,
-        active:
-          group.href === "/submissions"
-            ? !pathname.startsWith("/program") &&
-              !pathname.startsWith("/settings") &&
-              !pathname.startsWith("/account")
-            : pathname.startsWith(group.href),
-      })),
-    [pathname],
-  );
-
   return (
     <SidebarNav
-      groups={groups}
       areas={NAV_AREAS}
       currentArea={currentArea}
-      toolContent={
-        <HelpButton />
-      }
-      newsContent={<News onEmpty={onNewsEmpty} />}
-      switcher={<WorkspaceDropdown />}
+      newsContent={!newsEmpty ? <News onEmpty={onNewsEmpty} /> : undefined}
       bottom={newsEmpty ? <SidebarUsage /> : undefined}
     />
   );

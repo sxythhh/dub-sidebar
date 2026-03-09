@@ -2,14 +2,15 @@
 
 import { cn } from "@/lib/utils";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
-  IconSettingsFilled,
   IconLogout,
-  IconArrowsExchange,
+  IconReplaceFilled,
   IconShieldCheckFilled,
   IconGiftFilled,
   IconSun,
   IconMoon,
+  IconSettingsFilled,
 } from "@tabler/icons-react";
 import {
   useFloating,
@@ -21,10 +22,12 @@ import {
 import { motion, AnimatePresence } from "motion/react";
 import { Dropdown } from "@/components/ui/dropdown";
 import { MenuItem } from "@/components/ui/menu-item";
+import { useTheme } from "@/components/theme-provider";
 
 export function UserDropdown() {
   const [show, setShow] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
+  const { darkMode, toggleDarkMode } = useTheme();
+  const router = useRouter();
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const { refs, floatingStyles } = useFloating({
@@ -63,10 +66,10 @@ export function UserDropdown() {
     >
       <button
         className={cn(
-          "flex size-11 cursor-pointer items-center justify-center rounded-xl p-1.5 transition-all duration-75",
-          "hover:bg-black/5 active:bg-black/10",
-          show && "bg-black/5",
-          "outline-none focus-visible:ring-2 focus-visible:ring-black/50",
+          "flex size-11 cursor-pointer items-center justify-center rounded-2xl p-1.5 transition-all duration-75",
+          "hover:bg-sidebar-hover active:bg-sidebar-active",
+          show && "bg-sidebar-hover",
+          "outline-none focus-visible:ring-2 focus-visible:ring-ring",
         )}
       >
         <img
@@ -92,7 +95,7 @@ export function UserDropdown() {
                 onPointerEnter={handleEnter}
                 onPointerLeave={handleLeave}
               >
-                <div className="w-64 rounded-xl bg-white shadow-lg ring-1 ring-neutral-200">
+                <div className="w-64 select-none rounded-xl bg-dropdown-bg shadow-lg ring-1 ring-dropdown-border">
                   {/* User info header */}
                   <div className="flex items-center gap-x-2.5 px-3 pb-2 pt-3">
                     <img
@@ -101,10 +104,10 @@ export function UserDropdown() {
                       className="size-8 shrink-0 rounded-full object-cover"
                     />
                     <div className="min-w-0">
-                      <div className="truncate text-sm font-medium leading-5 text-neutral-900">
+                      <div className="truncate text-sm font-medium leading-5 text-dropdown-text">
                         Tom Anderson
                       </div>
-                      <div className="truncate text-xs leading-tight text-neutral-500">
+                      <div className="truncate text-xs leading-tight text-dropdown-text-muted">
                         tom@acme.com
                       </div>
                     </div>
@@ -134,7 +137,10 @@ export function UserDropdown() {
                           icon={IconSettingsFilled}
                           label="Account settings"
                           index={0}
-                          onSelect={() => setShow(false)}
+                          onSelect={() => {
+                            setShow(false);
+                            router.push("/settings");
+                          }}
                         />
                         <MenuItem
                           icon={IconShieldCheckFilled}
@@ -149,27 +155,27 @@ export function UserDropdown() {
                           onSelect={() => setShow(false)}
                         />
                         <MenuItem
-                          icon={IconArrowsExchange}
+                          icon={IconReplaceFilled}
                           label="Switch to Creator"
                           index={3}
                           onSelect={() => setShow(false)}
                         />
                       </Dropdown>
 
-                      <div className="mx-2 my-1 border-t border-neutral-100" />
+                      <div className="mx-2 my-1 border-t border-dropdown-border" />
 
                       {/* Theme toggle */}
                       <div className="flex items-center justify-between px-[10px] py-2">
-                        <span className="text-sm font-medium font-[family-name:var(--font-inter)] tracking-[-0.02em] text-neutral-500">
+                        <span className="text-sm font-medium font-[family-name:var(--font-inter)] tracking-[-0.02em] text-dropdown-text-muted">
                           Theme
                         </span>
                         <button
                           type="button"
-                          onClick={() => setDarkMode((d) => !d)}
-                          className="relative flex h-7 w-[52px] cursor-pointer items-center rounded-full bg-neutral-200/80 p-0.5 transition-colors"
+                          onClick={() => toggleDarkMode()}
+                          className="relative flex h-7 w-[52px] cursor-pointer items-center rounded-full bg-sidebar-active p-0.5 transition-colors"
                         >
                           <motion.div
-                            className="absolute flex size-6 items-center justify-center rounded-full bg-white shadow-sm"
+                            className="absolute flex size-6 items-center justify-center rounded-full bg-dropdown-bg shadow-sm"
                             animate={{ x: darkMode ? 23 : 0 }}
                             transition={{ type: "spring", duration: 0.25, bounce: 0.15 }}
                           >
@@ -182,7 +188,7 @@ export function UserDropdown() {
                                   exit={{ opacity: 0, rotate: 90, scale: 0.5 }}
                                   transition={{ duration: 0.15 }}
                                 >
-                                  <IconMoon size={14} className="text-neutral-700" />
+                                  <IconMoon size={14} className="text-dropdown-text-muted" />
                                 </motion.div>
                               ) : (
                                 <motion.div
@@ -192,7 +198,7 @@ export function UserDropdown() {
                                   exit={{ opacity: 0, rotate: -90, scale: 0.5 }}
                                   transition={{ duration: 0.15 }}
                                 >
-                                  <IconSun size={14} className="text-neutral-700" />
+                                  <IconSun size={14} className="text-dropdown-text-muted" />
                                 </motion.div>
                               )}
                             </AnimatePresence>
@@ -200,7 +206,7 @@ export function UserDropdown() {
                         </button>
                       </div>
 
-                      <div className="mx-2 my-1 border-t border-neutral-100" />
+                      <div className="mx-2 my-1 border-t border-dropdown-border" />
 
                       <Dropdown>
                         <MenuItem

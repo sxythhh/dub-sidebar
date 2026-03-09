@@ -12,17 +12,17 @@ export default function DomainsPage() {
   return (
     <PageShell title="Domains" description="Manage your custom domains for short links.">
       <div className="mt-4 flex justify-end">
-        <button className="flex items-center gap-1.5 rounded-lg bg-neutral-900 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-neutral-800 active:scale-[0.98]">
+        <button className="flex items-center gap-1.5 rounded-lg bg-foreground px-3 py-2 text-sm font-medium text-page-bg transition-colors hover:bg-foreground/90 active:scale-[0.98]">
           <IconPlus size={16} />
           Add domain
         </button>
       </div>
-      <div className="mt-4 divide-y divide-neutral-100 rounded-lg border border-neutral-200">
+      <div className="mt-4 divide-y divide-border rounded-lg border border-border">
         {DOMAINS.map((d) => (
-          <div key={d.id} className="flex items-center justify-between px-4 py-3 transition-colors hover:bg-neutral-50">
+          <div key={d.id} className="flex items-center justify-between px-4 py-3 transition-colors hover:bg-accent">
             <div className="flex items-center gap-3">
-              <IconWorld size={16} className="text-neutral-400" />
-              <span className="text-sm font-medium text-neutral-900">{d.domain}</span>
+              <IconWorld size={16} className="text-muted-foreground" />
+              <span className="text-sm font-medium text-foreground">{d.domain}</span>
               {d.status === "active" ? (
                 <span className="flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-xs font-medium text-green-600">
                   <IconCheck size={12} /> Verified
@@ -33,7 +33,7 @@ export default function DomainsPage() {
                 </span>
               )}
             </div>
-            <span className="text-sm text-neutral-500">{d.links} links</span>
+            <span className="text-sm text-muted-foreground">{d.links} links</span>
           </div>
         ))}
       </div>

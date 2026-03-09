@@ -137,7 +137,7 @@ const Dropdown = forwardRef<HTMLDivElement, DropdownProps>(
           <AnimatePresence>
             {checkedRect && (
               <motion.div
-                className="pointer-events-none absolute rounded-lg bg-neutral-200/50"
+                className="pointer-events-none absolute rounded-lg bg-dropdown-hover"
                 initial={false}
                 animate={{
                   top: checkedRect.top,
@@ -160,7 +160,7 @@ const Dropdown = forwardRef<HTMLDivElement, DropdownProps>(
             {activeRect && (
               <motion.div
                 key={sessionRef.current}
-                className="pointer-events-none absolute rounded-lg bg-neutral-100/80"
+                className="pointer-events-none absolute rounded-lg bg-dropdown-hover"
                 initial={{
                   opacity: 0,
                   top: checkedRect?.top ?? activeRect.top,

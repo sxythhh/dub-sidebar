@@ -70,7 +70,7 @@ const MenuItem = forwardRef<HTMLDivElement, MenuItemProps>(
           stroke={isActive || checked ? 2 : 1.5}
           className={cn(
             "transition-[color,stroke-width] duration-75",
-            isActive || checked ? "text-neutral-900" : "text-neutral-500",
+            isActive || checked ? "text-dropdown-text" : "text-dropdown-text-muted",
           )}
         />
         <span className="inline-grid flex-1 text-sm font-medium">
@@ -84,7 +84,7 @@ const MenuItem = forwardRef<HTMLDivElement, MenuItemProps>(
           <span
             className={cn(
               "col-start-1 row-start-1 transition-[color,font-variation-settings] duration-75",
-              isActive || checked ? "text-neutral-900" : "text-neutral-500",
+              isActive || checked ? "text-dropdown-text" : "text-dropdown-text-muted",
             )}
             style={{
               fontVariationSettings: checked
@@ -107,7 +107,7 @@ const MenuItem = forwardRef<HTMLDivElement, MenuItemProps>(
               strokeWidth={2}
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="shrink-0 text-neutral-900"
+              className="shrink-0 text-dropdown-text"
               initial={{ opacity: 1 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 1 }}

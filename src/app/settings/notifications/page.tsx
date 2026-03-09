@@ -8,8 +8,8 @@ export default function NotificationsPage() {
         <div className="space-y-3">
           {["Weekly report", "New partner signup", "Payout processed", "Domain verification"].map((item) => (
             <label key={item} className="flex items-center justify-between">
-              <span className="text-sm text-neutral-700">{item}</span>
-              <input type="checkbox" defaultChecked className="size-4 rounded border-neutral-300 accent-neutral-900" />
+              <span className="text-sm text-foreground">{item}</span>
+              <input type="checkbox" defaultChecked className="size-4 rounded border-border accent-foreground" />
             </label>
           ))}
         </div>

@@ -68,7 +68,7 @@ export function News({
 
   return (
     <div
-      className="group overflow-hidden p-3 pt-6 transition-all duration-200 hover:pt-10"
+      className="group p-3 pt-4 transition-all duration-200 hover:pt-8"
       data-active={cardCount !== 0}
     >
       <div className="relative size-full">
@@ -76,22 +76,21 @@ export function News({
           <div
             key={href}
             className={cn(
-              "absolute left-0 top-0 size-full scale-[var(--scale)] transition-[opacity,transform] duration-200",
+              "absolute left-0 top-0 size-full transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]",
               cardCount - idx > 3
                 ? [
-                    "opacity-0 sm:group-hover:translate-y-[var(--y)] sm:group-hover:opacity-[var(--opacity)]",
-                    "sm:group-has-[*[data-dragging=true]]:translate-y-[var(--y)] sm:group-has-[*[data-dragging=true]]:opacity-[var(--opacity)]",
+                    "opacity-0 sm:group-hover:opacity-[var(--opacity)]",
+                    "sm:group-has-[*[data-dragging=true]]:opacity-[var(--opacity)]",
                   ]
-                : "translate-y-[var(--y)] opacity-[var(--opacity)]",
+                : "opacity-[var(--opacity)]",
             )}
             style={
               {
-                "--y": `-${(cardCount - (idx + 1)) * OFFSET_FACTOR}%`,
-                "--scale": 1 - (cardCount - (idx + 1)) * SCALE_FACTOR,
                 "--opacity":
                   cardCount - (idx + 1) >= 6
                     ? 0
                     : 1 - (cardCount - (idx + 1)) * OPACITY_FACTOR,
+                transform: `translateY(-${(cardCount - (idx + 1)) * OFFSET_FACTOR}%) scale(${1 - (cardCount - (idx + 1)) * SCALE_FACTOR})`,
               } as CSSProperties
             }
             aria-hidden={idx !== cardCount - 1}
@@ -119,8 +118,8 @@ export function News({
             style={{ "--offset": "10px" } as CSSProperties}
           >
             <div className="animate-fade-in absolute inset-0 rounded-lg [animation-delay:2.3s] [animation-direction:reverse] [animation-duration:0.2s]" />
-            <AnimatedStars className="w-1/5 text-neutral-500" />
-            <span className="animate-fade-in text-xs font-medium text-neutral-500 [animation-delay:2.3s] [animation-direction:reverse] [animation-duration:0.2s]">
+            <AnimatedStars className="w-1/5 text-sidebar-text-muted" />
+            <span className="animate-fade-in text-xs font-medium text-sidebar-text-muted [animation-delay:2.3s] [animation-direction:reverse] [animation-duration:0.2s]">
               You&apos;re all caught up!
             </span>
           </div>
@@ -171,7 +170,7 @@ function NewsCard({
     const translateX = Math.sign(drag.current.delta) * cardWidth;
     animation.current = ref.current.animate(
       { opacity: 0, transform: `translateX(${translateX}px)` },
-      { duration: 150, easing: "ease-in-out", fill: "forwards" },
+      { duration: 250, easing: "cubic-bezier(0.16, 1, 0.3, 1)", fill: "forwards" },
     );
     animation.current.onfinish = () => onDismiss?.();
   };
@@ -189,7 +188,7 @@ function NewsCard({
 
     animation.current = ref.current.animate(
       { transform: "translateX(0)" },
-      { duration: 150, easing: "ease-in-out" },
+      { duration: 250, easing: "cubic-bezier(0.16, 1, 0.3, 1)" },
     );
     animation.current.onfinish = () =>
       ref.current?.style.setProperty("--dx", "0");
@@ -238,7 +237,7 @@ function NewsCard({
     <div
       ref={ref}
       className={cn(
-        "relative cursor-pointer select-none gap-2 rounded-lg border border-neutral-200 bg-white p-3 text-[0.8125rem]",
+        "relative cursor-pointer select-none gap-2 rounded-lg border border-card-border bg-card-bg p-3 text-[0.8125rem]",
         "translate-x-[calc(var(--dx,0)*1px)] rotate-[calc(var(--dx,0)*0.05deg)]",
         "transition-shadow data-[dragging=true]:cursor-grabbing data-[dragging=true]:shadow-[0_4px_12px_0_#0000000D]",
       )}
@@ -249,14 +248,14 @@ function NewsCard({
     >
       <div className={cn(hideContent && "invisible")}>
         <div className="flex flex-col gap-1">
-          <span className="line-clamp-1 font-medium text-neutral-900">
+          <span className="line-clamp-1 font-medium text-sidebar-text">
             {title}
           </span>
-          <p className="line-clamp-2 h-10 leading-5 text-neutral-500">
+          <p className="line-clamp-2 h-10 leading-5 text-sidebar-text-muted">
             {description}
           </p>
         </div>
-        <div className="relative mt-3 aspect-[16/9] w-full shrink-0 overflow-hidden rounded border border-neutral-200 bg-neutral-100">
+        <div className="relative mt-3 aspect-[16/9] w-full shrink-0 overflow-hidden rounded border border-card-border bg-sidebar-hover">
           {image && (
             <Image
               src={image}
@@ -279,14 +278,14 @@ function NewsCard({
             <Link
               href={href || "#"}
               target="_blank"
-              className="font-medium text-neutral-700 transition-colors duration-75 hover:text-neutral-900 hover:underline"
+              className="font-medium text-sidebar-text-subtle transition-colors duration-75 hover:text-sidebar-text hover:underline"
             >
               Read more
             </Link>
             <button
               type="button"
               onClick={dismiss}
-              className="text-neutral-600 transition-colors duration-75 hover:text-neutral-900"
+              className="cursor-pointer text-sidebar-text-muted transition-colors duration-75 hover:text-sidebar-text"
             >
               Dismiss
             </button>

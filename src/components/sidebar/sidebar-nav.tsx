@@ -17,16 +17,36 @@ import {
   useRef,
   useState,
 } from "react";
-import { IconChevronDown, IconChevronLeft } from "@tabler/icons-react";
+import { IconChevronDown, IconChevronLeft, IconLayoutSidebar, IconPlus } from "@tabler/icons-react";
 import { AnimatePresence, motion } from "motion/react";
 import { UserDropdown } from "./user-dropdown";
+import { UserInfoRow } from "./user-info-row";
+import { WorkspaceDropdown } from "./workspace-dropdown";
 import { NavGroupTooltip } from "./tooltip";
-import { DubWordmark } from "./icons/dub-wordmark";
+
 import { StarsLogo } from "./icons/stars-logo";
 import { useProximityHover } from "@/hooks/use-proximity-hover";
 import { springs } from "@/lib/springs";
-import { useSideNav } from "./sidebar-context";
-import { IconLayoutSidebarLeftCollapse, IconLayoutSidebarLeftExpand } from "@tabler/icons-react";
+import { useSideNav, SIDEBAR_COLLAPSED_WIDTH, SIDEBAR_EXPANDED_WIDTH } from "./sidebar-context";
+import { SearchCommand } from "./search-command";
+import { FloatingPortal } from "@floating-ui/react";
+
+// ── Sidebar Icon (from dub.co) ──────────────────────────────────────
+
+function LayoutSidebarIcon({ className, size = 16 }: { className?: string; size?: number }) {
+  return (
+    <svg
+      height={size}
+      width={size}
+      viewBox="0 -960 960 960"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      fill="currentColor"
+    >
+      <path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm440-80h120v-560H640v560Zm-80 0v-560H200v560h360Zm80 0h120-120Z"/>
+    </svg>
+  );
+}
 
 // ── Proximity hover context ──────────────────────────────────────────
 
@@ -58,17 +78,8 @@ export type NavSubItemType = NavItemCommon;
 
 export type NavItemType = NavItemCommon & {
   icon: AnimatedIcon;
+  description?: string;
   items?: NavSubItemType[];
-};
-
-export type NavGroupType = {
-  name: string;
-  icon: AnimatedIcon;
-  href: string;
-  active: boolean;
-  description: string;
-  learnMoreHref?: string;
-  badge?: ReactNode;
 };
 
 export type SidebarNavAreas = Record<
@@ -87,103 +98,125 @@ export type SidebarNavAreas = Record<
   }
 >;
 
-// ── Constants ──────────────────────────────────────────────────────────
-
-const SIDEBAR_WIDTH = 304;
-const SIDEBAR_GROUPS_WIDTH = 64;
-const SIDEBAR_AREAS_WIDTH = SIDEBAR_WIDTH - SIDEBAR_GROUPS_WIDTH;
-
 // ── Main SidebarNav ────────────────────────────────────────────────────
 
 export function SidebarNav({
-  groups,
   areas,
   currentArea,
-  toolContent,
   newsContent,
-  switcher,
   bottom,
 }: {
-  groups: NavGroupType[];
   areas: SidebarNavAreas;
   currentArea: string | null;
-  toolContent?: ReactNode;
   newsContent?: ReactNode;
-  switcher?: ReactNode;
   bottom?: ReactNode;
 }) {
   const { collapsed, setCollapsed } = useSideNav();
-  const hideSwitcherIcons =
-    currentArea && areas[currentArea]?.().hideSwitcherIcons;
-  const showAreas = currentArea !== null && !collapsed;
+  const pathname = usePathname();
+  const [workspaceOpen, setWorkspaceOpen] = useState(false);
 
-  const targetWidth = showAreas ? SIDEBAR_WIDTH : SIDEBAR_GROUPS_WIDTH;
+  const targetWidth = collapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_EXPANDED_WIDTH;
+
+  // Collect all nav items from the current area for the collapsed icon strip
+  const collapsedItems = useMemo(() => {
+    if (!currentArea || !areas[currentArea]) return [];
+    const { content } = areas[currentArea]();
+    return content.flatMap(({ items }) => items);
+  }, [currentArea, areas]);
 
   return (
-    <motion.div
+    <div
       className="h-full"
-      animate={{ width: targetWidth }}
-      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
       style={
         {
-          "--sidebar-groups-width": `${SIDEBAR_GROUPS_WIDTH}px`,
-          "--sidebar-areas-width": `${SIDEBAR_AREAS_WIDTH}px`,
+          width: targetWidth,
+          "--sidebar-areas-width": `${SIDEBAR_EXPANDED_WIDTH}px`,
         } as CSSProperties
       }
     >
-      <nav className="grid size-full grid-cols-[var(--sidebar-groups-width)_1fr]">
-        {/* Left icon strip */}
-        <div className="flex flex-col items-center justify-between">
-          <div className="flex flex-col items-center p-2">
-            {/* Dub wordmark */}
+      <nav className="relative size-full select-none">
+        {/* Collapsed view — icon strip */}
+        <div
+          className={cn(
+            "group/collapsed absolute inset-0 flex cursor-ew-resize flex-col items-center justify-between border-r border-sidebar-border bg-sidebar-bg transition-opacity duration-100",
+            collapsed ? "z-10 opacity-100" : "pointer-events-none opacity-0",
+          )}
+          onClick={(e) => {
+            const target = e.target as HTMLElement;
+            if (target.closest("a, button, [role=menuitemradio]")) return;
+            setCollapsed(false);
+          }}
+        >
+          <div className="flex flex-col items-center gap-1 p-2">
+            {/* Logo / Expand toggle */}
             <div className="pb-1">
-              <Link
-                href="/"
-                className="block overflow-visible rounded-lg px-1 py-2.5 outline-none transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-black/50"
-              >
-                <StarsLogo className="h-7" />
-              </Link>
+              <NavGroupTooltip name="Show sidebar" disabled={!collapsed}>
+                <button
+                  type="button"
+                  onClick={() => setCollapsed(false)}
+                  className="relative flex size-10 cursor-pointer items-center justify-center rounded-lg outline-none transition-colors hover:bg-sidebar-hover focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <StarsLogo className="h-7 text-sidebar-text transition-opacity duration-150 group-hover/collapsed:opacity-0" />
+                  <LayoutSidebarIcon className="absolute text-sidebar-text opacity-0 transition-opacity duration-150 group-hover/collapsed:opacity-100" />
+                </button>
+              </NavGroupTooltip>
             </div>
 
-            {/* Workspace switcher + group icons */}
-            {!hideSwitcherIcons && (
-              <div className="flex flex-col gap-3">
-                {switcher}
-                {groups.map((group) => (
-                  <NavGroupItem key={group.name} group={group} />
-                ))}
-              </div>
-            )}
+            {/* Workspace avatar */}
+            <WorkspaceDropdown onOpenChange={setWorkspaceOpen} />
+
+            {/* Nav item icons */}
+            {collapsedItems.map((item) => {
+              const Icon = item.icon;
+              const hrefBase = item.href.split("?")[0];
+              const isActive = !workspaceOpen && (item.exact
+                ? pathname === hrefBase
+                : pathname.startsWith(hrefBase));
+              return (
+                <NavGroupTooltip
+                  key={item.name}
+                  name={item.name}
+                  description={item.description}
+                >
+                  <Link
+                    href={item.href}
+                    className={cn(
+                      "relative flex size-10 cursor-pointer items-center justify-center rounded-xl transition-colors duration-75",
+                      "outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                      isActive
+                        ? "bg-sidebar-active text-sidebar-text"
+                        : "text-sidebar-text-subtle hover:bg-sidebar-hover",
+                    )}
+                  >
+                    <Icon className={cn("size-[18px]", isActive ? "opacity-100" : "opacity-50")} data-hovered={false} />
+                    {item.badge && (
+                      <div className="absolute right-0.5 top-0.5">
+                        {typeof item.badge === "object" ? item.badge : (
+                          <span className="flex size-3.5 items-center justify-center rounded-full bg-blue-600 text-[0.5rem] font-semibold text-white">
+                            {item.badge}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </Link>
+                </NavGroupTooltip>
+              );
+            })}
           </div>
 
-          {/* Bottom section: collapse + tool content + user */}
+          {/* Bottom: user avatar */}
           <div className="flex flex-col items-center gap-3 py-3">
-            <button
-              onClick={() => setCollapsed((c) => !c)}
-              className={cn(
-                "flex size-11 cursor-pointer items-center justify-center rounded-xl text-neutral-700 transition-colors duration-75",
-                "hover:bg-black/5 active:bg-black/10",
-                "outline-none focus-visible:ring-2 focus-visible:ring-black/50",
-              )}
-            >
-              {collapsed ? (
-                <IconLayoutSidebarLeftExpand size={20} />
-              ) : (
-                <IconLayoutSidebarLeftCollapse size={20} />
-              )}
-            </button>
-            {toolContent}
             <div className="flex size-12 items-center justify-center">
               <UserDropdown />
             </div>
           </div>
         </div>
 
-        {/* Right areas panel */}
+        {/* Expanded view — full areas panel */}
         <div
           className={cn(
-            "size-full overflow-hidden py-2 pr-2 transition-opacity duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]",
-            !showAreas && "opacity-0",
+            "absolute inset-0 flex flex-col overflow-hidden transition-opacity duration-100",
+            collapsed ? "pointer-events-none opacity-0" : "opacity-100",
           )}
         >
           <SidebarAreasPanel
@@ -194,7 +227,7 @@ export function SidebarNav({
           />
         </div>
       </nav>
-    </motion.div>
+    </div>
   );
 }
 
@@ -211,137 +244,265 @@ function SidebarAreasPanel({
   newsContent?: ReactNode;
   bottom?: ReactNode;
 }) {
+  const { collapsed, setCollapsed } = useSideNav();
   const showNews = currentArea && areas[currentArea]?.().showNews;
 
   return (
-    <div className="flex h-full w-[calc(var(--sidebar-areas-width)-0.5rem)] flex-col overflow-hidden rounded-xl bg-white">
-      {/* Nav items */}
-      <div className="scrollbar-hide min-h-0 flex-1 rounded-xl">
-        <div className="relative flex flex-col p-3 text-neutral-500">
-          <div className="relative w-full grow">
-            {Object.entries(areas).map(([area, areaConfig]) => {
-              const { title, headerContent, backHref, content, direction } = areaConfig();
+    <div className="flex h-full w-full flex-col border-r border-sidebar-border bg-sidebar-bg">
+        {/* Sidebar header */}
+        <div className="flex h-14 shrink-0 items-center justify-between px-2">
+          <Link
+            href="/"
+            className="flex size-10 items-center justify-center rounded-[10px] outline-none transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <StarsLogo className="h-6 text-sidebar-text" />
+          </Link>
+          <HeaderIconGroup collapsed={collapsed} onCollapse={() => setCollapsed(true)} />
+        </div>
 
-              const TitleContainer = backHref ? Link : "div";
+        {/* Nav items */}
+        <div className="min-h-0 flex-1 overflow-clip">
+          <div className="relative flex flex-col px-3 pb-3 text-sidebar-text-muted">
+            <div className="relative w-full grow">
+              {Object.entries(areas).map(([area, areaConfig]) => {
+                const { title, headerContent, backHref, content, direction } =
+                  areaConfig();
 
-              return (
-                <Area
-                  key={area}
-                  visible={area === currentArea}
-                  direction={direction ?? "right"}
-                >
-                  {headerContent ? (
-                    <div className="mb-2">
-                      {headerContent}
-                    </div>
-                  ) : title && (
-                    <TitleContainer
-                      href={backHref ?? "#"}
-                      className="group mb-2 flex items-center gap-3 px-3 py-2"
-                    >
-                      {backHref && (
-                        <div
-                          className={cn(
-                            "flex size-6 items-center justify-center rounded-lg bg-neutral-200 text-neutral-500",
-                            "transition-[transform,background-color,color] duration-150 group-hover:-translate-x-0.5 group-hover:bg-neutral-900/10 group-hover:text-neutral-600",
-                          )}
+                const TitleContainer = backHref ? Link : "div";
+
+                return (
+                  <Area
+                    key={area}
+                    visible={area === currentArea}
+                    direction={direction ?? "right"}
+                  >
+                    {headerContent ? (
+                      <div className="mb-1">{headerContent}</div>
+                    ) : (
+                      title && (
+                        <TitleContainer
+                          href={backHref ?? "#"}
+                          className="group mb-2 flex items-center gap-3 px-3 py-2"
                         >
-                          <IconChevronLeft size={12} stroke={2.5} />
+                          {backHref && (
+                            <div
+                              className={cn(
+                                "flex size-6 items-center justify-center rounded-lg bg-sidebar-active text-sidebar-text-muted",
+                                "transition-[transform,background-color,color] duration-150 group-hover:-translate-x-0.5 group-hover:bg-sidebar-hover group-hover:text-sidebar-text-subtle",
+                              )}
+                            >
+                              <IconChevronLeft size={12} stroke={2.5} />
+                            </div>
+                          )}
+                          <span className="text-lg font-semibold text-sidebar-text">
+                            {title}
+                          </span>
+                        </TitleContainer>
+                      )
+                    )}
+
+                    <div className="flex flex-col gap-2">
+                      {content.map(({ name, items }, idx) => (
+                        <div key={idx}>
+                          {name && (
+                            <div className="mb-2 pl-[10px] font-[family-name:var(--font-inter)] text-[11px] font-normal tracking-[-0.02em] text-sidebar-section-label">
+                              {name}
+                            </div>
+                          )}
+                          <ProximityNavSection>
+                            {items.map((item, itemIdx) => (
+                              <NavItem
+                                key={item.name}
+                                item={item}
+                                index={itemIdx}
+                              />
+                            ))}
+                          </ProximityNavSection>
                         </div>
-                      )}
-                      <span className="text-lg font-semibold text-neutral-900">
-                        {title}
-                      </span>
-                    </TitleContainer>
-                  )}
-                  <div className="flex flex-col gap-8">
-                    {content.map(({ name, items }, idx) => (
-                      <div key={idx}>
-                        {name && (
-                          <div className="mb-2 pl-[10px] font-[family-name:var(--font-inter)] text-[11px] font-normal tracking-[-0.02em] text-[rgba(37,37,37,0.5)]">
-                            {name}
-                          </div>
-                        )}
-                        <ProximityNavSection>
-                          {items.map((item, itemIdx) => (
-                            <NavItem key={item.name} item={item} index={itemIdx} />
-                          ))}
-                        </ProximityNavSection>
-                      </div>
-                    ))}
-                  </div>
-                </Area>
-              );
-            })}
+                      ))}
+                    </div>
+                  </Area>
+                );
+              })}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* News cards — fixed bottom, not clipped */}
-      {showNews && newsContent && (
-        <div className="shrink-0 rounded-b-xl">{newsContent}</div>
-      )}
-
-      {/* Usage — fixed bottom */}
-      <AnimatePresence>
-        {bottom && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
-            className="shrink-0 overflow-hidden rounded-b-xl"
-          >
-            {bottom}
-          </motion.div>
+        {/* News cards */}
+        {showNews && newsContent && (
+          <div className="shrink-0 rounded-b-xl">{newsContent}</div>
         )}
-      </AnimatePresence>
+
+        {/* Usage */}
+        <AnimatePresence>
+          {bottom && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
+              className="shrink-0 overflow-hidden"
+            >
+              {bottom}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* User info row */}
+        <div className="shrink-0 p-3 pt-0">
+          <UserInfoRow />
+        </div>
     </div>
   );
 }
 
-// ── NavGroupItem (icon strip button) ───────────────────────────────────
+// ── HeaderIconGroup (proximity hover for +, search, sidebar icons) ────
 
-function NavGroupItem({ group }: { group: NavGroupType }) {
+const HEADER_ICON_LABELS = ["New", "Search", "Close sidebar"];
+
+function HeaderIconGroup({
+  collapsed,
+  onCollapse,
+}: {
+  collapsed: boolean;
+  onCollapse: () => void;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
   const {
-    name,
-    description,
-    learnMoreHref,
-    icon: Icon,
-    href,
-    active,
-    badge,
-  } = group;
-  const [hovered, setHovered] = useState(false);
+    activeIndex,
+    setActiveIndex,
+    itemRects,
+    sessionRef,
+    handlers,
+    registerItem,
+    measureItems,
+  } = useProximityHover(containerRef, { axis: "x" });
+
+  useEffect(() => {
+    measureItems();
+  }, [measureItems]);
+
+  const register = useCallback(
+    (index: number) => (el: HTMLDivElement | null) => {
+      itemRefs.current[index] = el;
+      registerItem(index, el);
+    },
+    [registerItem],
+  );
+
+  // Suppress hover when search dialog is open
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const handleSearchOpenChange = useCallback((open: boolean) => {
+    setDialogOpen(open);
+    if (open) setActiveIndex(null);
+  }, [setActiveIndex]);
+
+  const effectiveIndex = dialogOpen ? null : activeIndex;
+  const activeRect = effectiveIndex !== null ? itemRects[effectiveIndex] : null;
+  const activeLabel =
+    effectiveIndex !== null ? HEADER_ICON_LABELS[effectiveIndex] : null;
+
+  // Tooltip positioning: compute from live DOM rect
+  const getTooltipPos = useCallback(() => {
+    if (activeIndex === null) return null;
+    const el = itemRefs.current[activeIndex];
+    if (!el) return null;
+    const rect = el.getBoundingClientRect();
+    return { x: rect.left + rect.width / 2, y: rect.bottom };
+  }, [activeIndex]);
+
+  const tooltipPos = getTooltipPos();
 
   return (
-    <NavGroupTooltip
-      name={name}
-      description={description}
-      learnMoreHref={learnMoreHref}
-    >
-      <div>
-        <Link
-          href={href}
-          onPointerEnter={() => setHovered(true)}
-          onPointerLeave={() => setHovered(false)}
-          className={cn(
-            "relative flex size-11 cursor-pointer items-center justify-center rounded-xl transition-colors duration-150",
-            "outline-none focus-visible:ring-2 focus-visible:ring-black/50",
-            active
-              ? "bg-white"
-              : "hover:bg-black/5 active:bg-black/10",
+    <div className="relative pr-0.5">
+      <div
+        ref={containerRef}
+        className="relative flex items-center gap-0.5"
+        onMouseMove={dialogOpen ? undefined : handlers.onMouseMove}
+        onMouseEnter={dialogOpen ? undefined : handlers.onMouseEnter}
+        onMouseLeave={dialogOpen ? undefined : handlers.onMouseLeave}
+      >
+        {/* Sliding highlight */}
+        <AnimatePresence>
+          {activeRect && (
+            <motion.div
+              key={sessionRef.current}
+              className="pointer-events-none absolute rounded-lg bg-sidebar-hover"
+              initial={{
+                opacity: 0,
+                top: activeRect.top,
+                left: activeRect.left,
+                width: activeRect.width,
+                height: activeRect.height,
+              }}
+              animate={{
+                opacity: 1,
+                top: activeRect.top,
+                left: activeRect.left,
+                width: activeRect.width,
+                height: activeRect.height,
+              }}
+              exit={{ opacity: 0, transition: { duration: 0.1 } }}
+              transition={{
+                ...springs.fast,
+                opacity: { duration: 0.12 },
+              }}
+            />
           )}
-        >
-          <Icon className="size-5 text-neutral-700" data-hovered={hovered} />
-          {badge && (
-            <div className="absolute right-0.5 top-0.5 flex size-3.5 items-center justify-center rounded-full bg-blue-600 text-[0.625rem] font-semibold text-white">
-              {badge}
-            </div>
-          )}
-        </Link>
+        </AnimatePresence>
+
+        {/* New */}
+        <div ref={register(0)}>
+          <button className="relative z-10 flex size-7 cursor-pointer items-center justify-center rounded-lg text-sidebar-text-muted">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.08333 0.75V6.08333M6.08333 6.08333V11.4167M6.08333 6.08333H0.75M6.08333 6.08333H11.4167" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+          </button>
+        </div>
+
+        {/* Search */}
+        <div ref={register(1)}>
+          <SearchCommand onOpenChange={handleSearchOpenChange} />
+        </div>
+
+        {/* Close sidebar */}
+        <div ref={register(2)}>
+          <button
+            type="button"
+            onClick={onCollapse}
+            className="relative z-10 flex size-7 cursor-pointer items-center justify-center rounded-lg text-sidebar-text-muted"
+          >
+            <svg width="16" height="16" viewBox="0 -960 960 960" fill="currentColor"><path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm440-80h120v-560H640v560Zm-80 0v-560H200v560h360Zm80 0h120-120Z"/></svg>
+          </button>
+        </div>
       </div>
-    </NavGroupTooltip>
+
+      {/* Shared tooltip (portaled to escape overflow) */}
+      <FloatingPortal>
+        <AnimatePresence>
+          {activeLabel && !collapsed && !dialogOpen && tooltipPos && (
+            <motion.div
+              className="pointer-events-none fixed z-[9999]"
+              style={{ top: tooltipPos.y }}
+              initial={{ opacity: 0, y: 0, left: tooltipPos.x }}
+              animate={{ opacity: 1, y: 4, left: tooltipPos.x }}
+              exit={{ opacity: 0, y: 0, transition: { duration: 0.08 } }}
+              transition={{
+                left: springs.fast,
+                opacity: { duration: 0.12 },
+                y: { duration: 0.12 },
+              }}
+            >
+              <div
+                className="whitespace-nowrap rounded-lg bg-tooltip-bg px-2.5 py-1 text-xs font-medium text-tooltip-text shadow-lg"
+                style={{ transform: "translateX(-50%)" }}
+              >
+                {activeLabel}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </FloatingPortal>
+    </div>
   );
 }
 
@@ -398,7 +559,7 @@ function ProximityNavSection({ children }: { children: ReactNode }) {
           {activeRect && (
             <motion.div
               key={sessionRef.current}
-              className="pointer-events-none absolute rounded-xl bg-black/[0.03]"
+              className="pointer-events-none absolute rounded-xl bg-sidebar-hover"
               initial={{
                 opacity: 0,
                 top: activeRect.top,
@@ -472,18 +633,18 @@ function NavItem({ item, index }: { item: NavItemType | NavSubItemType; index?: 
         onPointerLeave={() => setHovered(false)}
         className={cn(
           "group flex h-8 cursor-pointer items-center justify-between rounded-xl px-[10px] py-2 text-sm leading-none transition-[color,background-color] duration-75 font-[family-name:var(--font-inter)] font-medium tracking-[-0.02em]",
-          "outline-none focus-visible:ring-2 focus-visible:ring-black/50",
+          "outline-none focus-visible:ring-2 focus-visible:ring-ring",
           isActive && !items
-            ? "bg-[rgba(37,37,37,0.06)] text-[#252525]"
-            : "text-[rgba(37,37,37,0.7)]",
+            ? "bg-sidebar-active text-sidebar-text"
+            : "text-sidebar-text-subtle",
         )}
       >
         <span className="flex items-center gap-2.5">
           {Icon && (
             <Icon
               className={cn(
-                "size-4",
-                !items && "group-data-[active=true]:text-[#252525]",
+                "size-4 opacity-50",
+                !items && "group-data-[active=true]:text-sidebar-text group-data-[active=true]:opacity-100",
               )}
               data-hovered={hovered}
             />
@@ -501,8 +662,8 @@ function NavItem({ item, index }: { item: NavItemType | NavSubItemType; index?: 
                 className={cn(
                   "flex items-center justify-center rounded px-1.5 py-0.5 text-xs font-semibold",
                   isActive && !items
-                    ? "bg-[rgba(37,37,37,0.1)] text-[#252525]"
-                    : "bg-[rgba(37,37,37,0.06)] text-[rgba(37,37,37,0.5)]",
+                    ? "bg-sidebar-active text-sidebar-text"
+                    : "bg-sidebar-hover text-sidebar-text-muted",
                 )}
               >
                 {item.badge}
@@ -511,7 +672,7 @@ function NavItem({ item, index }: { item: NavItemType | NavSubItemType; index?: 
           {items && (
             <IconChevronDown
               size={14}
-              className="text-neutral-500 transition-transform duration-75 group-data-[active=true]:rotate-180"
+              className="text-sidebar-text-muted transition-transform duration-75 group-data-[active=true]:rotate-180"
             />
           )}
           {arrow && (
@@ -524,7 +685,7 @@ function NavItem({ item, index }: { item: NavItemType | NavSubItemType; index?: 
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="text-neutral-700 transition-transform duration-75 group-hover:-translate-y-px group-hover:translate-x-px"
+              className="text-sidebar-text-subtle transition-transform duration-75 group-hover:-translate-y-px group-hover:translate-x-px"
             >
               <path d="M7 17L17 7M17 7H7M17 7V17" />
             </svg>
@@ -544,7 +705,7 @@ function NavItem({ item, index }: { item: NavItemType | NavSubItemType; index?: 
             >
               <div className="pl-px pt-1">
                 <div className="pl-3.5">
-                  <div className="flex flex-col gap-0.5 border-l border-neutral-200 pl-2">
+                  <div className="flex flex-col gap-0.5 border-l border-sidebar-border pl-2">
                     {items.map((subItem) => (
                       <NavItem key={subItem.name} item={subItem} />
                     ))}

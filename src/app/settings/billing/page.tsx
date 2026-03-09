@@ -7,10 +7,10 @@ export default function BillingPage() {
       <SettingsCard title="Current plan" description="You are currently on the Free plan.">
         <div className="flex items-center justify-between">
           <div>
-            <span className="rounded-full bg-neutral-100 px-2.5 py-1 text-xs font-medium text-neutral-600">Free</span>
-            <span className="ml-2 text-sm text-neutral-500">1,240 / 5,000 events used</span>
+            <span className="rounded-full bg-accent px-2.5 py-1 text-xs font-medium text-muted-foreground">Free</span>
+            <span className="ml-2 text-sm text-muted-foreground">1,240 / 5,000 events used</span>
           </div>
-          <button className="rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-neutral-800">
+          <button className="rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-page-bg transition-colors hover:bg-foreground/90">
             Upgrade
           </button>
         </div>

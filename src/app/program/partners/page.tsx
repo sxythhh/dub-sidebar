@@ -10,8 +10,8 @@ const PARTNERS = [
 export default function PartnersPage() {
   return (
     <PageShell title="All Partners" description="View and manage your affiliate partners.">
-      <div className="mt-4 divide-y divide-neutral-100 rounded-lg border border-neutral-200">
-        <div className="grid grid-cols-[40px_1fr_80px_100px_100px] gap-3 px-4 py-2 text-xs font-medium text-neutral-500">
+      <div className="mt-4 divide-y divide-border rounded-lg border border-border">
+        <div className="grid grid-cols-[40px_1fr_80px_100px_100px] gap-3 px-4 py-2 text-xs font-medium text-page-text-muted">
           <span></span>
           <span>Partner</span>
           <span>Clicks</span>
@@ -19,12 +19,12 @@ export default function PartnersPage() {
           <span className="text-right">Revenue</span>
         </div>
         {PARTNERS.map((p) => (
-          <div key={p.id} className="grid grid-cols-[40px_1fr_80px_100px_100px] items-center gap-3 px-4 py-3 text-sm transition-colors hover:bg-neutral-50">
+          <div key={p.id} className="grid grid-cols-[40px_1fr_80px_100px_100px] items-center gap-3 px-4 py-3 text-sm transition-colors hover:bg-accent">
             <img src={p.avatar} alt="" className="size-8 rounded-full object-cover" />
-            <span className="font-medium text-neutral-900">{p.name}</span>
-            <span className="text-neutral-600">{p.clicks.toLocaleString()}</span>
-            <span className="text-neutral-600">{p.conversions}</span>
-            <span className="text-right font-medium text-neutral-900">{p.revenue}</span>
+            <span className="font-medium text-page-text">{p.name}</span>
+            <span className="text-page-text-muted">{p.clicks.toLocaleString()}</span>
+            <span className="text-page-text-muted">{p.conversions}</span>
+            <span className="text-right font-medium text-page-text">{p.revenue}</span>
           </div>
         ))}
       </div>

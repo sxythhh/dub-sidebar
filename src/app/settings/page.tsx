@@ -8,12 +8,12 @@ export default function SettingsPage() {
         <input
           type="text"
           defaultValue="Acme Inc"
-          className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-neutral-400 focus:ring-1 focus:ring-neutral-400"
+          className="w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-ring focus:ring-1 focus:ring-ring"
         />
       </SettingsCard>
       <SettingsCard title="Workspace slug" description="Your workspace's URL slug on Dub.">
-        <div className="flex items-center gap-0 rounded-lg border border-neutral-200 text-sm">
-          <span className="border-r border-neutral-200 bg-neutral-50 px-3 py-2 text-neutral-500">app.dub.co/</span>
+        <div className="flex items-center gap-0 rounded-lg border border-border text-sm">
+          <span className="border-r border-border bg-accent px-3 py-2 text-muted-foreground">app.dub.co/</span>
           <input
             type="text"
             defaultValue="acme"

@@ -3,12 +3,6 @@
 import { cn } from "@/lib/utils";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  IconCheck,
-  IconPlus,
-  IconSettings,
-  IconUserPlus,
-} from "@tabler/icons-react";
-import {
   useFloating,
   offset,
   shift,
@@ -16,121 +10,136 @@ import {
   FloatingPortal,
 } from "@floating-ui/react";
 import { motion, AnimatePresence } from "motion/react";
-import { Dropdown, useDropdown } from "@/components/ui/dropdown";
-import { fontWeights } from "@/lib/font-weight";
+import { useSideNav, WORKSPACES } from "./sidebar-context";
 
-const WORKSPACES = [
-  { id: "1", name: "Acme Inc", slug: "acme", plan: "pro" as const, logo: "https://ui-avatars.com/api/?name=A&background=7c3aed&color=fff&size=64&bold=true&font-size=0.45" },
-  { id: "2", name: "Strato Labs", slug: "strato", plan: "free" as const, logo: "https://ui-avatars.com/api/?name=S&background=0ea5e9&color=fff&size=64&bold=true&font-size=0.45" },
-  { id: "3", name: "Nebula Co", slug: "nebula", plan: "free" as const, logo: "https://ui-avatars.com/api/?name=N&background=f97316&color=fff&size=64&bold=true&font-size=0.45" },
-];
-
-const planColors: Record<string, string> = {
-  enterprise: "text-purple-700",
-  advanced: "text-amber-800",
-  business: "text-blue-900",
-  pro: "text-cyan-900",
-  free: "text-neutral-500",
-};
-
-function WorkspaceItem({
-  ws,
-  index,
-  isActive,
-  onSelect,
+function ProgramLogo({
+  src,
+  name,
+  className,
 }: {
-  ws: (typeof WORKSPACES)[number];
-  index: number;
-  isActive: boolean;
-  onSelect: () => void;
+  src: string;
+  name: string;
+  className?: string;
 }) {
-  const internalRef = useRef<HTMLDivElement>(null);
-  const hasMounted = useRef(false);
-  const { registerItem, activeIndex, checkedIndex } = useDropdown();
-
-  useEffect(() => {
-    registerItem(index, internalRef.current);
-    return () => registerItem(index, null);
-  }, [index, registerItem]);
-
-  useEffect(() => {
-    hasMounted.current = true;
-  }, []);
-
-  const isHovered = activeIndex === index;
-  const skipAnimation = !hasMounted.current;
-
   return (
-    <div
-      ref={internalRef}
-      data-proximity-index={index}
-      tabIndex={index === (checkedIndex ?? 0) ? 0 : -1}
-      role="menuitemradio"
-      aria-checked={isActive}
-      aria-label={ws.name}
-      onClick={onSelect}
-      onKeyDown={(e) => {
-        if (e.key === " " || e.key === "Enter") {
-          e.preventDefault();
-          onSelect();
-        }
-      }}
-      className="relative z-10 flex w-full cursor-pointer items-center gap-x-2 rounded-lg px-2 py-2 outline-none"
-    >
-      <img src={ws.logo} alt="" className="size-5 shrink-0 rounded-full object-cover" />
-      <span
-        className={cn(
-          "block max-w-[140px] truncate text-sm leading-5 transition-colors duration-75",
-          isHovered || isActive ? "text-neutral-900" : "text-neutral-600",
-        )}
-        style={{
-          fontVariationSettings: isActive
-            ? fontWeights.semibold
-            : fontWeights.normal,
-        }}
-      >
-        {ws.name}
-      </span>
-      <AnimatePresence>
-        {isActive && (
-          <motion.svg
-            key="check"
-            width={16}
-            height={16}
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="ml-auto shrink-0 text-neutral-900"
-            initial={{ opacity: 1 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 1 }}
-          >
-            <motion.path
-              d="M4 12L9 17L20 6"
-              initial={{ pathLength: skipAnimation ? 1 : 0 }}
-              animate={{
-                pathLength: 1,
-                transition: { duration: 0.08, ease: "easeOut" },
-              }}
-              exit={{
-                pathLength: 0,
-                transition: { duration: 0.04, ease: "easeIn" },
-              }}
-            />
-          </motion.svg>
-        )}
-      </AnimatePresence>
-    </div>
+    <img
+      src={src}
+      alt={name}
+      className={cn(
+        "shrink-0 rounded-full border border-black/10 object-cover",
+        className,
+      )}
+    />
   );
 }
 
-export function WorkspaceDropdown() {
-  const [show, setShow] = useState(false);
-  const [selected, setSelected] = useState(WORKSPACES[0]);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+function SearchIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 18 18"
+      fill="none"
+      className={className}
+    >
+      <path
+        d="M12.5 12.5L16 16"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <circle
+        cx="8"
+        cy="8"
+        r="5.25"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
+    </svg>
+  );
+}
+
+function GridIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      className={className}
+    >
+      <rect x="1.5" y="1.5" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.3" />
+      <rect x="9.5" y="1.5" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.3" />
+      <rect x="1.5" y="9.5" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.3" />
+      <rect x="9.5" y="9.5" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.3" />
+    </svg>
+  );
+}
+
+function MarketplaceIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      className={className}
+    >
+      <path
+        d="M2 6.5V13a1 1 0 001 1h10a1 1 0 001-1V6.5"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M1.5 3.5a1 1 0 011-1h11a1 1 0 011 1v2H1.5v-2z"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M6.5 10.5h3v3.5h-3z"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function CheckIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      className={className}
+    >
+      <path
+        d="M3.5 8.5L6.5 11.5L12.5 5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function WorkspaceDropdown({ onOpenChange }: { onOpenChange?: (open: boolean) => void } = {}) {
+  const { workspace: selected, setWorkspace: setSelected } = useSideNav();
+  const [show, setShowRaw] = useState(false);
+  const setShow = useCallback((v: boolean | ((prev: boolean) => boolean)) => {
+    setShowRaw((prev) => {
+      const next = typeof v === "function" ? v(prev) : v;
+      onOpenChange?.(next);
+      return next;
+    });
+  }, [onOpenChange]);
+  const [search, setSearch] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const { refs, floatingStyles } = useFloating({
     open: show,
@@ -146,37 +155,46 @@ export function WorkspaceDropdown() {
     [refs],
   );
 
-  const handleEnter = () => {
-    clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => setShow(true), 100);
-  };
-
-  const handleLeave = () => {
-    clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => setShow(false), 200);
-  };
-
+  // Close on outside click
   useEffect(() => {
-    return () => clearTimeout(timeoutRef.current);
-  }, []);
+    if (!show) return;
+    function handleClick(e: MouseEvent) {
+      const floating = document.querySelector("[data-workspace-popover]");
+      const reference = refs.domReference.current;
+      const target = e.target as Node;
+      if (floating?.contains(target)) return;
+      if (reference?.contains(target)) return;
+      setShow(false);
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [show, refs]);
 
-  const checkedIndex = WORKSPACES.findIndex((ws) => ws.id === selected.id);
+  // Focus search input when opened
+  useEffect(() => {
+    if (show) {
+      setTimeout(() => inputRef.current?.focus(), 50);
+      setSearch("");
+    }
+  }, [show]);
+
+  const filteredPrograms = WORKSPACES.filter((p) =>
+    p.name.toLowerCase().includes(search.toLowerCase()),
+  );
 
   return (
-    <div
-      ref={refs.setReference}
-      onPointerEnter={handleEnter}
-      onPointerLeave={handleLeave}
-    >
+    <div ref={refs.setReference}>
       <button
+        type="button"
+        onClick={() => setShow((v) => !v)}
         className={cn(
-          "flex size-11 items-center justify-center rounded-xl p-1.5 text-left text-sm transition-all duration-75",
-          "hover:bg-black/5 active:bg-black/10",
-          show && "bg-black/5",
-          "outline-none focus-visible:ring-2 focus-visible:ring-black/50",
+          "flex size-10 cursor-pointer items-center justify-center rounded-xl text-left text-sm transition-all duration-75",
+          "hover:bg-sidebar-hover active:bg-sidebar-active",
+          show && "bg-sidebar-active",
+          "outline-none focus-visible:ring-2 focus-visible:ring-ring",
         )}
       >
-        <img src={selected.logo} alt="" className="size-7 shrink-0 rounded-full object-cover" />
+        <ProgramLogo src={selected.logo} name={selected.name} className="size-7" />
       </button>
 
       <AnimatePresence>
@@ -185,105 +203,109 @@ export function WorkspaceDropdown() {
             <div
               ref={setFloatingRef}
               style={floatingStyles}
-              className="pointer-events-none z-[100]"
+              className="z-[200]"
+              data-workspace-popover
             >
               <motion.div
-                className="pointer-events-auto"
                 initial={{ opacity: 0, x: -4 }}
-                animate={{ opacity: 1, x: 0, transition: { duration: 0.15 } }}
-                exit={{ opacity: 0, transition: { duration: 0.1 } }}
-                onPointerEnter={handleEnter}
-                onPointerLeave={handleLeave}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -4 }}
+                transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
+                style={{ width: 256 }}
               >
-                <div className="w-72 rounded-xl bg-white shadow-lg ring-1 ring-neutral-200">
-                  {/* Header */}
-                  <div className="flex items-center gap-x-2.5 px-3 pb-2 pt-3">
-                    <img src={selected.logo} alt="" className="size-8 shrink-0 rounded-full object-cover" />
-                    <div className="min-w-0">
-                      <div className="truncate text-sm font-medium leading-5 text-neutral-900">
-                        {selected.name}
-                      </div>
-                      <div
-                        className={cn(
-                          "truncate text-xs capitalize leading-tight",
-                          planColors[selected.plan] ?? planColors.free,
+                <div className="select-none overflow-hidden rounded-xl bg-dropdown-bg shadow-lg ring-1 ring-dropdown-border">
+                  {/* Search */}
+                  <div className="border-b border-dropdown-border">
+                    <label className="flex w-full items-center pl-3.5">
+                      <SearchIcon className="size-[18px] shrink-0 text-dropdown-text-muted" />
+                      <input
+                        ref={inputRef}
+                        type="text"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        placeholder="Find program..."
+                        className="h-12 w-full border-0 bg-transparent px-2.5 text-sm text-dropdown-text placeholder:text-dropdown-text-muted focus:outline-none"
+                      />
+                    </label>
+                  </div>
+
+                  {/* Programs list */}
+                  <div className="max-h-[260px] overflow-y-auto">
+                    <div className="p-2">
+                      <p className="px-1 pb-1.5 pt-1 text-xs font-medium text-dropdown-text-muted">
+                        Programs
+                      </p>
+                      <div className="flex flex-col gap-0.5">
+                        {filteredPrograms.map((program) => {
+                          const isSelected = selected.id === program.id;
+                          return (
+                            <button
+                              key={program.id}
+                              type="button"
+                              onClick={() => {
+                                setSelected(program);
+                                setShow(false);
+                              }}
+                              className={cn(
+                                "relative flex w-full cursor-pointer items-center gap-x-2.5 rounded-md py-2.5 pl-2 pr-3 text-left transition-all duration-75",
+                                "outline-none focus-visible:ring-2 focus-visible:ring-black/50",
+                                isSelected
+                                  ? "bg-sidebar-hover"
+                                  : "hover:bg-dropdown-hover active:bg-dropdown-hover",
+                              )}
+                            >
+                              <ProgramLogo
+                                src={program.logo}
+                                name={program.name}
+                                className="size-5"
+                              />
+                              <span className="block min-w-0 grow truncate text-sm leading-5 text-dropdown-text">
+                                {program.name}
+                              </span>
+                              {isSelected && (
+                                <CheckIcon className="size-4 shrink-0 text-dropdown-text-muted" />
+                              )}
+                            </button>
+                          );
+                        })}
+                        {filteredPrograms.length === 0 && (
+                          <p className="p-1 text-sm text-dropdown-text-muted">
+                            No programs found
+                          </p>
                         )}
-                      >
-                        {selected.plan}
                       </div>
                     </div>
                   </div>
 
-                  {/* Phase 2: expand */}
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    transition={{
-                      height: {
-                        delay: 0.35,
-                        duration: 0.3,
-                        type: "spring",
-                        bounce: 0.1,
-                      },
-                      opacity: {
-                        delay: 0.4,
-                        duration: 0.2,
-                      },
-                    }}
-                    className="overflow-hidden"
-                  >
-                    <div className="flex flex-row gap-1 px-3 pb-2.5">
-                      <button className="flex items-center justify-start gap-x-2 rounded-lg border border-neutral-200 px-2 py-1 text-neutral-700 outline-none transition-all duration-75 hover:bg-neutral-100/50 focus-visible:ring-2 focus-visible:ring-black/50 active:bg-neutral-200/80">
-                        <IconSettings
-                          size={16}
-                          className="text-neutral-800"
-                        />
-                        <span className="block truncate text-sm">
-                          Settings
-                        </span>
+                  {/* Bottom links */}
+                  <div className="border-t border-dropdown-border p-2">
+                    <div className="flex flex-col gap-0.5">
+                      <button
+                        type="button"
+                        onClick={() => setShow(false)}
+                        className={cn(
+                          "flex cursor-pointer items-center gap-x-2.5 rounded-md px-2.5 py-2 text-sm transition-all duration-75",
+                          "hover:bg-dropdown-hover active:bg-dropdown-hover",
+                          "outline-none focus-visible:ring-2 focus-visible:ring-black/50",
+                        )}
+                      >
+                        <GridIcon className="size-4 text-dropdown-text-muted" />
+                        <span className="text-dropdown-text">All programs</span>
                       </button>
-                      <button className="flex items-center justify-start gap-x-2 rounded-lg border border-neutral-200 px-2 py-1 text-neutral-700 outline-none transition-all duration-75 hover:bg-neutral-100/50 focus-visible:ring-2 focus-visible:ring-black/50 active:bg-neutral-200/80">
-                        <IconUserPlus
-                          size={16}
-                          className="text-neutral-800"
-                        />
-                        <span className="block truncate text-sm">
-                          Invite members
-                        </span>
+                      <button
+                        type="button"
+                        onClick={() => setShow(false)}
+                        className={cn(
+                          "flex cursor-pointer items-center gap-x-2.5 rounded-md px-2.5 py-2 text-sm transition-all duration-75",
+                          "hover:bg-dropdown-hover active:bg-dropdown-hover",
+                          "outline-none focus-visible:ring-2 focus-visible:ring-black/50",
+                        )}
+                      >
+                        <MarketplaceIcon className="size-4 text-dropdown-text-muted" />
+                        <span className="text-dropdown-text">Marketplace</span>
                       </button>
                     </div>
-
-                    <div className="p-1.5 pt-0">
-                      <p className="px-2 pb-1 pt-0.5 text-xs font-medium text-neutral-500">
-                        Workspaces
-                      </p>
-                      <Dropdown checkedIndex={checkedIndex}>
-                        {WORKSPACES.map((ws, i) => (
-                          <WorkspaceItem
-                            key={ws.id}
-                            ws={ws}
-                            index={i}
-                            isActive={selected.id === ws.id}
-                            onSelect={() => {
-                              setSelected(ws);
-                              setShow(false);
-                            }}
-                          />
-                        ))}
-                      </Dropdown>
-                      <button className="group flex w-full cursor-pointer items-center gap-x-2 rounded-lg px-2 py-2 text-neutral-700 transition-all duration-75 hover:bg-neutral-200/50 active:bg-neutral-200/80">
-                        <div className="flex size-5 shrink-0 items-center justify-center">
-                          <IconPlus
-                            size={16}
-                            className="text-neutral-500"
-                          />
-                        </div>
-                        <span className="block truncate text-sm leading-5 text-neutral-600">
-                          Create workspace
-                        </span>
-                      </button>
-                    </div>
-                  </motion.div>
+                  </div>
                 </div>
               </motion.div>
             </div>

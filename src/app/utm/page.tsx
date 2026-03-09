@@ -12,16 +12,16 @@ export default function UTMPage() {
   return (
     <PageShell title="UTM Templates" description="Save and reuse UTM parameter templates.">
       <div className="mt-4 flex justify-end">
-        <button className="flex items-center gap-1.5 rounded-lg bg-neutral-900 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-neutral-800 active:scale-[0.98]">
+        <button className="flex items-center gap-1.5 rounded-lg bg-foreground px-3 py-2 text-sm font-medium text-page-bg transition-colors hover:bg-foreground/90 active:scale-[0.98]">
           <IconPlus size={16} />
           New template
         </button>
       </div>
-      <div className="mt-4 divide-y divide-neutral-100 rounded-lg border border-neutral-200">
+      <div className="mt-4 divide-y divide-border rounded-lg border border-border">
         {TEMPLATES.map((t) => (
-          <div key={t.id} className="px-4 py-3 transition-colors hover:bg-neutral-50">
-            <div className="text-sm font-medium text-neutral-900">{t.name}</div>
-            <div className="mt-1 flex gap-2 text-xs text-neutral-500">
+          <div key={t.id} className="px-4 py-3 transition-colors hover:bg-accent">
+            <div className="text-sm font-medium text-foreground">{t.name}</div>
+            <div className="mt-1 flex gap-2 text-xs text-muted-foreground">
               <span>source={t.source}</span>
               <span>medium={t.medium}</span>
               <span>campaign={t.campaign}</span>

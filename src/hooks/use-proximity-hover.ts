@@ -25,7 +25,9 @@ interface UseProximityHoverReturn {
 
 export function useProximityHover<T extends HTMLElement>(
   containerRef: RefObject<T | null>,
+  options?: { axis?: "x" | "y" },
 ): UseProximityHoverReturn {
+  const axis = options?.axis ?? "y";
   const itemsRef = useRef(new Map<number, HTMLElement>());
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [itemRects, setItemRects] = useState<ItemRect[]>([]);
@@ -69,7 +71,7 @@ export function useProximityHover<T extends HTMLElement>(
       const containerRect = container.getBoundingClientRect();
       const borderTop = container.clientTop;
       const borderLeft = container.clientLeft;
-      const mouseY = e.clientY;
+      const mousePos = axis === "x" ? e.clientX : e.clientY;
 
       let closestIndex: number | null = null;
       let closestDistance = Infinity;
@@ -84,8 +86,10 @@ export function useProximityHover<T extends HTMLElement>(
           width: rect.width,
         };
 
-        const itemCenter = rect.top + rect.height / 2;
-        const distance = Math.abs(mouseY - itemCenter);
+        const itemCenter = axis === "x"
+          ? rect.left + rect.width / 2
+          : rect.top + rect.height / 2;
+        const distance = Math.abs(mousePos - itemCenter);
 
         if (distance < closestDistance) {
           closestDistance = distance;

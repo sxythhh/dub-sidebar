@@ -11,25 +11,27 @@ const CUSTOMERS = [
 export default function CustomersPage() {
   return (
     <PageShell title="Customers" description="Track customers across the entire conversion funnel.">
-      <div className="mt-4 divide-y divide-neutral-100 rounded-lg border border-neutral-200">
-        <div className="grid grid-cols-[40px_1fr_1fr_80px_100px_80px] gap-3 px-4 py-2 text-xs font-medium text-neutral-500">
-          <span></span>
-          <span>Name</span>
-          <span>Email</span>
-          <span>Events</span>
-          <span>Revenue</span>
-          <span className="text-right">Last seen</span>
-        </div>
-        {CUSTOMERS.map((c) => (
-          <div key={c.id} className="grid grid-cols-[40px_1fr_1fr_80px_100px_80px] items-center gap-3 px-4 py-3 text-sm transition-colors hover:bg-neutral-50">
-            <img src={c.avatar} alt="" className="size-8 rounded-full object-cover" />
-            <span className="font-medium text-neutral-900">{c.name}</span>
-            <span className="text-neutral-500">{c.email}</span>
-            <span className="text-neutral-600">{c.events}</span>
-            <span className="font-medium text-neutral-900">{c.revenue}</span>
-            <span className="text-right text-neutral-500">{c.lastSeen}</span>
+      <div className="mt-4 overflow-x-auto rounded-lg border border-border">
+        <div className="min-w-[600px] divide-y divide-border">
+          <div className="grid grid-cols-[40px_1fr_1fr_80px_100px_80px] gap-3 px-4 py-2 text-xs font-medium text-page-text-muted">
+            <span></span>
+            <span>Name</span>
+            <span>Email</span>
+            <span>Events</span>
+            <span>Revenue</span>
+            <span className="text-right">Last seen</span>
           </div>
-        ))}
+          {CUSTOMERS.map((c) => (
+            <div key={c.id} className="grid grid-cols-[40px_1fr_1fr_80px_100px_80px] items-center gap-3 px-4 py-3 text-sm transition-colors hover:bg-accent">
+              <img src={c.avatar} alt="" className="size-8 rounded-full object-cover" />
+              <span className="font-medium text-page-text">{c.name}</span>
+              <span className="text-page-text-muted">{c.email}</span>
+              <span className="text-page-text-muted">{c.events}</span>
+              <span className="font-medium text-page-text">{c.revenue}</span>
+              <span className="text-right text-page-text-muted">{c.lastSeen}</span>
+            </div>
+          ))}
+        </div>
       </div>
     </PageShell>
   );

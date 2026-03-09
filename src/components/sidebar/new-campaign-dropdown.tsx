@@ -5,6 +5,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { IconChevronDown } from "@tabler/icons-react";
 import { Scratch } from "./icons/scratch";
 import { Template } from "./icons/template";
+import { RichButton } from "@/components/rich-button";
+import { toastManager } from "@/components/ui/toast";
 import {
   useFloating,
   offset,
@@ -26,11 +28,22 @@ function NewCampaignDropdown({
   onClose: () => void;
   onFromScratch: () => void;
 }) {
+  const floatingElRef = useRef<HTMLDivElement | null>(null);
+  const combinedFloatingRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      floatingElRef.current = node;
+      floatingRef(node);
+    },
+    [floatingRef],
+  );
+
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as Node;
       if (
         containerRef.current &&
-        !containerRef.current.contains(e.target as Node)
+        !containerRef.current.contains(target) &&
+        (!floatingElRef.current || !floatingElRef.current.contains(target))
       ) {
         onClose();
       }
@@ -42,31 +55,31 @@ function NewCampaignDropdown({
   return (
     <FloatingPortal>
       <div
-        ref={floatingRef}
+        ref={combinedFloatingRef}
         style={floatingStyles}
         className="z-[200]"
       >
-        <div className="w-[240px] overflow-hidden rounded-xl bg-white shadow-lg ring-1 ring-neutral-200">
+        <div className="w-[240px] overflow-hidden rounded-xl bg-dropdown-bg shadow-lg ring-1 ring-dropdown-border">
           <div className="flex flex-col p-1">
             <button
               type="button"
-              className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-neutral-700 transition-colors hover:bg-neutral-100"
+              className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-dropdown-text-muted transition-colors hover:bg-dropdown-hover"
               onClick={() => {
                 onFromScratch();
                 onClose();
               }}
             >
-              <Scratch className="text-neutral-500" />
+              <Scratch className="text-dropdown-text-muted" />
               From scratch...
             </button>
             <button
               type="button"
               disabled
-              className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-neutral-400"
+              className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-muted-foreground"
             >
-              <Template className="text-neutral-300" />
+              <Template className="text-muted-foreground" />
               <span className="flex-1 text-left">Choose a template...</span>
-              <span className="rounded-full bg-neutral-100 px-1.5 py-0.5 text-[10px] font-medium text-neutral-400">
+              <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
                 Soon
               </span>
             </button>
@@ -97,12 +110,10 @@ export function NewCampaignButton() {
 
   return (
     <div className="relative flex-1" ref={(node) => { containerRef.current = node; refs.setReference(node); }}>
-      <button
-        type="button"
+      <RichButton
+        size="sm"
         onClick={() => setOpen((v) => !v)}
-        className={cn(
-          "flex h-8 w-full cursor-pointer items-center justify-between rounded-xl bg-neutral-900 px-3 text-sm font-medium text-white whitespace-nowrap transition-colors hover:bg-neutral-800",
-        )}
+        className="w-full rounded-2xl"
       >
         <span>New campaign</span>
         <IconChevronDown
@@ -112,7 +123,7 @@ export function NewCampaignButton() {
             open && "rotate-180",
           )}
         />
-      </button>
+      </RichButton>
       {open && (
         <NewCampaignDropdown
           containerRef={containerRef}
@@ -120,7 +131,11 @@ export function NewCampaignButton() {
           floatingStyles={floatingStyles}
           onClose={() => setOpen(false)}
           onFromScratch={() => {
-            // TODO: hook up to campaign creation flow
+            toastManager.add({
+              title: "Campaign created",
+              description: "Your new campaign is ready to go.",
+              type: "success",
+            });
           }}
         />
       )}

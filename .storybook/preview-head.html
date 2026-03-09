@@ -1,0 +1,23 @@
+<!-- Inter font (normally loaded by Next.js at runtime) -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+<link
+  href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+  rel="stylesheet"
+/>
+
+<style>
+  /* Geist Sans — loaded from the `geist` npm package via staticDirs in main.ts */
+  @font-face {
+    font-family: "Geist Sans";
+    src: url("/fonts/geist-sans/Geist-Variable.woff2") format("woff2");
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  html {
+    --font-inter-display: "Inter", system-ui, -apple-system, sans-serif;
+    --font-geist-sans: "Geist Sans", system-ui, -apple-system, sans-serif;
+  }
+</style>

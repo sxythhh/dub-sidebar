@@ -1,57 +1,52 @@
 "use client";
-import { PageShell } from "@/components/page-shell";
-import { IconLink, IconPlus, IconSearch, IconFilter } from "@tabler/icons-react";
 
-const MOCK_LINKS = [
-  { id: 1, short: "dub.sh/launch", url: "https://example.com/product-launch-2026", clicks: 2847, createdAt: "2 days ago" },
-  { id: 2, short: "dub.sh/docs", url: "https://docs.example.com/getting-started", clicks: 1523, createdAt: "5 days ago" },
-  { id: 3, short: "dub.sh/blog", url: "https://blog.example.com/announcing-v2", clicks: 891, createdAt: "1 week ago" },
-  { id: 4, short: "dub.sh/demo", url: "https://example.com/schedule-demo", clicks: 456, createdAt: "2 weeks ago" },
-  { id: 5, short: "dub.sh/github", url: "https://github.com/acme/project", clicks: 234, createdAt: "3 weeks ago" },
-];
+import { useState } from "react";
+import { IconPlus } from "@tabler/icons-react";
+import { LinkBuilderModal } from "@/components/link-builder/link-builder-modal";
+import { NewCampaignButton } from "@/components/sidebar/new-campaign-dropdown";
+import { RichButton } from "@/components/rich-button";
 
-export default function LinksPage() {
+export default function Page() {
+  const [showBuilder, setShowBuilder] = useState(false);
+
   return (
-    <PageShell title="Links" description="Create, organize, and measure the performance of your short links.">
-      <div className="mt-4 flex items-center justify-between gap-3">
-        <div className="flex flex-1 items-center gap-2">
-          <div className="flex flex-1 items-center gap-2 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-500 focus-within:border-neutral-400 focus-within:ring-1 focus-within:ring-neutral-400">
-            <IconSearch size={16} />
-            <input
-              type="text"
-              placeholder="Search links..."
-              className="flex-1 bg-transparent outline-none placeholder:text-neutral-400"
-            />
-          </div>
-          <button className="flex items-center gap-1.5 rounded-lg border border-neutral-200 px-3 py-2 text-sm text-neutral-600 transition-colors hover:bg-neutral-50">
-            <IconFilter size={16} />
-            Filter
-          </button>
+    <div>
+      {/* Top nav */}
+      <div className="flex h-14 items-center justify-between border-b border-page-border px-5">
+        <div className="flex items-center gap-2">
+          <span className="font-[family-name:var(--font-inter)] text-sm font-medium tracking-[-0.02em] text-page-text">
+            Links
+          </span>
         </div>
-        <button className="flex items-center gap-1.5 rounded-lg bg-neutral-900 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-neutral-800 active:scale-[0.98]">
-          <IconPlus size={16} />
-          Create link
-        </button>
+
+        <NewCampaignButton />
       </div>
-      <div className="mt-4 divide-y divide-neutral-100 rounded-lg border border-neutral-200">
-        {MOCK_LINKS.map((link) => (
-          <div key={link.id} className="flex items-center justify-between px-4 py-3 transition-colors hover:bg-neutral-50">
-            <div className="flex items-center gap-3">
-              <div className="flex size-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
-                <IconLink size={16} />
-              </div>
-              <div>
-                <div className="text-sm font-medium text-neutral-900">{link.short}</div>
-                <div className="text-xs text-neutral-500 max-w-[300px] truncate">{link.url}</div>
-              </div>
-            </div>
-            <div className="text-right">
-              <div className="text-sm font-medium text-neutral-900">{link.clicks.toLocaleString()} clicks</div>
-              <div className="text-xs text-neutral-500">{link.createdAt}</div>
-            </div>
+
+      {/* Content */}
+      <div className="flex flex-col items-center justify-center px-5 py-24">
+        <div className="flex flex-col items-center gap-4">
+          <div className="flex size-12 items-center justify-center rounded-2xl bg-page-border">
+            <IconPlus size={20} className="text-page-text-muted" />
           </div>
-        ))}
+          <div className="text-center">
+            <p className="font-[family-name:var(--font-inter)] text-sm font-medium tracking-[-0.02em] text-page-text">
+              No links yet
+            </p>
+            <p className="mt-1 font-[family-name:var(--font-inter)] text-sm tracking-[-0.02em] text-page-text-muted">
+              Create your first short link to get started.
+            </p>
+          </div>
+          <RichButton
+            size="sm"
+            onClick={() => setShowBuilder(true)}
+            className="mt-2 rounded-2xl"
+          >
+            New campaign
+          </RichButton>
+        </div>
       </div>
-    </PageShell>
+
+      <LinkBuilderModal open={showBuilder} onClose={() => setShowBuilder(false)} />
+    </div>
   );
 }

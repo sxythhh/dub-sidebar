@@ -12,21 +12,21 @@ const APPLICATIONS = [
 export default function ApplicationsPage() {
   return (
     <PageShell title="Applications" description="Review pending partner applications.">
-      <div className="mt-4 divide-y divide-neutral-100 rounded-lg border border-neutral-200">
+      <div className="mt-4 divide-y divide-border rounded-lg border border-border">
         {APPLICATIONS.map((a) => (
-          <div key={a.id} className="flex items-center justify-between px-4 py-3 transition-colors hover:bg-neutral-50">
+          <div key={a.id} className="flex items-center justify-between px-4 py-3 transition-colors hover:bg-accent">
             <div className="flex items-center gap-3">
               <img src={a.avatar} alt="" className="size-8 rounded-full object-cover" />
               <div>
-                <div className="text-sm font-medium text-neutral-900">{a.name}</div>
-                <div className="text-xs text-neutral-500">{a.email} &middot; Applied {a.applied}</div>
+                <div className="text-sm font-medium text-page-text">{a.name}</div>
+                <div className="text-xs text-page-text-muted">{a.email} &middot; Applied {a.applied}</div>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <button className="rounded-lg border border-neutral-200 px-3 py-1.5 text-xs font-medium text-neutral-700 transition-colors hover:bg-neutral-50">
+              <button className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-page-text-subtle transition-colors hover:bg-accent">
                 Decline
               </button>
-              <button className="rounded-lg bg-neutral-900 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-neutral-800">
+              <button className="rounded-lg bg-foreground px-3 py-1.5 text-xs font-medium text-page-bg transition-colors hover:bg-foreground/90">
                 Approve
               </button>
             </div>

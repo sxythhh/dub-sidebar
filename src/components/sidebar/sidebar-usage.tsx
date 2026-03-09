@@ -1,11 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { IconChevronRight } from "@tabler/icons-react";
 import NumberFlow from "@number-flow/react";
 import { Sparkle } from "./icons/sparkle";
 import { Hyperlink } from "./icons/hyperlink";
+import { VerifiedAgencyDrawer } from "@/components/verified-agency/VerifiedAgencyDrawer";
+import { RichButton } from "@/components/rich-button";
 
 function UsageRow({
   icon: Icon,
@@ -29,17 +32,17 @@ function UsageRow({
     <div>
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <Icon className="size-3.5 text-neutral-600" />
-          <span className="text-xs font-medium text-neutral-700">{label}</span>
+          <Icon className="size-3.5 text-sidebar-text-muted" />
+          <span className="text-xs font-medium text-sidebar-text-subtle">{label}</span>
         </div>
-        <span className="text-xs font-medium text-neutral-600">
+        <span className="text-xs font-medium text-sidebar-text-muted">
           <NumberFlow value={usage} /> of <NumberFlow value={limit} />
         </span>
       </div>
       <div className="mt-1.5">
         <div
           className={cn(
-            "h-[3px] w-full overflow-hidden rounded-full bg-neutral-900/10",
+            "h-[3px] w-full overflow-hidden rounded-full bg-sidebar-active",
           )}
         >
           <div
@@ -56,6 +59,7 @@ function UsageRow({
 }
 
 export function SidebarUsage() {
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const tokensUsage = 1240;
   const tokensLimit = 5000;
   const linksUsage = 12;
@@ -65,15 +69,15 @@ export function SidebarUsage() {
   const linksWarning = linksUsage / linksLimit >= 0.9;
 
   return (
-    <div className="p-3">
+    <div className="px-3 pt-3 pb-1.5">
       <Link
-        className="group flex items-center gap-0.5 text-sm font-normal text-neutral-500 transition-colors hover:text-neutral-700"
+        className="group flex items-center gap-0.5 text-sm font-normal text-sidebar-text-muted transition-colors hover:text-sidebar-text-subtle"
         href="/settings/billing"
       >
         AI usage
         <IconChevronRight
           size={12}
-          className="text-neutral-400 transition-[color,transform] group-hover:translate-x-0.5 group-hover:text-neutral-500"
+          className="text-sidebar-text-muted transition-[color,transform] group-hover:translate-x-0.5 group-hover:text-sidebar-text-muted"
         />
       </Link>
 
@@ -88,17 +92,20 @@ export function SidebarUsage() {
       </div>
 
       <div className="mt-3">
-        <p className="text-xs text-neutral-900/40">
+        <p className="text-xs text-sidebar-text-muted">
           Usage will reset Mar 15, 2026
         </p>
       </div>
 
-      <Link
-        href="/upgrade"
-        className="mt-4 flex h-8 cursor-pointer items-center justify-center rounded-[10px] bg-neutral-900 px-3 text-sm font-medium text-white transition-colors hover:bg-neutral-800"
+      <RichButton
+        size="sm"
+        onClick={() => setDrawerOpen(true)}
+        className="mt-4 w-full rounded-[10px]"
       >
         Unlock more
-      </Link>
+      </RichButton>
+
+      <VerifiedAgencyDrawer open={drawerOpen} onOpenChange={setDrawerOpen} />
     </div>
   );
 }
