@@ -1,12 +1,13 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { IconPlus, IconLink, IconUserPlus } from "@tabler/icons-react";
 import { Home } from "./icons/home";
 import { Creators } from "./icons/creators";
 import { PieChart } from "./icons/pie-chart";
 import { Gear } from "./icons/gear";
+import { useSideNav } from "./sidebar-context";
 import {
   Command,
   CommandDialog,
@@ -26,14 +27,14 @@ import {
 
 export function SearchCommand({ onOpenChange }: { onOpenChange?: (open: boolean) => void } = {}) {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
+  const { searchOpen: open, setSearchOpen } = useSideNav();
 
   const handleOpenChange = useCallback(
     (next: boolean) => {
-      setOpen(next);
+      setSearchOpen(next);
       onOpenChange?.(next);
     },
-    [onOpenChange],
+    [setSearchOpen, onOpenChange],
   );
 
   const navigate = useCallback(

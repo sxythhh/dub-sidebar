@@ -528,8 +528,8 @@ function MobileCreatorsTable() {
               i < CREATORS.length - 1 && "border-b border-[rgba(37,37,37,0.03)] dark:border-foreground/[0.03]",
             )}
           >
-            {/* Row 1: avatar + name + last sub | match */}
-            <div className="flex items-center justify-between">
+            {/* Row 1: avatar + name + last sub */}
+            <div className="flex items-center">
               <div className="flex items-center gap-2">
                 <div className="size-6 shrink-0 overflow-hidden rounded-full">
                   <img
@@ -547,12 +547,6 @@ function MobileCreatorsTable() {
                     last sub. {creator.lastSub}
                   </span>
                 </div>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="font-[family-name:var(--font-inter)] text-xs tracking-[-0.02em] text-[#008754]">
-                  {creator.match}%
-                </span>
-                <ScoreCircle value={creator.match} color="#008754" />
               </div>
             </div>
 

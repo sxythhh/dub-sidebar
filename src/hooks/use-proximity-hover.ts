@@ -54,9 +54,9 @@ export function useProximityHover<T extends HTMLElement>(
     itemsRef.current.forEach((element, index) => {
       const rect = element.getBoundingClientRect();
       rects[index] = {
-        top: rect.top - containerRect.top - borderTop,
+        top: rect.top - containerRect.top - borderTop + container.scrollTop,
         height: rect.height,
-        left: rect.left - containerRect.left - borderLeft,
+        left: rect.left - containerRect.left - borderLeft + container.scrollLeft,
         width: rect.width,
       };
     });
@@ -80,9 +80,9 @@ export function useProximityHover<T extends HTMLElement>(
       itemsRef.current.forEach((element, index) => {
         const rect = element.getBoundingClientRect();
         rects[index] = {
-          top: rect.top - containerRect.top - borderTop,
+          top: rect.top - containerRect.top - borderTop + container.scrollTop,
           height: rect.height,
-          left: rect.left - containerRect.left - borderLeft,
+          left: rect.left - containerRect.left - borderLeft + container.scrollLeft,
           width: rect.width,
         };
 

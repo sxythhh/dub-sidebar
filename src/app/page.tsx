@@ -97,7 +97,7 @@ export default function Home() {
       />
 
       {/* Welcome banner */}
-      <div className="relative z-[1] flex flex-col items-center self-stretch rounded-[20px] px-0 py-8 sm:flex-1">
+      <div className="relative z-[1] flex flex-col items-center self-stretch rounded-[20px] px-0 py-4 sm:py-8 sm:flex-1">
         {/* Centered content */}
         <div className="flex flex-col items-center sm:flex-1 sm:justify-center">
           {/* Header section */}

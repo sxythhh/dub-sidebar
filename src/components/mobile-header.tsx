@@ -3,8 +3,11 @@
 import Link from "next/link";
 import { IconSearch, IconBell } from "@tabler/icons-react";
 import { StarsLogo } from "@/components/sidebar/icons/stars-logo";
+import { useSideNav } from "@/components/sidebar/sidebar-context";
 
 export function MobileHeader() {
+  const { setSearchOpen } = useSideNav();
+
   return (
     <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center justify-between border-b border-page-border bg-page-bg px-5 md:hidden">
       <Link href="/" className="flex items-center">
@@ -15,6 +18,7 @@ export function MobileHeader() {
         <button
           type="button"
           className="flex size-11 items-center justify-center rounded-full text-[#7B7B7B] active:bg-foreground/[0.06]"
+          onClick={() => setSearchOpen(true)}
         >
           <IconSearch size={20} stroke={2} />
         </button>
