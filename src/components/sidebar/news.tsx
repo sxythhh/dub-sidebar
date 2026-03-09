@@ -18,21 +18,21 @@ const OPACITY_FACTOR = 0.1;
 
 const DEMO_ARTICLES: NewsArticle[] = [
   {
-    href: "https://dub.co/blog/smart-folders",
+    href: "#",
     title: "Introducing Smart Folders",
     summary:
       "Automatically organize your links with rule-based smart folders.",
     image: "/placeholder.png",
   },
   {
-    href: "https://dub.co/blog/partner-payouts",
+    href: "#",
     title: "Partner Payouts v2",
     summary:
       "Streamlined payouts with auto-approval, multi-currency, and instant transfers.",
     image: "/placeholder.png",
   },
   {
-    href: "https://dub.co/blog/conversion-tracking",
+    href: "#",
     title: "Conversion Tracking",
     summary:
       "Track leads, signups, and purchases across every short link you create.",
@@ -325,7 +325,7 @@ function AnimatedStars(props: React.SVGProps<SVGSVGElement>) {
             opacity: 0,
             transformOrigin: "center",
             transformBox: "fill-box",
-            animation: `star-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) ${order[i] * 120}ms forwards`,
+            animation: `star-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) ${order[i] * 120}ms forwards`,
           }}
         />
       ))}

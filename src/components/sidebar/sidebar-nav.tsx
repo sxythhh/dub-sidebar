@@ -30,7 +30,7 @@ import { useSideNav, SIDEBAR_COLLAPSED_WIDTH, SIDEBAR_EXPANDED_WIDTH } from "./s
 import { SearchCommand } from "./search-command";
 import { FloatingPortal } from "@floating-ui/react";
 
-// ── Sidebar Icon (from dub.co) ──────────────────────────────────────
+// ── Sidebar Icon ──────────────────────────────────────────────────
 
 function LayoutSidebarIcon({ className, size = 16 }: { className?: string; size?: number }) {
   return (

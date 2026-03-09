@@ -4,16 +4,16 @@ import { SettingsShell, SettingsCard } from "@/components/settings-shell";
 export default function SettingsPage() {
   return (
     <SettingsShell title="General" description="Manage your workspace settings.">
-      <SettingsCard title="Workspace name" description="The name of your workspace on Dub.">
+      <SettingsCard title="Workspace name" description="The name of your workspace.">
         <input
           type="text"
           defaultValue="Acme Inc"
           className="w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-ring focus:ring-1 focus:ring-ring"
         />
       </SettingsCard>
-      <SettingsCard title="Workspace slug" description="Your workspace's URL slug on Dub.">
+      <SettingsCard title="Workspace slug" description="Your workspace's URL slug.">
         <div className="flex items-center gap-0 rounded-lg border border-border text-sm">
-          <span className="border-r border-border bg-accent px-3 py-2 text-muted-foreground">app.dub.co/</span>
+          <span className="border-r border-border bg-accent px-3 py-2 text-muted-foreground">app.outpace.io/</span>
           <input
             type="text"
             defaultValue="acme"
