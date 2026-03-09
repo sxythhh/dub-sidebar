@@ -84,7 +84,7 @@ const steps = [
 
 export default function Home() {
   return (
-    <div className="relative flex min-h-0 flex-col items-start gap-2 self-stretch p-4 sm:flex-1 sm:p-8">
+    <div className="relative flex flex-col items-start gap-2 self-stretch p-4 sm:flex-1 sm:p-8">
       {/* Radial gradient background */}
       <div
         className="absolute inset-0 bottom-0"

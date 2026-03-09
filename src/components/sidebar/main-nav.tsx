@@ -40,13 +40,11 @@ export function MainNav({ children }: { children: ReactNode }) {
           </div>
         </div>
 
-        {/* Main content */}
-        <div className="flex min-h-0 flex-1 flex-col bg-page-bg max-md:pb-0 max-md:pr-0 max-md:pt-0 [contain:layout_style_paint]">
-          <div className="min-h-0 flex-1 overflow-hidden will-change-transform max-md:rounded-none">
-            <div className="scrollbar-hide relative flex h-full flex-col overflow-y-auto bg-page-bg pb-[calc(60px+max(8px,env(safe-area-inset-bottom)))] md:pb-0">
-              <MobileHeader />
-              {children}
-            </div>
+        {/* Main content — on mobile the outer div is the scroll container so sticky works */}
+        <div className="scrollbar-hide relative flex min-h-0 flex-1 flex-col overflow-y-auto bg-page-bg pb-[calc(60px+max(8px,env(safe-area-inset-bottom)))] md:overflow-hidden md:pb-0 md:[contain:layout_style_paint]">
+          <MobileHeader />
+          <div className="scrollbar-hide flex min-h-0 flex-1 flex-col md:overflow-y-auto md:will-change-transform">
+            {children}
           </div>
         </div>
       </div>
