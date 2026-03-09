@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { IconSearch, IconBell, IconMenu2 } from "@tabler/icons-react";
+import { IconSearch, IconBell } from "@tabler/icons-react";
 import { StarsLogo } from "@/components/sidebar/icons/stars-logo";
 
 export function MobileHeader() {
   return (
-    <header className="flex h-14 items-center justify-between px-5 md:hidden">
+    <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center justify-between border-b border-page-border bg-page-bg px-5 md:hidden">
       <Link href="/" className="flex items-center">
         <StarsLogo className="h-7 w-auto" />
       </Link>
@@ -14,14 +14,14 @@ export function MobileHeader() {
       <div className="flex flex-1 items-center justify-end gap-1">
         <button
           type="button"
-          className="flex size-11 items-center justify-center rounded-full text-foreground/50 active:bg-foreground/[0.06]"
+          className="flex size-11 items-center justify-center rounded-full text-[#7B7B7B] active:bg-foreground/[0.06]"
         >
           <IconSearch size={20} stroke={2} />
         </button>
 
         <button
           type="button"
-          className="relative flex size-11 items-center justify-center rounded-full text-foreground/50 active:bg-foreground/[0.06]"
+          className="relative flex size-11 items-center justify-center rounded-full text-[#7B7B7B] active:bg-foreground/[0.06]"
         >
           <IconBell size={20} stroke={2} />
           <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-red-500" />

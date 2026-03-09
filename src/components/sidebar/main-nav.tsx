@@ -13,9 +13,6 @@ export function MainNav({ children }: { children: ReactNode }) {
 
   return (
     <div className="flex h-dvh flex-col bg-page-bg md:bg-page-outer-bg">
-      {/* Mobile header */}
-      <MobileHeader />
-
       <div className="min-h-0 flex-1 md:grid md:grid-cols-[min-content_minmax(0,1fr)]">
         {/* Side nav backdrop — desktop only */}
         <div
@@ -46,7 +43,8 @@ export function MainNav({ children }: { children: ReactNode }) {
         {/* Main content */}
         <div className="flex min-h-0 flex-1 flex-col bg-page-bg max-md:pb-0 max-md:pr-0 max-md:pt-0 [contain:layout_style_paint]">
           <div className="min-h-0 flex-1 overflow-hidden will-change-transform max-md:rounded-none">
-            <div className="scrollbar-hide relative flex h-full flex-col overflow-y-auto bg-page-bg pb-[calc(60px+max(8px,env(safe-area-inset-bottom)))] pt-px md:pb-0">
+            <div className="scrollbar-hide relative flex h-full flex-col overflow-y-auto bg-page-bg pb-[calc(60px+max(8px,env(safe-area-inset-bottom)))] md:pb-0">
+              <MobileHeader />
               {children}
             </div>
           </div>

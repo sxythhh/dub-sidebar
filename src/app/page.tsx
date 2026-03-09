@@ -84,7 +84,7 @@ const steps = [
 
 export default function Home() {
   return (
-    <div className="relative flex flex-1 flex-col items-start gap-2 self-stretch p-4 sm:p-8">
+    <div className="relative flex min-h-0 flex-col items-start gap-2 self-stretch p-4 sm:flex-1 sm:p-8">
       {/* Radial gradient background */}
       <div
         className="absolute inset-0 bottom-0"
@@ -97,9 +97,9 @@ export default function Home() {
       />
 
       {/* Welcome banner */}
-      <div className="relative z-[1] flex flex-1 flex-col items-center self-stretch rounded-[20px] px-0 py-8">
+      <div className="relative z-[1] flex flex-col items-center self-stretch rounded-[20px] px-0 py-8 sm:flex-1">
         {/* Centered content */}
-        <div className="flex flex-1 flex-col items-center justify-center">
+        <div className="flex flex-col items-center sm:flex-1 sm:justify-center">
           {/* Header section */}
           <div className="flex w-full max-w-[720px] flex-col items-center gap-4 pb-6">
             {/* Overlapping avatars */}

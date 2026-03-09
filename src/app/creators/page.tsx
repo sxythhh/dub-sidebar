@@ -301,6 +301,7 @@ type Platform = "tiktok" | "instagram" | "youtube" | "x";
 interface Creator {
   name: string;
   joined: string;
+  lastSub: string;
   platforms: Platform[];
   earned: string;
   views: string;
@@ -313,17 +314,17 @@ interface Creator {
 }
 
 const CREATORS: Creator[] = [
-  { name: "xKaizen", joined: "Oct '26", platforms: ["tiktok", "instagram", "youtube", "x"], earned: "$24,815.67", views: "680.4K", match: 92, engRate: "4.8%", engScore: 85, cpm: "$0.84", sentiment: "78%", submissions: 45 },
-  { name: "Cryptoclipz", joined: "Nov '25", platforms: ["tiktok", "instagram"], earned: "$18,090.32", views: "520.1K", match: 88, engRate: "3.9%", engScore: 79, cpm: "$0.92", sentiment: "72%", submissions: 40 },
-  { name: "ViralVince", joined: "Jan '26", platforms: ["tiktok", "instagram"], earned: "$25,450.67", views: "750.3K", match: 90, engRate: "4.1%", engScore: 85, cpm: "$1.05", sentiment: "75%", submissions: 50 },
-  { name: "TechnoTrade", joined: "Feb '26", platforms: ["tiktok"], earned: "$22,154.50", views: "610.3K", match: 85, engRate: "2.8%", engScore: 65, cpm: "$1.05", sentiment: "75%", submissions: 45 },
-  { name: "GamingGrace", joined: "Mar '26", platforms: ["tiktok", "instagram", "youtube"], earned: "$15,340.78", views: "450.2K", match: 90, engRate: "3.5%", engScore: 80, cpm: "$0.85", sentiment: "78%", submissions: 38 },
-  { name: "BetBoss", joined: "Apr '26", platforms: ["tiktok", "instagram", "youtube", "x"], earned: "$28,432.12", views: "800.5K", match: 87, engRate: "3.1%", engScore: 70, cpm: "$1.20", sentiment: "80%", submissions: 55 },
-  { name: "ClipKingJr", joined: "May '26", platforms: ["tiktok", "instagram"], earned: "$19,876.00", views: "530.7K", match: 92, engRate: "2.4%", engScore: 90, cpm: "$0.99", sentiment: "77%", submissions: 50 },
-  { name: "NeonEdits", joined: "Jun '26", platforms: ["tiktok", "instagram"], earned: "$24,760.99", views: "670.9K", match: 89, engRate: "3.0%", engScore: 82, cpm: "$1.10", sentiment: "74%", submissions: 42 },
-  { name: "ReelMaster", joined: "Jul '26", platforms: ["tiktok", "instagram"], earned: "$30,052.45", views: "900.4K", match: 86, engRate: "2.6%", engScore: 88, cpm: "$1.15", sentiment: "81%", submissions: 48 },
-  { name: "WealthWave", joined: "Aug '26", platforms: ["tiktok"], earned: "$26,485.33", views: "750.6K", match: 91, engRate: "3.3%", engScore: 77, cpm: "$1.00", sentiment: "73%", submissions: 46 },
-  { name: "StableAssets", joined: "Sep '26", platforms: ["instagram", "youtube"], earned: "$23,548.88", views: "620.8K", match: 88, engRate: "2.7%", engScore: 72, cpm: "$0.97", sentiment: "79%", submissions: 41 },
+  { name: "xKaizen", joined: "Oct '26", lastSub: "2h ago", platforms: ["tiktok", "instagram", "youtube", "x"], earned: "$24,815.67", views: "680.4K", match: 92, engRate: "4.8%", engScore: 85, cpm: "$0.84", sentiment: "78%", submissions: 45 },
+  { name: "Cryptoclipz", joined: "Nov '25", lastSub: "1d ago", platforms: ["tiktok", "instagram"], earned: "$18,090.32", views: "520.1K", match: 88, engRate: "3.9%", engScore: 79, cpm: "$0.92", sentiment: "72%", submissions: 40 },
+  { name: "ViralVince", joined: "Jan '26", lastSub: "3d ago", platforms: ["tiktok", "instagram"], earned: "$25,450.67", views: "750.3K", match: 90, engRate: "4.1%", engScore: 85, cpm: "$1.05", sentiment: "75%", submissions: 50 },
+  { name: "TechnoTrade", joined: "Feb '26", lastSub: "1w ago", platforms: ["tiktok"], earned: "$22,154.50", views: "610.3K", match: 85, engRate: "2.8%", engScore: 65, cpm: "$1.05", sentiment: "75%", submissions: 45 },
+  { name: "GamingGrace", joined: "Mar '26", lastSub: "2w ago", platforms: ["tiktok", "instagram", "youtube"], earned: "$15,340.78", views: "450.2K", match: 90, engRate: "3.5%", engScore: 80, cpm: "$0.85", sentiment: "78%", submissions: 38 },
+  { name: "BetBoss", joined: "Apr '26", lastSub: "2w ago", platforms: ["tiktok", "instagram", "youtube", "x"], earned: "$28,432.12", views: "800.5K", match: 87, engRate: "3.1%", engScore: 70, cpm: "$1.20", sentiment: "80%", submissions: 55 },
+  { name: "ClipKingJr", joined: "May '26", lastSub: "5h ago", platforms: ["tiktok", "instagram"], earned: "$19,876.00", views: "530.7K", match: 92, engRate: "2.4%", engScore: 90, cpm: "$0.99", sentiment: "77%", submissions: 50 },
+  { name: "NeonEdits", joined: "Jun '26", lastSub: "12h ago", platforms: ["tiktok", "instagram"], earned: "$24,760.99", views: "670.9K", match: 89, engRate: "3.0%", engScore: 82, cpm: "$1.10", sentiment: "74%", submissions: 42 },
+  { name: "ReelMaster", joined: "Jul '26", lastSub: "4d ago", platforms: ["tiktok", "instagram"], earned: "$30,052.45", views: "900.4K", match: 86, engRate: "2.6%", engScore: 88, cpm: "$1.15", sentiment: "81%", submissions: 48 },
+  { name: "WealthWave", joined: "Aug '26", lastSub: "6d ago", platforms: ["tiktok"], earned: "$26,485.33", views: "750.6K", match: 91, engRate: "3.3%", engScore: 77, cpm: "$1.00", sentiment: "73%", submissions: 46 },
+  { name: "StableAssets", joined: "Sep '26", lastSub: "1w ago", platforms: ["instagram", "youtube"], earned: "$23,548.88", views: "620.8K", match: 88, engRate: "2.7%", engScore: 72, cpm: "$0.97", sentiment: "79%", submissions: 41 },
 ];
 
 const COLUMNS = [
@@ -495,6 +496,84 @@ function CreatorsTable() {
   );
 }
 
+// ── Mobile Creators Table ────────────────────────────────────────────
+
+function MobileCreatorsTable() {
+  return (
+    <div className="flex flex-col rounded-2xl border border-[rgba(37,37,37,0.06)] bg-card-bg shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:border-foreground/[0.06]">
+      {/* Title row */}
+      <div className="flex h-9 items-center border-b border-[rgba(37,37,37,0.06)] px-1 dark:border-foreground/[0.06]">
+        <div className="flex w-8 items-center justify-center">
+          <span className="font-[family-name:var(--font-inter)] text-xs font-medium tracking-[-0.02em] text-page-text-muted">#</span>
+        </div>
+        <div className="flex flex-1 items-center py-3 pr-3">
+          <span className="font-[family-name:var(--font-inter)] text-xs font-medium tracking-[-0.02em] text-page-text-muted">Creator</span>
+        </div>
+      </div>
+
+      {/* Creator rows */}
+      {CREATORS.map((creator, i) => (
+        <div key={creator.name} className="flex items-center px-1">
+          {/* # */}
+          <div className="flex w-8 shrink-0 items-center justify-center self-stretch py-3">
+            <span className="font-[family-name:var(--font-inter)] text-xs font-medium tracking-[-0.02em] text-page-text-muted">
+              {i + 1}
+            </span>
+          </div>
+
+          {/* Content */}
+          <div
+            className={cn(
+              "flex flex-1 flex-col gap-2 py-3 pr-3",
+              i < CREATORS.length - 1 && "border-b border-[rgba(37,37,37,0.03)] dark:border-foreground/[0.03]",
+            )}
+          >
+            {/* Row 1: avatar + name + last sub | match */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="size-6 shrink-0 overflow-hidden rounded-full">
+                  <img
+                    src={`https://i.pravatar.cc/48?u=${creator.name}`}
+                    alt=""
+                    className="size-full object-cover"
+                  />
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-[family-name:var(--font-inter)] text-sm font-medium tracking-[-0.02em] text-page-text">
+                    {creator.name}
+                  </span>
+                  <span className="font-[family-name:var(--font-inter)] text-xs font-medium tracking-[-0.02em] text-page-text/20">·</span>
+                  <span className="font-[family-name:var(--font-inter)] text-xs tracking-[-0.02em] text-page-text-muted">
+                    last sub. {creator.lastSub}
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="font-[family-name:var(--font-inter)] text-xs tracking-[-0.02em] text-[#008754]">
+                  {creator.match}%
+                </span>
+                <ScoreCircle value={creator.match} color="#008754" />
+              </div>
+            </div>
+
+            {/* Row 2: platform icons | earned */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1">
+                {creator.platforms.map((p) => (
+                  <PlatformBadge key={p} platform={p} />
+                ))}
+              </div>
+              <span className="font-[family-name:var(--font-inter)] text-xs tracking-[-0.02em] text-page-text">
+                {creator.earned}
+              </span>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ── Page ─────────────────────────────────────────────────────────────
 
 const NAV_TABS = ["Creators", "Insights"];
@@ -602,7 +681,12 @@ export default function CreatorsPage() {
 
         {/* Creators table */}
         <div className="mt-4">
-          <CreatorsTable />
+          <div className="sm:hidden">
+            <MobileCreatorsTable />
+          </div>
+          <div className="hidden sm:block">
+            <CreatorsTable />
+          </div>
         </div>
       </div>
     </div>
