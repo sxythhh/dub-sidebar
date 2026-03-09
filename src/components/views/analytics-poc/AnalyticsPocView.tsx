@@ -192,7 +192,7 @@ export function AnalyticsPocView() {
     return (
       <AnalyticsPocPageShell>
         <AnalyticsPocHeader title={data.header.title} />
-        <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-2 px-5 py-5 md:gap-3 lg:px-10">
+        <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-2 px-4 py-4 sm:px-5 sm:py-5 md:gap-3 lg:px-10">
           <AnalyticsPocCampaignHealthTab
             {...analyticsPocCampaignHealthMockData}
           />
@@ -205,7 +205,7 @@ export function AnalyticsPocView() {
     <AnalyticsPocPageShell>
       <AnalyticsPocHeader title={data.header.title} />
 
-      <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-2 px-5 py-5 md:gap-3 lg:px-10">
+      <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-2 px-4 py-4 sm:px-5 sm:py-5 md:gap-3 lg:px-10">
       <AnalyticsPocFilterToolbar
         campaignLabel={data.filters.campaignLabel}
         campaignSlot={

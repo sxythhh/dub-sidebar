@@ -26,7 +26,7 @@ function ProgramLogo({
       src={src}
       alt={name}
       className={cn(
-        "shrink-0 rounded-full border border-black/10 object-cover",
+        "shrink-0 rounded-full border border-foreground/[0.06] object-cover",
         className,
       )}
     />
@@ -211,7 +211,7 @@ export function WorkspaceDropdown({ onOpenChange }: { onOpenChange?: (open: bool
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -4 }}
                 transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
-                style={{ width: 256 }}
+                style={{ width: 256, maxWidth: "calc(100vw - 32px)" }}
               >
                 <div className="select-none overflow-hidden rounded-xl bg-dropdown-bg shadow-lg ring-1 ring-dropdown-border">
                   {/* Search */}
@@ -230,7 +230,7 @@ export function WorkspaceDropdown({ onOpenChange }: { onOpenChange?: (open: bool
                   </div>
 
                   {/* Programs list */}
-                  <div className="max-h-[260px] overflow-y-auto">
+                  <div className="scrollbar-hide max-h-[260px] overflow-y-auto">
                     <div className="p-2">
                       <p className="px-1 pb-1.5 pt-1 text-xs font-medium text-dropdown-text-muted">
                         Programs
@@ -248,7 +248,7 @@ export function WorkspaceDropdown({ onOpenChange }: { onOpenChange?: (open: bool
                               }}
                               className={cn(
                                 "relative flex w-full cursor-pointer items-center gap-x-2.5 rounded-md py-2.5 pl-2 pr-3 text-left transition-all duration-75",
-                                "outline-none focus-visible:ring-2 focus-visible:ring-black/50",
+                                "outline-none focus-visible:ring-2 focus-visible:ring-ring",
                                 isSelected
                                   ? "bg-sidebar-hover"
                                   : "hover:bg-dropdown-hover active:bg-dropdown-hover",
@@ -286,7 +286,7 @@ export function WorkspaceDropdown({ onOpenChange }: { onOpenChange?: (open: bool
                         className={cn(
                           "flex cursor-pointer items-center gap-x-2.5 rounded-md px-2.5 py-2 text-sm transition-all duration-75",
                           "hover:bg-dropdown-hover active:bg-dropdown-hover",
-                          "outline-none focus-visible:ring-2 focus-visible:ring-black/50",
+                          "outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         )}
                       >
                         <GridIcon className="size-4 text-dropdown-text-muted" />
@@ -298,7 +298,7 @@ export function WorkspaceDropdown({ onOpenChange }: { onOpenChange?: (open: bool
                         className={cn(
                           "flex cursor-pointer items-center gap-x-2.5 rounded-md px-2.5 py-2 text-sm transition-all duration-75",
                           "hover:bg-dropdown-hover active:bg-dropdown-hover",
-                          "outline-none focus-visible:ring-2 focus-visible:ring-black/50",
+                          "outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         )}
                       >
                         <MarketplaceIcon className="size-4 text-dropdown-text-muted" />

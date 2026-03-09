@@ -330,7 +330,7 @@ export default function PayoutsPage() {
   return (
     <div>
       {/* Top nav */}
-      <div className="flex h-14 items-center justify-between border-b border-border px-5">
+      <div className="flex h-14 items-center justify-between border-b border-border px-4 sm:px-5">
         <div className="flex items-center gap-2">
           <span className="font-[family-name:var(--font-inter)] text-sm font-medium tracking-[-0.02em] text-page-text">
             Payouts
@@ -357,7 +357,7 @@ export default function PayoutsPage() {
       </div>
 
       {/* Content */}
-      <div className="flex flex-col gap-3 p-5">
+      <div className="flex flex-col gap-3 p-4 sm:p-5">
         {/* Stat cards row */}
         <div className="flex flex-row items-start gap-2">
           {STAT_CARDS.map((card) => (

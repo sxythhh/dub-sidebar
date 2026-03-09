@@ -72,7 +72,7 @@ const NAV_AREAS: SidebarNavAreas = {
     headerContent: (
       <WorkspaceCard />
     ),
-    direction: "left",
+
     showNews: true,
     content: [
       {
@@ -108,7 +108,7 @@ const NAV_AREAS: SidebarNavAreas = {
 
   program: () => ({
     title: "Partner Program",
-    direction: "left",
+
     showNews: true,
     content: [
       {

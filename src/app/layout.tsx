@@ -20,7 +20,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${GeistSans.className} ${inter.variable} select-none bg-page-outer-bg antialiased`}>
+      <body className={`${GeistSans.className} ${inter.variable} select-none overflow-x-hidden bg-page-outer-bg text-foreground antialiased`}>
         <ThemeProvider>
           <ToastProvider position="bottom-right">
             <SideNavProvider>

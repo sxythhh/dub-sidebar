@@ -362,7 +362,7 @@ function CreatorsTable() {
       ref={tableRef}
       onMouseMove={handlers.onMouseMove}
       onMouseLeave={handlers.onMouseLeave}
-      className="relative overflow-x-auto rounded-2xl border border-border bg-card-bg shadow-[0_1px_2px_rgba(0,0,0,0.02)]"
+      className="scrollbar-hide relative overflow-x-auto rounded-2xl border border-border bg-card-bg shadow-[0_1px_2px_rgba(0,0,0,0.02)]"
     >
       {/* Hover indicator */}
       <AnimatePresence>
@@ -555,11 +555,11 @@ export default function CreatorsPage() {
       </div>
 
       {/* Content */}
-      <div className="px-6 pb-6 pt-[21px] max-md:px-5">
+      <div className="px-4 pb-6 pt-[21px] sm:px-6">
         {/* Toolbar */}
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-2">
           {/* Filter tabs */}
-          <Tabs selectedIndex={selectedFilter} onSelect={setSelectedFilter} className="overflow-x-auto">
+          <Tabs selectedIndex={selectedFilter} onSelect={setSelectedFilter} className="scrollbar-hide overflow-x-auto">
             {FILTER_TABS.map((tab, i) => (
               <TabItem
                 key={tab.name}

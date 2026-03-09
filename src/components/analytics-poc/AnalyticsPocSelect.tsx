@@ -50,7 +50,7 @@ export function AnalyticsPocSelect({
     <div className={cn("relative inline-flex items-center", className)}>
       <button
         className={cn(
-          "inline-flex h-[34px] cursor-pointer items-center gap-1.5 rounded-[10px] border border-[var(--ap-border)] px-2.5",
+          "inline-flex h-[34px] max-w-[200px] cursor-pointer items-center gap-1.5 rounded-[10px] border border-[var(--ap-border)] px-2.5",
           "font-inter text-[13px] font-medium leading-[1.2] tracking-[-0.09px] text-[var(--ap-text-strong)]",
           "outline-none transition-colors",
           open
@@ -66,7 +66,7 @@ export function AnalyticsPocSelect({
             {selectedOption.icon}
           </span>
         ) : null}
-        <span className="whitespace-nowrap">{displayLabel}</span>
+        <span className="truncate">{displayLabel}</span>
         <ChevronDown className={cn("ml-0.5 size-3.5 shrink-0 text-[var(--ap-text-tertiary)] transition-transform duration-200", open ? "rotate-0" : "rotate-180")} />
       </button>
 

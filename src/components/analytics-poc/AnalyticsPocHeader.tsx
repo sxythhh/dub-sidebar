@@ -38,7 +38,7 @@ export function AnalyticsPocHeader({
   return (
     <header
       className={cn(
-        "flex h-14 items-center justify-between gap-2 border-b border-foreground/[0.06] px-5 py-4 dark:border-foreground/[0.08]",
+        "flex h-14 items-center justify-between gap-2 border-b border-foreground/[0.06] px-4 py-4 dark:border-foreground/[0.08] sm:px-5",
         className,
       )}
     >
@@ -48,9 +48,9 @@ export function AnalyticsPocHeader({
       </span>
 
       {/* Right actions */}
-      <div className="flex items-start gap-2">
-        {/* Search/help pill */}
-        <button className="flex h-9 cursor-pointer items-center gap-1.5 rounded-full px-4 pr-3.5 text-page-text-muted transition-colors hover:bg-foreground/[0.04]">
+      <div className="flex shrink-0 items-start gap-2">
+        {/* Search/help pill — hidden on mobile */}
+        <button className="hidden h-9 cursor-pointer items-center gap-1.5 rounded-full px-4 pr-3.5 text-page-text-muted transition-colors hover:bg-foreground/[0.04] sm:flex">
           <span className="font-[family-name:var(--font-inter)] text-sm font-medium leading-none tracking-[-0.02em]">
             Monitor performance, creator activity, and payouts
           </span>
@@ -58,7 +58,7 @@ export function AnalyticsPocHeader({
         </button>
 
         {/* Export button */}
-        <button className="flex h-9 cursor-pointer items-center gap-1.5 rounded-full bg-foreground/[0.06] px-4 pr-3.5 text-page-text transition-colors hover:bg-foreground/[0.1]">
+        <button className="flex h-9 cursor-pointer items-center gap-1.5 rounded-full bg-foreground/[0.06] px-3 pr-2.5 text-page-text transition-colors hover:bg-foreground/[0.1] sm:px-4 sm:pr-3.5">
           <span className="font-[family-name:var(--font-inter)] text-sm font-medium leading-none tracking-[-0.02em]">
             Export
           </span>

@@ -95,7 +95,7 @@ export function UserDropdown() {
                 onPointerEnter={handleEnter}
                 onPointerLeave={handleLeave}
               >
-                <div className="w-64 select-none rounded-xl bg-dropdown-bg shadow-lg ring-1 ring-dropdown-border">
+                <div className="w-64 max-w-[calc(100vw-32px)] select-none rounded-xl bg-dropdown-bg shadow-lg ring-1 ring-dropdown-border">
                   {/* User info header */}
                   <div className="flex items-center gap-x-2.5 px-3 pb-2 pt-3">
                     <img

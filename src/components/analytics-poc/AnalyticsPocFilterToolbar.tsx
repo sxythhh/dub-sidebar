@@ -42,11 +42,11 @@ export function AnalyticsPocFilterToolbar({
   return (
     <div
       className={cn(
-        "flex items-center justify-between gap-2",
+        "flex flex-wrap items-center gap-2",
         className,
       )}
     >
-      <div className="flex items-center gap-2 flex-1">
+      <div className="flex items-center gap-2">
         {platforms.map((platform) => (
           <PlatformPill
             active={platform.active}
@@ -57,7 +57,7 @@ export function AnalyticsPocFilterToolbar({
         ))}
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex min-w-0 items-center gap-2">
         {dateSlot ?? (
           <button
             className={cn(

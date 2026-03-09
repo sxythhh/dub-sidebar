@@ -204,7 +204,7 @@ export default function ApplicationsPage() {
   return (
     <div>
       {/* Top nav */}
-      <div className="flex h-14 items-center justify-between border-b border-border px-5">
+      <div className="flex h-14 items-center justify-between border-b border-border px-4 sm:px-5">
         <div className="flex items-center gap-2">
           <span className="font-[family-name:var(--font-inter)] text-sm font-medium tracking-[-0.02em] text-page-text">
             Applications
@@ -222,7 +222,7 @@ export default function ApplicationsPage() {
       </div>
 
       {/* Content */}
-      <div className="px-5 pb-6 pt-5">
+      <div className="px-4 pb-6 pt-5 sm:px-5">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {APPLICATIONS.map((app) => (
             <ApplicationCard key={app.id} app={app} />

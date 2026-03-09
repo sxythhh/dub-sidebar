@@ -12,7 +12,7 @@ export default function Page() {
   return (
     <div>
       {/* Top nav */}
-      <div className="flex h-14 items-center justify-between border-b border-page-border px-5">
+      <div className="flex h-14 items-center justify-between border-b border-page-border px-4 sm:px-5">
         <div className="flex items-center gap-2">
           <span className="font-[family-name:var(--font-inter)] text-sm font-medium tracking-[-0.02em] text-page-text">
             Links
@@ -23,7 +23,7 @@ export default function Page() {
       </div>
 
       {/* Content */}
-      <div className="flex flex-col items-center justify-center px-5 py-24">
+      <div className="flex flex-col items-center justify-center px-4 py-16 sm:px-5 sm:py-24">
         <div className="flex flex-col items-center gap-4">
           <div className="flex size-12 items-center justify-center rounded-2xl bg-page-border">
             <IconPlus size={20} className="text-page-text-muted" />

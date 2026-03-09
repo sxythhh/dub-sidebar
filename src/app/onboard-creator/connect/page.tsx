@@ -243,7 +243,7 @@ export default function ConnectAccountsPage() {
           onClick={closeDialog}
         >
           <div
-            className="relative flex w-[400px] flex-col items-center rounded-[20px] bg-white shadow-[0_24px_48px_-8px_rgba(0,0,0,0.2)] dark:bg-[#151515] dark:shadow-[0_24px_48px_-8px_rgba(0,0,0,0.5)]"
+            className="relative flex w-full max-w-[400px] flex-col items-center rounded-[20px] bg-white shadow-[0_24px_48px_-8px_rgba(0,0,0,0.2)] dark:bg-[#151515] dark:shadow-[0_24px_48px_-8px_rgba(0,0,0,0.5)] mx-4"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Back button (code step only) */}

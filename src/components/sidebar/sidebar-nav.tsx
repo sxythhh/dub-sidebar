@@ -7,7 +7,6 @@ import {
   createContext,
   type ComponentType,
   type CSSProperties,
-  type PropsWithChildren,
   type ReactNode,
   type SVGProps,
   useCallback,
@@ -90,7 +89,6 @@ export type SidebarNavAreas = Record<
     backHref?: string;
     showNews?: boolean;
     hideSwitcherIcons?: boolean;
-    direction?: "left" | "right";
     content: {
       name?: string;
       items: NavItemType[];
@@ -233,6 +231,14 @@ export function SidebarNav({
 
 // ── Areas Panel ────────────────────────────────────────────────────────
 
+// Area ordering for determining slide direction
+const AREA_ORDER: Record<string, number> = {
+  default: 0,
+  program: 1,
+  workspaceSettings: 2,
+  userSettings: 3,
+};
+
 function SidebarAreasPanel({
   areas,
   currentArea,
@@ -246,6 +252,36 @@ function SidebarAreasPanel({
 }) {
   const { collapsed, setCollapsed } = useSideNav();
   const showNews = currentArea && areas[currentArea]?.().showNews;
+
+  // Track previous area to determine slide direction
+  const prevAreaRef = useRef(currentArea);
+  const [slideDirection, setSlideDirection] = useState<1 | -1>(1);
+
+  useEffect(() => {
+    if (prevAreaRef.current !== currentArea) {
+      const prevOrder = AREA_ORDER[prevAreaRef.current ?? "default"] ?? 0;
+      const nextOrder = AREA_ORDER[currentArea ?? "default"] ?? 0;
+      setSlideDirection(nextOrder > prevOrder ? 1 : -1);
+      prevAreaRef.current = currentArea;
+    }
+  }, [currentArea]);
+
+  const SLIDE_DISTANCE = 20;
+
+  const areaVariants = {
+    enter: (dir: number) => ({
+      x: dir * SLIDE_DISTANCE,
+      opacity: 0,
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+    },
+    exit: (dir: number) => ({
+      x: dir * -SLIDE_DISTANCE,
+      opacity: 0,
+    }),
+  };
 
   return (
     <div className="flex h-full w-full flex-col border-r border-sidebar-border bg-sidebar-bg">
@@ -264,66 +300,73 @@ function SidebarAreasPanel({
         <div className="min-h-0 flex-1 overflow-clip">
           <div className="relative flex flex-col px-3 pb-3 text-sidebar-text-muted">
             <div className="relative w-full grow">
-              {Object.entries(areas).map(([area, areaConfig]) => {
-                const { title, headerContent, backHref, content, direction } =
-                  areaConfig();
+              <AnimatePresence initial={false} mode="popLayout" custom={slideDirection}>
+                {currentArea && areas[currentArea] && (() => {
+                  const { title, headerContent, backHref, content } = areas[currentArea]();
+                  const TitleContainer = backHref ? Link : "div";
 
-                const TitleContainer = backHref ? Link : "div";
+                  return (
+                    <motion.div
+                      key={currentArea}
+                      custom={slideDirection}
+                      variants={areaVariants}
+                      initial="enter"
+                      animate="center"
+                      exit="exit"
+                      transition={{
+                        x: { type: "spring", stiffness: 300, damping: 30 },
+                        opacity: { duration: 0.2 },
+                      }}
+                    >
+                      {headerContent ? (
+                        <div className="mb-1">{headerContent}</div>
+                      ) : (
+                        title && (
+                          <TitleContainer
+                            href={backHref ?? "#"}
+                            className="group mb-2 flex items-center gap-3 px-3 py-2"
+                          >
+                            {backHref && (
+                              <div
+                                className={cn(
+                                  "flex size-6 items-center justify-center rounded-lg bg-sidebar-active text-sidebar-text-muted",
+                                  "transition-[transform,background-color,color] duration-150 group-hover:-translate-x-0.5 group-hover:bg-sidebar-hover group-hover:text-sidebar-text-subtle",
+                                )}
+                              >
+                                <IconChevronLeft size={12} stroke={2.5} />
+                              </div>
+                            )}
+                            <span className="text-lg font-semibold text-sidebar-text">
+                              {title}
+                            </span>
+                          </TitleContainer>
+                        )
+                      )}
 
-                return (
-                  <Area
-                    key={area}
-                    visible={area === currentArea}
-                    direction={direction ?? "right"}
-                  >
-                    {headerContent ? (
-                      <div className="mb-1">{headerContent}</div>
-                    ) : (
-                      title && (
-                        <TitleContainer
-                          href={backHref ?? "#"}
-                          className="group mb-2 flex items-center gap-3 px-3 py-2"
-                        >
-                          {backHref && (
-                            <div
-                              className={cn(
-                                "flex size-6 items-center justify-center rounded-lg bg-sidebar-active text-sidebar-text-muted",
-                                "transition-[transform,background-color,color] duration-150 group-hover:-translate-x-0.5 group-hover:bg-sidebar-hover group-hover:text-sidebar-text-subtle",
-                              )}
-                            >
-                              <IconChevronLeft size={12} stroke={2.5} />
-                            </div>
-                          )}
-                          <span className="text-lg font-semibold text-sidebar-text">
-                            {title}
-                          </span>
-                        </TitleContainer>
-                      )
-                    )}
-
-                    <div className="flex flex-col gap-2">
-                      {content.map(({ name, items }, idx) => (
-                        <div key={idx}>
-                          {name && (
-                            <div className="mb-2 pl-[10px] font-[family-name:var(--font-inter)] text-[11px] font-normal tracking-[-0.02em] text-sidebar-section-label">
-                              {name}
-                            </div>
-                          )}
-                          <ProximityNavSection>
-                            {items.map((item, itemIdx) => (
-                              <NavItem
-                                key={item.name}
-                                item={item}
-                                index={itemIdx}
-                              />
-                            ))}
-                          </ProximityNavSection>
-                        </div>
-                      ))}
-                    </div>
-                  </Area>
-                );
-              })}
+                      <div className="flex flex-col gap-2">
+                        {content.map(({ name, items }, idx) => (
+                          <div key={idx}>
+                            {name && (
+                              <div className="mb-2 pl-[10px] font-[family-name:var(--font-inter)] text-[11px] font-normal tracking-[-0.02em] text-sidebar-section-label">
+                                {name}
+                              </div>
+                            )}
+                            <ProximityNavSection>
+                              {items.map((item, itemIdx) => (
+                                <NavItem
+                                  key={item.name}
+                                  item={item}
+                                  index={itemIdx}
+                                />
+                              ))}
+                            </ProximityNavSection>
+                          </div>
+                        ))}
+                      </div>
+                    </motion.div>
+                  );
+                })()}
+              </AnimatePresence>
             </div>
           </div>
         </div>
@@ -720,28 +763,3 @@ function NavItem({ item, index }: { item: NavItemType | NavSubItemType; index?: 
   );
 }
 
-// ── Area (transition wrapper) ──────────────────────────────────────────
-
-function Area({
-  visible,
-  direction,
-  children,
-}: PropsWithChildren<{ visible: boolean; direction: "left" | "right" }>) {
-  return (
-    <div
-      className={cn(
-        "left-0 top-0 flex size-full flex-col md:transition-[opacity,transform] md:duration-300",
-        visible
-          ? "relative opacity-100"
-          : cn(
-              "pointer-events-none absolute opacity-0",
-              direction === "left" ? "-translate-x-full" : "translate-x-full",
-            ),
-      )}
-      aria-hidden={!visible ? "true" : undefined}
-      {...(!visible ? { inert: true as unknown as boolean } : {})}
-    >
-      {children}
-    </div>
-  );
-}

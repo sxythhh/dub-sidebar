@@ -154,7 +154,7 @@ function CommandEmpty({
 function CommandPanel({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
-      className="-mx-px not-has-[+[data-slot=command-footer]]:-mb-px relative min-h-0 overflow-hidden rounded-xl border border-b-0 border-border bg-background **:data-[slot=scroll-area-scrollbar]:mt-2"
+      className="-mx-px not-has-[+[data-slot=command-footer]]:-mb-px relative min-h-0 overflow-hidden rounded-t-xl border border-b-0 border-border bg-background **:data-[slot=scroll-area-scrollbar]:mt-2"
       {...props}
     />
   );

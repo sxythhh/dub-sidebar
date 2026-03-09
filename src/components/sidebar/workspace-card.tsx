@@ -228,7 +228,7 @@ export function WorkspaceCard() {
                 exit={{ opacity: 0, y: -4, scale: 0.98 }}
                 transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
                 className="origin-top"
-                style={{ width: 256 }}
+                style={{ width: 256, maxWidth: "calc(100vw - 32px)" }}
               >
                 <div className="select-none overflow-hidden rounded-xl bg-dropdown-bg shadow-lg ring-1 ring-dropdown-border">
                   {/* Search */}
@@ -247,7 +247,7 @@ export function WorkspaceCard() {
                   </div>
 
                   {/* Programs list */}
-                  <div className="max-h-[260px] overflow-y-auto">
+                  <div className="scrollbar-hide max-h-[260px] overflow-y-auto">
                     <div className="p-2">
                       <p className="px-1 pb-1.5 pt-1 text-xs font-medium text-dropdown-text-muted">
                         Programs

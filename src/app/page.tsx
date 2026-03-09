@@ -84,7 +84,7 @@ const steps = [
 
 export default function Home() {
   return (
-    <div className="relative flex flex-1 flex-col items-start gap-2 self-stretch p-8">
+    <div className="relative flex flex-1 flex-col items-start gap-2 self-stretch p-4 sm:p-8">
       {/* Radial gradient background */}
       <div
         className="absolute inset-0 bottom-0"
@@ -127,10 +127,10 @@ export default function Home() {
 
             {/* Text */}
             <div className="flex flex-col items-center gap-1.5 px-5">
-              <h1 className="text-xl font-medium tracking-[-0.02em] text-page-text">
+              <h1 className="text-center text-lg font-medium tracking-[-0.02em] text-page-text sm:text-xl">
                 Manage brands, creators and campaigns
               </h1>
-              <p className="max-w-[457px] text-center text-base leading-[150%] tracking-[-0.02em] text-page-text-subtle">
+              <p className="max-w-[457px] text-center text-sm leading-[150%] tracking-[-0.02em] text-page-text-subtle sm:text-base">
                 Your agency dashboard lets you run multiple brand campaigns from
                 one place. Add your first brand client to get started.
               </p>
@@ -138,7 +138,7 @@ export default function Home() {
           </div>
 
           {/* Checklist card */}
-          <div className="flex w-full max-w-[720px] flex-col items-center gap-4 rounded-[20px] border border-page-border bg-card-bg p-6">
+          <div className="flex w-full max-w-[720px] flex-col items-center gap-4 rounded-[20px] border border-page-border bg-card-bg p-4 sm:p-6">
             {steps.map((step, i) => (
               <div key={step.title} className="w-full">
                 {/* Divider (indented, between items) */}

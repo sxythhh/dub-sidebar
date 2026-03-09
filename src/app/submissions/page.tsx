@@ -282,7 +282,7 @@ export default function SubmissionsPage() {
   return (
     <div>
       {/* Top nav */}
-      <div className="flex h-[55px] items-center justify-between border-b border-border px-5">
+      <div className="flex h-[55px] items-center justify-between border-b border-border px-4 sm:px-5">
         <div className="flex items-center gap-2">
           <span className="font-[family-name:var(--font-inter)] text-sm font-medium tracking-[-0.02em] text-page-text">
             Submissions
@@ -309,11 +309,11 @@ export default function SubmissionsPage() {
       </div>
 
       {/* Content */}
-      <div className="px-6 pb-6 pt-[21px] max-md:px-5">
+      <div className="px-4 pb-6 pt-[21px] sm:px-6">
       {/* Toolbar */}
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-2">
         {/* Tabs */}
-        <Tabs selectedIndex={selectedIndex} onSelect={setSelectedIndex} className="overflow-x-auto">
+        <Tabs selectedIndex={selectedIndex} onSelect={setSelectedIndex} className="scrollbar-hide overflow-x-auto">
           {TABS.map((tab, i) => (
             <TabItem
               key={tab.name}

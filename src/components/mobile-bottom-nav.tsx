@@ -46,10 +46,20 @@ function AnalyticsIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
+function MenuIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+      <path d="M3 5H17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <path d="M3 10H17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <path d="M3 15H17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 const NAV_ITEMS = [
+  { href: "/", icon: HomeIcon, exact: true },
   { href: "/submissions", icon: SubmissionsIcon },
   { href: "/creators", icon: StarIcon },
-  { href: "/links", icon: HomeIcon, exact: true },
   { href: "/messages", icon: MessagesIcon, badge: 2 },
   { href: "/analytics", icon: AnalyticsIcon },
 ];
@@ -59,7 +69,7 @@ export function MobileBottomNav() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background md:hidden">
-      <div className="flex h-[83px] items-center justify-around px-2 pb-[env(safe-area-inset-bottom)]">
+      <div className="flex items-center justify-around px-2 pb-[max(8px,env(safe-area-inset-bottom))]">
         {NAV_ITEMS.map(({ href, icon: Icon, exact, badge }) => {
           const isActive = exact
             ? pathname === href
@@ -69,7 +79,7 @@ export function MobileBottomNav() {
             <Link
               key={href}
               href={href}
-              className="relative flex items-center justify-center px-4 py-3"
+              className="relative flex min-w-[44px] items-center justify-center px-3 py-3"
             >
               <Icon
                 className={cn(

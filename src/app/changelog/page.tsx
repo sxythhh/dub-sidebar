@@ -362,7 +362,7 @@ export default function Page() {
       <ScrollProgress />
 
       {/* Header */}
-      <div className="flex h-14 items-center border-b border-border px-5">
+      <div className="flex h-14 items-center border-b border-border px-4 sm:px-5">
         <span className="font-[family-name:var(--font-inter)] text-sm font-medium tracking-[-0.02em] text-page-text">
           Changelog
         </span>

@@ -11,8 +11,9 @@ const CUSTOMERS = [
 export default function CustomersPage() {
   return (
     <PageShell title="Customers" description="Track customers across the entire conversion funnel.">
-      <div className="mt-4 overflow-x-auto rounded-lg border border-border">
-        <div className="min-w-[600px] divide-y divide-border">
+      <div className="mt-4 rounded-lg border border-border">
+        {/* Desktop table */}
+        <div className="hidden divide-y divide-border sm:block">
           <div className="grid grid-cols-[40px_1fr_1fr_80px_100px_80px] gap-3 px-4 py-2 text-xs font-medium text-page-text-muted">
             <span></span>
             <span>Name</span>
@@ -29,6 +30,24 @@ export default function CustomersPage() {
               <span className="text-page-text-muted">{c.events}</span>
               <span className="font-medium text-page-text">{c.revenue}</span>
               <span className="text-right text-page-text-muted">{c.lastSeen}</span>
+            </div>
+          ))}
+        </div>
+        {/* Mobile list */}
+        <div className="divide-y divide-border sm:hidden">
+          {CUSTOMERS.map((c) => (
+            <div key={c.id} className="flex items-center gap-3 px-4 py-3">
+              <img src={c.avatar} alt="" className="size-10 shrink-0 rounded-full object-cover" />
+              <div className="min-w-0 flex-1">
+                <div className="flex items-baseline justify-between gap-2">
+                  <span className="truncate text-sm font-medium text-page-text">{c.name}</span>
+                  <span className="shrink-0 text-sm font-medium text-page-text">{c.revenue}</span>
+                </div>
+                <div className="flex items-baseline justify-between gap-2 mt-0.5">
+                  <span className="truncate text-xs text-page-text-muted">{c.email}</span>
+                  <span className="shrink-0 text-xs text-page-text-muted">{c.lastSeen}</span>
+                </div>
+              </div>
             </div>
           ))}
         </div>

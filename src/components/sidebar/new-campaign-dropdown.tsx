@@ -109,11 +109,11 @@ export function NewCampaignButton() {
   );
 
   return (
-    <div className="relative flex-1" ref={(node) => { containerRef.current = node; refs.setReference(node); }}>
+    <div className="relative" ref={(node) => { containerRef.current = node; refs.setReference(node); }}>
       <RichButton
         size="sm"
         onClick={() => setOpen((v) => !v)}
-        className="w-full rounded-2xl"
+        className="rounded-2xl"
       >
         <span>New campaign</span>
         <IconChevronDown
