@@ -1,13 +1,5 @@
 "use client";
 
-import { useRef } from "react";
-import {
-  motion,
-  useScroll,
-  useTransform,
-  useInView,
-  useSpring,
-} from "motion/react";
 import { Sparkles, Zap, Shield, Bug } from "lucide-react";
 
 type ChangeType = "feature" | "improvement" | "fix" | "security";
@@ -188,43 +180,10 @@ const CHANGELOG: ChangeEntry[] = [
   },
 ];
 
-function ScrollProgress() {
-  const { scrollYProgress } = useScroll();
-  const scaleX = useSpring(scrollYProgress, {
-    stiffness: 100,
-    damping: 30,
-    restDelta: 0.001,
-  });
-
-  return (
-    <motion.div
-      className="fixed left-0 right-0 top-0 z-[60] h-[2px] origin-left bg-foreground"
-      style={{ scaleX }}
-    />
-  );
-}
-
 function TimelineLine() {
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start 20%", "end 80%"],
-  });
-  const height = useSpring(
-    useTransform(scrollYProgress, [0, 1], ["0%", "100%"]),
-    { stiffness: 100, damping: 30 },
-  );
-
   return (
-    <div
-      ref={ref}
-      className="absolute bottom-0 left-[23px] top-0 w-[2px] md:left-1/2 md:-translate-x-px"
-    >
+    <div className="absolute bottom-0 left-[23px] top-0 w-[2px] md:left-1/2 md:-translate-x-px">
       <div className="absolute inset-0 bg-border" />
-      <motion.div
-        className="absolute left-0 right-0 top-0 bg-gradient-to-b from-foreground via-foreground/60 to-foreground/20"
-        style={{ height }}
-      />
     </div>
   );
 }
@@ -236,40 +195,25 @@ function ChangelogEntry({
   entry: ChangeEntry;
   index: number;
 }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
   const isLeft = index % 2 === 0;
   const typeConfig = TYPE_CONFIG[entry.type];
 
   return (
     <div
-      ref={ref}
       className={`relative flex items-start gap-8 md:gap-0 ${
         isLeft ? "md:flex-row" : "md:flex-row-reverse"
       }`}
     >
-      <motion.div
+      <div
         className={`ml-14 md:ml-0 md:w-[calc(50%-40px)] ${
           isLeft ? "md:mr-auto md:pr-0" : "md:ml-auto md:pl-0"
         }`}
-        initial={{ opacity: 0, x: isLeft ? -60 : 60, y: 20 }}
-        animate={isInView ? { opacity: 1, x: 0, y: 0 } : {}}
-        transition={{
-          duration: 0.6,
-          ease: [0.25, 0.1, 0.25, 1],
-          delay: 0.15,
-        }}
       >
-        <div className="group relative rounded-xl border border-border bg-card-bg p-6 transition-colors duration-300 hover:border-border">
+        <div className="group relative rounded-xl border border-border bg-card-bg p-6 transition-colors duration-200 hover:border-border">
           <div className="mb-3 flex items-center gap-3">
-            <motion.span
-              className="rounded-md bg-accent px-2.5 py-1 font-[family-name:var(--font-inter)] text-xs font-bold tracking-[-0.02em] text-page-text"
-              initial={{ scale: 0.5, opacity: 0 }}
-              animate={isInView ? { scale: 1, opacity: 1 } : {}}
-              transition={{ delay: 0.3, type: "spring", stiffness: 300 }}
-            >
+            <span className="rounded-md bg-accent px-2.5 py-1 font-[family-name:var(--font-inter)] text-xs font-bold tracking-[-0.02em] text-page-text">
               v{entry.version}
-            </motion.span>
+            </span>
             <span className="font-[family-name:var(--font-inter)] text-xs tracking-[-0.02em] text-page-text-muted">
               {entry.date}
             </span>
@@ -292,18 +236,15 @@ function ChangelogEntry({
               const changeConfig = TYPE_CONFIG[change.type];
               const ChangeIcon = changeConfig.icon;
               return (
-                <motion.li
+                <li
                   key={i}
                   className="flex items-start gap-2.5 font-[family-name:var(--font-inter)] text-sm tracking-[-0.02em] text-page-text-subtle"
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={isInView ? { opacity: 1, x: 0 } : {}}
-                  transition={{ delay: 0.35 + i * 0.08, duration: 0.3 }}
                 >
                   <ChangeIcon
                     className={`mt-0.5 h-3.5 w-3.5 shrink-0 ${changeConfig.color}`}
                   />
                   {change.text}
-                </motion.li>
+                </li>
               );
             })}
           </ul>
@@ -316,29 +257,20 @@ function ChangelogEntry({
             } transition-colors duration-300`}
           />
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }
 
 function YearMarker({ year }: { year: string }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: true, margin: "-50px" });
-
   return (
-    <motion.div
-      ref={ref}
-      className="relative my-12 flex justify-center"
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={isInView ? { opacity: 1, scale: 1 } : {}}
-      transition={{ duration: 0.5, ease: "easeOut" }}
-    >
+    <div className="relative my-12 flex justify-center">
       <div className="relative z-10 rounded-full border border-border bg-page-bg px-5 py-2">
         <span className="font-[family-name:var(--font-inter)] text-sm font-bold tracking-wide text-page-text">
           {year}
         </span>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -359,10 +291,8 @@ export default function Page() {
 
   return (
     <div className="min-h-full bg-page-bg">
-      <ScrollProgress />
-
       {/* Header */}
-      <div className="flex h-14 items-center border-b border-border px-4 sm:px-5">
+      <div className="sticky top-0 z-10 flex h-14 items-center border-b border-border bg-page-bg px-4 sm:px-5">
         <span className="font-[family-name:var(--font-inter)] text-sm font-medium tracking-[-0.02em] text-page-text">
           Changelog
         </span>
@@ -371,18 +301,12 @@ export default function Page() {
       {/* Hero */}
       <div className="px-4 pb-8 pt-16">
         <div className="mx-auto max-w-2xl text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <h1 className="font-[family-name:var(--font-inter)] text-4xl font-bold tracking-tight text-page-text sm:text-5xl">
-              Changelog
-            </h1>
-            <p className="mt-4 font-[family-name:var(--font-inter)] text-lg tracking-[-0.02em] text-page-text-muted">
-              New updates and improvements to the platform.
-            </p>
-          </motion.div>
+          <h1 className="font-[family-name:var(--font-inter)] text-4xl font-bold tracking-tight text-page-text sm:text-5xl">
+            Changelog
+          </h1>
+          <p className="mt-4 font-[family-name:var(--font-inter)] text-lg tracking-[-0.02em] text-page-text-muted">
+            New updates and improvements to the platform.
+          </p>
         </div>
       </div>
 
@@ -391,7 +315,7 @@ export default function Page() {
         <TimelineLine />
 
         <div className="space-y-12">
-          {entriesWithMarkers.map((item, i) => {
+          {entriesWithMarkers.map((item) => {
             if (item.kind === "year") {
               return <YearMarker key={`year-${item.year}`} year={item.year} />;
             }
