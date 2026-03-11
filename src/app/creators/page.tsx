@@ -5,240 +5,17 @@ import {
   useState,
   useCallback,
   useEffect,
-  createContext,
-  useContext,
-  forwardRef,
-  type ReactNode,
-  type HTMLAttributes,
+  useMemo,
 } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { springs } from "@/lib/springs";
-import { fontWeights } from "@/lib/font-weight";
 import { useProximityHover } from "@/hooks/use-proximity-hover";
 import { PlatformIcon } from "@/components/icons/PlatformIcon";
-
-// ── Subtle Tab primitives (same as submissions) ─────────────────────
-
-interface TabContextValue {
-  registerTab: (index: number, element: HTMLElement | null) => void;
-  hoveredIndex: number | null;
-  selectedIndex: number;
-  onSelect: (index: number) => void;
-}
-
-const TabContext = createContext<TabContextValue | null>(null);
-
-function useTab() {
-  const ctx = useContext(TabContext);
-  if (!ctx) throw new Error("useTab must be used within Tabs");
-  return ctx;
-}
-
-const Tabs = forwardRef<
-  HTMLDivElement,
-  Omit<HTMLAttributes<HTMLDivElement>, "onSelect"> & {
-    children: ReactNode;
-    selectedIndex: number;
-    onSelect: (index: number) => void;
-  }
->(({ children, selectedIndex, onSelect, className, ...props }, ref) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const isMouseInside = useRef(false);
-
-  const {
-    activeIndex: hoveredIndex,
-    itemRects: tabRects,
-    handlers,
-    registerItem: registerTab,
-    measureItems: measureTabs,
-  } = useProximityHover(containerRef, { axis: "x" });
-
-  useEffect(() => {
-    measureTabs();
-  }, [measureTabs, children]);
-
-  const handleMouseMove = useCallback(
-    (e: React.MouseEvent) => {
-      isMouseInside.current = true;
-      handlers.onMouseMove(e);
-    },
-    [handlers],
-  );
-
-  const handleMouseLeave = useCallback(() => {
-    isMouseInside.current = false;
-    handlers.onMouseLeave();
-  }, [handlers]);
-
-  const selectedRect = tabRects[selectedIndex];
-  const hoverRect = hoveredIndex !== null ? tabRects[hoveredIndex] : null;
-  const isHoveringSelected = hoveredIndex === selectedIndex;
-  const isHovering = hoveredIndex !== null && !isHoveringSelected;
-
-  return (
-    <TabContext.Provider
-      value={{ registerTab, hoveredIndex, selectedIndex, onSelect }}
-    >
-      <div
-        ref={(node) => {
-          (
-            containerRef as React.MutableRefObject<HTMLDivElement | null>
-          ).current = node;
-          if (typeof ref === "function") ref(node);
-          else if (ref)
-            (
-              ref as React.MutableRefObject<HTMLDivElement | null>
-            ).current = node;
-        }}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-        className={cn(
-          "relative flex items-center gap-0.5 rounded-2xl bg-accent p-0.5 select-none",
-          className,
-        )}
-        role="tablist"
-        {...props}
-      >
-        {selectedRect && (
-          <motion.div
-            className="pointer-events-none absolute rounded-xl bg-card-bg shadow-[0_2px_4px_rgba(0,0,0,0.06)] dark:bg-white/[0.10] dark:shadow-none"
-            initial={false}
-            animate={{
-              left: selectedRect.left,
-              width: selectedRect.width,
-              top: selectedRect.top,
-              height: selectedRect.height,
-              opacity: isHovering ? 0.85 : 1,
-            }}
-            transition={{
-              ...springs.moderate,
-              opacity: { duration: 0.16 },
-            }}
-          />
-        )}
-
-        <AnimatePresence>
-          {hoverRect && !isHoveringSelected && selectedRect && (
-            <motion.div
-              className="pointer-events-none absolute rounded-xl bg-accent dark:bg-white/[0.06]"
-              initial={{
-                left: selectedRect.left,
-                width: selectedRect.width,
-                top: selectedRect.top,
-                height: selectedRect.height,
-                opacity: 0,
-              }}
-              animate={{
-                left: hoverRect.left,
-                width: hoverRect.width,
-                top: hoverRect.top,
-                height: hoverRect.height,
-                opacity: 1,
-              }}
-              exit={
-                !isMouseInside.current && selectedRect
-                  ? {
-                      left: selectedRect.left,
-                      width: selectedRect.width,
-                      top: selectedRect.top,
-                      height: selectedRect.height,
-                      opacity: 0,
-                      transition: {
-                        ...springs.moderate,
-                        opacity: { duration: 0.12 },
-                      },
-                    }
-                  : { opacity: 0, transition: { duration: 0.12 } }
-              }
-              transition={{
-                ...springs.moderate,
-                opacity: { duration: 0.16 },
-              }}
-            />
-          )}
-        </AnimatePresence>
-
-        {children}
-      </div>
-    </TabContext.Provider>
-  );
-});
-Tabs.displayName = "Tabs";
-
-const TabItem = forwardRef<
-  HTMLButtonElement,
-  HTMLAttributes<HTMLButtonElement> & {
-    label: string;
-    count: number;
-    index: number;
-  }
->(({ label, count, index, className, ...props }, ref) => {
-  const internalRef = useRef<HTMLButtonElement>(null);
-  const { registerTab, hoveredIndex, selectedIndex, onSelect } = useTab();
-
-  useEffect(() => {
-    registerTab(index, internalRef.current);
-    return () => registerTab(index, null);
-  }, [index, registerTab]);
-
-  const isSelected = selectedIndex === index;
-  const isHovered = hoveredIndex === index;
-
-  return (
-    <button
-      ref={(node) => {
-        (
-          internalRef as React.MutableRefObject<HTMLButtonElement | null>
-        ).current = node;
-        if (typeof ref === "function") ref(node);
-        else if (ref)
-          (
-            ref as React.MutableRefObject<HTMLButtonElement | null>
-          ).current = node;
-      }}
-      data-proximity-index={index}
-      role="tab"
-      aria-selected={isSelected}
-      tabIndex={isSelected ? 0 : -1}
-      onClick={() => onSelect(index)}
-      className={cn(
-        "relative z-10 flex h-8 cursor-pointer items-center gap-1.5 rounded-xl border-none bg-transparent px-4 font-[family-name:var(--font-inter)] tracking-[-0.02em] outline-none",
-        className,
-      )}
-      {...props}
-    >
-      <span className="inline-grid text-sm">
-        <span
-          className="invisible col-start-1 row-start-1"
-          style={{ fontVariationSettings: fontWeights.semibold }}
-          aria-hidden="true"
-        >
-          {label}
-        </span>
-        <span
-          className={cn(
-            "col-start-1 row-start-1 transition-[color,font-variation-settings] duration-75",
-            isSelected || isHovered
-              ? "text-page-text"
-              : "text-page-text-subtle",
-          )}
-          style={{
-            fontVariationSettings: isSelected
-              ? fontWeights.semibold
-              : fontWeights.medium,
-          }}
-        >
-          {label}
-        </span>
-      </span>
-      <span className="text-sm font-normal text-page-text-muted">
-        {count}
-      </span>
-    </button>
-  );
-});
-TabItem.displayName = "TabItem";
+import Dropdown from "@/components/ui/dropdown";
+import { Tabs, TabItem } from "@/components/ui/tabs";
+import { FilterSelect, type Filter, type ActiveFilter } from "@/components/ui/dub-filter";
 
 // ── Filter Icon ─────────────────────────────────────────────────────
 
@@ -327,20 +104,115 @@ const CREATORS: Creator[] = [
   { name: "StableAssets", joined: "Sep '26", lastSub: "1w ago", platforms: ["instagram", "youtube"], earned: "$23,548.88", views: "620.8K", match: 88, engRate: "2.7%", engScore: 72, cpm: "$0.97", sentiment: "79%", submissions: 41 },
 ];
 
-const COLUMNS = [
-  { key: "creator", label: "Creator", align: "left" as const, width: "minmax(200px, 1fr)" },
-  { key: "platforms", label: "Platforms", align: "right" as const, width: "132px" },
-  { key: "earned", label: "Earned", align: "right" as const, width: "96px" },
-  { key: "views", label: "Views", align: "right" as const, width: "80px" },
-  { key: "match", label: "Match", align: "right" as const, width: "80px" },
-  { key: "engRate", label: "Eng. rate", align: "right" as const, width: "88px" },
-  { key: "engScore", label: "Eng. score", align: "right" as const, width: "96px" },
-  { key: "cpm", label: "CPM", align: "right" as const, width: "64px" },
-  { key: "sentiment", label: "Sentiment", align: "right" as const, width: "89px" },
-  { key: "submissions", label: "Submissions", align: "right" as const, width: "103px" },
+type ColumnKey = "creator" | "platforms" | "earned" | "views" | "match" | "engRate" | "engScore" | "cpm" | "sentiment" | "submissions";
+type SortDir = "asc" | "desc";
+
+function parseNumeric(val: string): number {
+  const cleaned = val.replace(/[$,%]/g, "").replace(/,/g, "");
+  if (cleaned.endsWith("K")) return parseFloat(cleaned) * 1000;
+  if (cleaned.endsWith("M")) return parseFloat(cleaned) * 1_000_000;
+  return parseFloat(cleaned) || 0;
+}
+
+function getSortValue(creator: Creator, key: ColumnKey): number | string {
+  switch (key) {
+    case "creator": return creator.name.toLowerCase();
+    case "platforms": return creator.platforms.length;
+    case "earned": return parseNumeric(creator.earned);
+    case "views": return parseNumeric(creator.views);
+    case "match": return creator.match;
+    case "engRate": return parseNumeric(creator.engRate);
+    case "engScore": return creator.engScore;
+    case "cpm": return parseNumeric(creator.cpm);
+    case "sentiment": return parseNumeric(creator.sentiment);
+    case "submissions": return creator.submissions;
+  }
+}
+
+interface Column {
+  key: ColumnKey;
+  label: string;
+  align: "left" | "right";
+  width: string;
+}
+
+const ALL_COLUMNS: Column[] = [
+  { key: "creator", label: "Creator", align: "left", width: "minmax(160px, 1fr)" },
+  { key: "platforms", label: "Platforms", align: "right", width: "110px" },
+  { key: "earned", label: "Earned", align: "right", width: "80px" },
+  { key: "views", label: "Views", align: "right", width: "68px" },
+  { key: "match", label: "Match", align: "right", width: "72px" },
+  { key: "engRate", label: "Eng. rate", align: "right", width: "76px" },
+  { key: "engScore", label: "Eng. score", align: "right", width: "88px" },
+  { key: "cpm", label: "CPM", align: "right", width: "56px" },
+  { key: "sentiment", label: "Sentiment", align: "right", width: "80px" },
+  { key: "submissions", label: "Submissions", align: "right", width: "92px" },
 ];
 
-function CreatorsTable() {
+const DEFAULT_COLUMN_ORDER: ColumnKey[] = ALL_COLUMNS.map((c) => c.key);
+const COLUMN_MAP = Object.fromEntries(ALL_COLUMNS.map((c) => [c.key, c])) as Record<ColumnKey, Column>;
+
+function CellContent({ colKey, creator }: { colKey: ColumnKey; creator: Creator }) {
+  switch (colKey) {
+    case "creator":
+      return (
+        <div className="flex min-w-0 items-center gap-2">
+          <div className="size-6 shrink-0 overflow-hidden rounded-full bg-accent">
+            <img src={`https://i.pravatar.cc/48?u=${creator.name}`} alt="" className="size-full object-cover" />
+          </div>
+          <div className="flex min-w-0 items-center gap-1.5">
+            <span className="truncate text-sm font-medium tracking-[-0.02em] text-page-text">{creator.name}</span>
+            <span className="shrink-0 text-xs tracking-[-0.02em] text-muted-foreground">·</span>
+            <span className="shrink-0 whitespace-nowrap text-xs tracking-[-0.02em] text-page-text-muted">joined {creator.joined}</span>
+          </div>
+        </div>
+      );
+    case "platforms":
+      return (
+        <div className="flex items-center gap-1 overflow-hidden">
+          {creator.platforms.map((p) => <PlatformBadge key={p} platform={p} />)}
+        </div>
+      );
+    case "earned":
+      return <span className="text-xs tracking-[-0.02em] text-page-text">{creator.earned}</span>;
+    case "views":
+      return <span className="text-xs tracking-[-0.02em] text-page-text">{creator.views}</span>;
+    case "match":
+      return (
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs tracking-[-0.02em] text-[#00B26E]">{creator.match}%</span>
+          <ScoreCircle value={creator.match} color="#00B26E" />
+        </div>
+      );
+    case "engRate":
+      return <span className="text-xs tracking-[-0.02em] text-page-text">{creator.engRate}</span>;
+    case "engScore":
+      return (
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs tracking-[-0.02em] text-page-text">{creator.engScore}</span>
+          <ScoreCircle value={creator.engScore} color="#3b82f6" />
+        </div>
+      );
+    case "cpm":
+      return <span className="text-xs tracking-[-0.02em] text-page-text">{creator.cpm}</span>;
+    case "sentiment":
+      return <span className="text-xs tracking-[-0.02em] text-page-text">{creator.sentiment}</span>;
+    case "submissions":
+      return <span className="text-xs tracking-[-0.02em] text-page-text">{creator.submissions}</span>;
+  }
+}
+
+function CreatorsTable({
+  columns,
+  sortKey,
+  sortDir,
+  onSort,
+}: {
+  columns: Column[];
+  sortKey: ColumnKey | null;
+  sortDir: SortDir;
+  onSort: (key: ColumnKey) => void;
+}) {
   const tableRef = useRef<HTMLDivElement>(null);
   const {
     activeIndex: hoveredRow,
@@ -352,11 +224,23 @@ function CreatorsTable() {
 
   useEffect(() => {
     measureRows();
-  }, [measureRows]);
+  }, [measureRows, columns]);
 
   const hoverRect = hoveredRow !== null ? rowRects[hoveredRow] : null;
 
-  const gridTemplate = `48px ${COLUMNS.map((c) => c.width).join(" ")} 4px`;
+  const sortedCreators = useMemo(() => {
+    if (!sortKey) return CREATORS;
+    return [...CREATORS].sort((a, b) => {
+      const aVal = getSortValue(a, sortKey);
+      const bVal = getSortValue(b, sortKey);
+      if (typeof aVal === "string" && typeof bVal === "string") {
+        return sortDir === "asc" ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+      }
+      return sortDir === "asc" ? (aVal as number) - (bVal as number) : (bVal as number) - (aVal as number);
+    });
+  }, [sortKey, sortDir]);
+
+  const gridTemplate = `40px ${columns.map((c) => c.width).join(" ")} 4px`;
 
   return (
     <div
@@ -383,111 +267,61 @@ function CreatorsTable() {
         className="grid border-b border-border px-1 font-[family-name:var(--font-inter)]"
         style={{ gridTemplateColumns: gridTemplate }}
       >
-        <div className="flex items-center justify-center py-3 pr-5 pl-3">
+        <div className="flex items-center justify-center py-3 pr-3 pl-2">
           <span className="w-full text-right text-xs font-medium tracking-[-0.02em] text-page-text-muted">#</span>
         </div>
-        {COLUMNS.map((col) => (
-          <div
+        {columns.map((col) => (
+          <button
             key={col.key}
+            type="button"
+            onClick={() => onSort(col.key)}
             className={cn(
-              "flex items-center py-3 text-xs font-medium tracking-[-0.02em] text-page-text-muted",
-              col.align === "right" ? "justify-end pl-5 pr-3" : "pr-3",
+              "flex cursor-pointer items-center gap-1 py-3 text-xs font-medium tracking-[-0.02em] transition-colors",
+              col.align === "right" ? "justify-end pl-3 pr-3" : "pr-3",
+              sortKey === col.key ? "text-page-text" : "text-page-text-muted hover:text-page-text",
             )}
           >
             {col.label}
-          </div>
+            {sortKey === col.key && (
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className="shrink-0">
+                <path
+                  d={sortDir === "asc" ? "M2.5 6.5L5 3.5L7.5 6.5" : "M2.5 3.5L5 6.5L7.5 3.5"}
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            )}
+          </button>
         ))}
         <div />
       </div>
 
       {/* Rows */}
       <div className="py-1">
-      {CREATORS.map((creator, i) => (
+      {sortedCreators.map((creator, i) => (
         <div
           key={creator.name}
-          ref={(node) => {
-            registerRow(i, node);
-          }}
+          ref={(node) => { registerRow(i, node); }}
           data-proximity-index={i}
           className="relative z-10 grid cursor-pointer px-1 font-[family-name:var(--font-inter)]"
           style={{ gridTemplateColumns: gridTemplate }}
         >
-          {/* # */}
-          <div className="flex items-center justify-center py-3 pr-5 pl-3">
-            <span className="w-full text-right text-xs font-medium tracking-[-0.02em] text-page-text-muted">
-              {i + 1}
-            </span>
+          <div className="flex items-center justify-center py-3 pr-3 pl-2">
+            <span className="w-full text-right text-xs font-medium tracking-[-0.02em] text-page-text-muted">{i + 1}</span>
           </div>
-
-          {/* Creator */}
-          <div className="flex items-center gap-2 border-b border-border/30 py-3 pr-3">
-            <div className="size-6 shrink-0 overflow-hidden rounded-full bg-accent">
-              <img
-                src={`https://i.pravatar.cc/48?u=${creator.name}`}
-                alt=""
-                className="size-full object-cover"
-              />
+          {columns.map((col) => (
+            <div
+              key={col.key}
+              className={cn(
+                "flex min-w-0 items-center border-b border-border/30 py-3",
+                col.align === "right" ? "justify-end pl-3 pr-3" : "pr-3",
+              )}
+            >
+              <CellContent colKey={col.key} creator={creator} />
             </div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-sm font-medium tracking-[-0.02em] text-page-text">
-                {creator.name}
-              </span>
-              <span className="text-xs tracking-[-0.02em] text-muted-foreground">·</span>
-              <span className="text-xs tracking-[-0.02em] text-page-text-muted">
-                joined {creator.joined}
-              </span>
-            </div>
-          </div>
-
-          {/* Platforms */}
-          <div className="flex items-center justify-end gap-1 border-b border-border/30 py-3 pr-3 pl-5">
-            {creator.platforms.map((p) => (
-              <PlatformBadge key={p} platform={p} />
-            ))}
-          </div>
-
-          {/* Earned */}
-          <div className="flex items-center justify-end border-b border-border/30 py-3 pr-3 pl-5">
-            <span className="text-xs tracking-[-0.02em] text-page-text">{creator.earned}</span>
-          </div>
-
-          {/* Views */}
-          <div className="flex items-center justify-end border-b border-border/30 py-3 pr-3 pl-5">
-            <span className="text-xs tracking-[-0.02em] text-page-text">{creator.views}</span>
-          </div>
-
-          {/* Match */}
-          <div className="flex items-center justify-end gap-1.5 border-b border-border/30 py-3 pr-3 pl-5">
-            <span className="text-xs tracking-[-0.02em] text-[#00B26E]">{creator.match}%</span>
-            <ScoreCircle value={creator.match} color="#00B26E" />
-          </div>
-
-          {/* Eng. rate */}
-          <div className="flex items-center justify-end border-b border-border/30 py-3 pr-3 pl-5">
-            <span className="text-xs tracking-[-0.02em] text-page-text">{creator.engRate}</span>
-          </div>
-
-          {/* Eng. score */}
-          <div className="flex items-center justify-end gap-1.5 border-b border-border/30 py-3 pr-3 pl-5">
-            <span className="text-xs tracking-[-0.02em] text-page-text">{creator.engScore}</span>
-            <ScoreCircle value={creator.engScore} color="#3b82f6" />
-          </div>
-
-          {/* CPM */}
-          <div className="flex items-center justify-end border-b border-border/30 py-3 pr-3 pl-5">
-            <span className="text-xs tracking-[-0.02em] text-page-text">{creator.cpm}</span>
-          </div>
-
-          {/* Sentiment */}
-          <div className="flex items-center justify-end border-b border-border/30 py-3 pr-3 pl-5">
-            <span className="text-xs tracking-[-0.02em] text-page-text">{creator.sentiment}</span>
-          </div>
-
-          {/* Submissions */}
-          <div className="flex items-center justify-end border-b border-border/30 py-3 pr-3 pl-5">
-            <span className="text-xs tracking-[-0.02em] text-page-text">{creator.submissions}</span>
-          </div>
-
+          ))}
           <div className="border-b border-border/30" />
         </div>
       ))}
@@ -495,6 +329,222 @@ function CreatorsTable() {
     </div>
   );
 }
+
+// ── Column Settings Dropdown ─────────────────────────────────────────
+
+const COLUMNS_DROPDOWN_EASING = [0.16, 1, 0.3, 1] as const;
+
+function ColumnsDropdown({
+  columnOrder,
+  hiddenColumns,
+  onToggleColumn,
+  onReorder,
+  onClose,
+}: {
+  columnOrder: ColumnKey[];
+  hiddenColumns: Set<ColumnKey>;
+  onToggleColumn: (key: ColumnKey) => void;
+  onReorder: (from: number, to: number) => void;
+  onClose: () => void;
+}) {
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const dragItem = useRef<number | null>(null);
+
+  useEffect(() => {
+    const handle = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (dropdownRef.current?.contains(target)) return;
+      onClose();
+    };
+    document.addEventListener("mousedown", handle);
+    return () => document.removeEventListener("mousedown", handle);
+  }, [onClose]);
+
+  return (
+    <motion.div
+      ref={dropdownRef}
+      className="absolute right-0 top-full z-50 mt-1 w-[220px] overflow-hidden rounded-xl border border-border bg-card-bg p-1 shadow-lg"
+      initial={{ opacity: 0, y: -2, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -2, scale: 0.98 }}
+      transition={{ duration: 0.2, ease: COLUMNS_DROPDOWN_EASING }}
+    >
+      <div className="px-2.5 py-2">
+        <span className="font-inter text-xs font-medium tracking-[-0.02em] text-page-text-muted">Columns</span>
+      </div>
+      <Dropdown>
+        {columnOrder.map((key, idx) => {
+          const col = COLUMN_MAP[key];
+          const isCreator = key === "creator";
+          const isHidden = hiddenColumns.has(key);
+          return (
+            <div
+              key={key}
+              data-proximity-index={idx}
+              draggable={!isCreator}
+              onDragStart={() => { dragItem.current = idx; }}
+              onDragEnter={(e) => {
+                e.preventDefault();
+                if (dragItem.current !== null && dragItem.current !== idx) {
+                  onReorder(dragItem.current, idx);
+                  dragItem.current = idx;
+                }
+              }}
+              onDragOver={(e) => e.preventDefault()}
+              onDragEnd={() => { dragItem.current = null; }}
+              className={cn(
+                "relative z-10 flex items-center gap-2 rounded-lg px-2.5 py-2",
+                !isCreator && "cursor-grab active:cursor-grabbing",
+                isCreator && "opacity-50",
+              )}
+            >
+              {/* Drag handle */}
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className={cn("shrink-0 text-page-text-muted", isCreator && "invisible")}>
+                <circle cx="4" cy="3" r="1" fill="currentColor" />
+                <circle cx="8" cy="3" r="1" fill="currentColor" />
+                <circle cx="4" cy="6" r="1" fill="currentColor" />
+                <circle cx="8" cy="6" r="1" fill="currentColor" />
+                <circle cx="4" cy="9" r="1" fill="currentColor" />
+                <circle cx="8" cy="9" r="1" fill="currentColor" />
+              </svg>
+              <span className="flex-1 font-inter text-sm tracking-[-0.02em] text-page-text">{col.label}</span>
+              {/* Checkmark toggle */}
+              <button
+                type="button"
+                disabled={isCreator}
+                onClick={() => onToggleColumn(key)}
+                className="flex size-5 shrink-0 items-center justify-center"
+              >
+                {!isHidden && <Check className="size-4 text-page-text" strokeWidth={2.5} />}
+              </button>
+            </div>
+          );
+        })}
+      </Dropdown>
+    </motion.div>
+  );
+}
+
+// ── Filter / Sort Dropdown ───────────────────────────────────────────
+
+function ChevronRight() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="shrink-0">
+      <path d="M4.5 2L8 6L4.5 10" stroke="currentColor" strokeWidth="1.125" strokeLinecap="round" strokeLinejoin="round" className="text-page-text-muted" />
+    </svg>
+  );
+}
+
+function CheckmarkIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="shrink-0">
+      <path d="M2.5 6.5L5 9L9.5 3" stroke="currentColor" strokeWidth="1.125" strokeLinecap="round" strokeLinejoin="round" className="text-page-text" />
+    </svg>
+  );
+}
+
+// Platform icons
+function TikTokIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <path d="M11.5 1.5H9.5V10.5C9.5 11.6046 8.60457 12.5 7.5 12.5C6.39543 12.5 5.5 11.6046 5.5 10.5C5.5 9.39543 6.39543 8.5 7.5 8.5V6.5C5.29086 6.5 3.5 8.29086 3.5 10.5C3.5 12.7091 5.29086 14.5 7.5 14.5C9.70914 14.5 11.5 12.7091 11.5 10.5V5.5C12.3284 6.16519 13.3676 6.5 14.5 6.5V4.5C12.8431 4.5 11.5 3.15685 11.5 1.5Z" fill="currentColor" />
+    </svg>
+  );
+}
+function InstagramIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <rect x="2" y="2" width="12" height="12" rx="3.5" stroke="currentColor" strokeWidth="1.25" fill="none" />
+      <circle cx="8" cy="8" r="2.75" stroke="currentColor" strokeWidth="1.25" fill="none" />
+      <circle cx="11.5" cy="4.5" r="0.75" fill="currentColor" />
+    </svg>
+  );
+}
+function YouTubeIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <path d="M14.3 4.5C14.1 3.8 13.6 3.3 12.9 3.1C11.9 2.8 8 2.8 8 2.8C8 2.8 4.1 2.8 3.1 3.1C2.4 3.3 1.9 3.8 1.7 4.5C1.4 5.5 1.4 8 1.4 8C1.4 8 1.4 10.5 1.7 11.5C1.9 12.2 2.4 12.7 3.1 12.9C4.1 13.2 8 13.2 8 13.2C8 13.2 11.9 13.2 12.9 12.9C13.6 12.7 14.1 12.2 14.3 11.5C14.6 10.5 14.6 8 14.6 8C14.6 8 14.6 5.5 14.3 4.5ZM6.6 10.2V5.8L10.4 8L6.6 10.2Z" fill="currentColor" />
+    </svg>
+  );
+}
+function FacebookIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <path d="M14 8C14 4.7 11.3 2 8 2C4.7 2 2 4.7 2 8C2 11 4.1 13.5 6.9 14V9.9H5.3V8H6.9V6.6C6.9 5 7.9 4.1 9.3 4.1C10 4.1 10.7 4.2 10.7 4.2V5.8H9.9C9.1 5.8 8.9 6.3 8.9 6.8V8H10.6L10.3 9.9H8.9V14C11.7 13.5 14 11 14 8Z" fill="currentColor" />
+    </svg>
+  );
+}
+
+const FILTER_SUB_OPTIONS: Record<string, { id: string; label: string; icon?: React.FC }[]> = {
+  platform: [
+    { id: "all", label: "All" },
+    { id: "tiktok", label: "TikTok", icon: TikTokIcon },
+    { id: "instagram", label: "Instagram", icon: InstagramIcon },
+    { id: "youtube", label: "YouTube", icon: YouTubeIcon },
+    { id: "facebook", label: "Facebook", icon: FacebookIcon },
+  ],
+  category: [
+    { id: "all", label: "All" },
+    { id: "fashion", label: "Fashion" },
+    { id: "beauty", label: "Beauty" },
+    { id: "tech", label: "Technology" },
+    { id: "food", label: "Food & Drink" },
+    { id: "fitness", label: "Fitness" },
+  ],
+  payment: [
+    { id: "all", label: "All" },
+    { id: "cpa", label: "CPA" },
+    { id: "flat", label: "Flat rate" },
+    { id: "hybrid", label: "Hybrid" },
+  ],
+};
+
+const CREATOR_FILTERS: Filter[] = [
+  {
+    key: "sort",
+    icon: <svg width="14" height="11" viewBox="0 0 14 11" fill="none"><path d="M0.75 0.75H12.75M4.75 10.0833H8.75M2.75 5.41667H10.75" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>,
+    label: "Sort by",
+    singleSelect: true,
+    separatorAfter: true,
+    options: [
+      { value: "date", label: "Date Applied" },
+      { value: "payout", label: "Payout (high to low)" },
+      { value: "followers", label: "Follower requirement" },
+    ],
+  },
+  {
+    key: "platform",
+    icon: null,
+    label: "Platform",
+    singleSelect: true,
+    options: FILTER_SUB_OPTIONS.platform
+      .filter((s) => s.id !== "all")
+      .map((s) => ({
+        value: s.id,
+        label: s.label,
+        icon: s.icon ? <s.icon /> : undefined,
+      })),
+  },
+  {
+    key: "category",
+    icon: null,
+    label: "Category",
+    singleSelect: true,
+    options: FILTER_SUB_OPTIONS.category
+      .filter((s) => s.id !== "all")
+      .map((s) => ({ value: s.id, label: s.label })),
+  },
+  {
+    key: "payment",
+    icon: null,
+    label: "Payment model",
+    singleSelect: true,
+    options: FILTER_SUB_OPTIONS.payment
+      .filter((s) => s.id !== "all")
+      .map((s) => ({ value: s.id, label: s.label })),
+  },
+];
 
 // ── Mobile Creators Table ────────────────────────────────────────────
 
@@ -584,28 +634,68 @@ const FILTER_TABS = [
 export default function CreatorsPage() {
   const [activeNavTab, setActiveNavTab] = useState(0);
   const [selectedFilter, setSelectedFilter] = useState(0);
+  const [columnOrder, setColumnOrder] = useState<ColumnKey[]>(DEFAULT_COLUMN_ORDER);
+  const [hiddenColumns, setHiddenColumns] = useState<Set<ColumnKey>>(new Set());
+  const [columnsOpen, setColumnsOpen] = useState(false);
+  const [sortKey, setSortKey] = useState<ColumnKey | null>(null);
+  const [sortDir, setSortDir] = useState<SortDir>("desc");
+  const [dubActiveFilters, setDubActiveFilters] = useState<ActiveFilter[]>([]);
+
+  const handleFilterSelect = useCallback((key: string, value: string | string[]) => {
+    const v = Array.isArray(value) ? value[0] : value;
+    setDubActiveFilters((prev) => {
+      const existing = prev.find((f) => f.key === key);
+      if (existing) return prev.map((f) => (f.key === key ? { ...f, values: [v] } : f));
+      return [...prev, { key, values: [v] }];
+    });
+  }, []);
+
+  const handleFilterRemove = useCallback((key: string) => {
+    setDubActiveFilters((prev) => prev.filter((f) => f.key !== key));
+  }, []);
+
+  const handleSort = useCallback((key: ColumnKey) => {
+    if (sortKey === key) {
+      setSortDir((d) => (d === "desc" ? "asc" : "desc"));
+    } else {
+      setSortKey(key);
+      setSortDir("desc");
+    }
+  }, [sortKey]);
+
+  const toggleColumn = useCallback((key: ColumnKey) => {
+    setHiddenColumns((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }, []);
+
+  const reorderColumns = useCallback((from: number, to: number) => {
+    setColumnOrder((prev) => {
+      const next = [...prev];
+      const [item] = next.splice(from, 1);
+      next.splice(to, 0, item);
+      return next;
+    });
+  }, []);
+
+  const visibleColumns = useMemo(
+    () => columnOrder.filter((k) => !hiddenColumns.has(k)).map((k) => COLUMN_MAP[k]),
+    [columnOrder, hiddenColumns],
+  );
 
   return (
     <div>
       {/* Top nav */}
-      <div className="flex h-[56px] items-center justify-between border-b border-border pr-5">
+      <div className="sticky top-0 z-10 flex h-[56px] items-center justify-between border-b border-border bg-page-bg pr-5">
         {/* Underline tabs */}
-        <div className="flex h-full items-start">
+        <Tabs selectedIndex={activeNavTab} onSelect={setActiveNavTab} variant="underline" className="h-full">
           {NAV_TABS.map((tab, i) => (
-            <button
-              key={tab}
-              onClick={() => setActiveNavTab(i)}
-              className={cn(
-                "flex h-full cursor-pointer items-center justify-center border-b px-5 font-[family-name:var(--font-inter)] text-sm font-medium tracking-[-0.02em] transition-colors",
-                activeNavTab === i
-                  ? "border-foreground text-page-text"
-                  : "border-transparent text-page-text-subtle hover:text-page-text",
-              )}
-            >
-              {tab}
-            </button>
+            <TabItem key={tab} label={tab} index={i} />
           ))}
-        </div>
+        </Tabs>
 
         {/* Right actions */}
         <div className="hidden items-center gap-2 md:flex">
@@ -667,19 +757,112 @@ export default function CreatorsPage() {
               />
             </div>
 
-            <button className="flex size-9 items-center justify-center rounded-2xl bg-accent text-page-text transition-colors hover:bg-accent">
-              <FilterIcon />
-            </button>
+            {(() => {
+              const activeCount = dubActiveFilters.filter((f) => !(f.key === "sort" && f.values[0] === "date")).length;
+              const hasActive = activeCount > 0;
+              return (
+                <FilterSelect
+                  filters={CREATOR_FILTERS}
+                  activeFilters={dubActiveFilters}
+                  onSelect={handleFilterSelect}
+                  onRemove={handleFilterRemove}
+                  searchPlaceholder="Sort & filter..."
+                >
+                  <button
+                    onClick={() => setColumnsOpen(false)}
+                    className={cn(
+                      "flex cursor-pointer items-center gap-0.5 transition-colors",
+                      hasActive
+                        ? "h-9 rounded-xl bg-foreground/[0.06] py-0.5 pl-0.5 pr-3 text-page-text"
+                        : "size-9 justify-center rounded-2xl bg-accent text-page-text hover:bg-accent",
+                    )}
+                  >
+                    <span className={cn(
+                      "flex items-center justify-center",
+                      hasActive ? "size-8 rounded-[10px]" : "",
+                    )}>
+                      <FilterIcon />
+                    </span>
+                    {hasActive && (
+                      <span className="flex size-[14px] items-center justify-center rounded-full bg-[#FF2525]">
+                        <span className="font-[family-name:var(--font-inter)] text-[10px] font-semibold leading-none tracking-[-0.02em] text-white">
+                          {activeCount}
+                        </span>
+                      </span>
+                    )}
+                  </button>
+                </FilterSelect>
+              );
+            })()}
+
+            {/* Columns toggle */}
+            <div className="relative">
+              <button
+                onClick={() => setColumnsOpen((v) => !v)}
+                className={cn(
+                  "flex size-9 items-center justify-center rounded-2xl transition-colors",
+                  columnsOpen ? "bg-foreground text-page-bg" : "bg-accent text-page-text hover:bg-accent",
+                )}
+              >
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <rect x="1" y="1" width="4" height="12" rx="1" stroke="currentColor" strokeWidth="1.25" fill="none" />
+                  <rect x="9" y="1" width="4" height="12" rx="1" stroke="currentColor" strokeWidth="1.25" fill="none" />
+                </svg>
+              </button>
+              <AnimatePresence>
+                {columnsOpen && (
+                  <ColumnsDropdown
+                    columnOrder={columnOrder}
+                    hiddenColumns={hiddenColumns}
+                    onToggleColumn={toggleColumn}
+                    onReorder={reorderColumns}
+                    onClose={() => setColumnsOpen(false)}
+                  />
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         </div>
 
+        {/* Filter chips */}
+        {(() => {
+          const chips = dubActiveFilters.filter((f) => !(f.key === "sort" && f.values[0] === "date"));
+          if (chips.length === 0) return null;
+          return (
+            <div className="mt-3 flex flex-wrap items-center gap-1.5">
+              {chips.map((af) => {
+                const filter = CREATOR_FILTERS.find((f) => f.key === af.key);
+                const optionLabel = filter?.options?.find((o) => o.value === af.values[0])?.label ?? af.values[0];
+                const chipLabel = af.key === "sort" ? optionLabel : `${filter?.label ?? af.key}: ${optionLabel}`;
+                return (
+                  <button
+                    key={af.key}
+                    onClick={() => handleFilterRemove(af.key)}
+                    className="flex h-6 items-center gap-1 rounded-lg bg-foreground/[0.06] px-2 transition-colors hover:bg-foreground/[0.1]"
+                  >
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="text-foreground/40">
+                      <path d="M1.5 3H10.5M3 6H9M4.5 9H7.5" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
+                    </svg>
+                    <span className="font-[family-name:var(--font-inter)] text-xs font-medium tracking-[-0.02em] text-foreground/70">
+                      {chipLabel}
+                    </span>
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="text-foreground/30">
+                      <path d="M3.5 3.5L8.5 8.5M8.5 3.5L3.5 8.5" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
+                    </svg>
+                  </button>
+                );
+              })}
+            </div>
+          );
+        })()}
+
         {/* Creators table */}
-        <div className="mt-4">
-          <div className="sm:hidden">
+        <div className="mt-4 min-w-0">
+          <div className="md:hidden">
             <MobileCreatorsTable />
           </div>
-          <div className="hidden sm:block">
-            <CreatorsTable />
+          <div className="hidden md:block">
+            <CreatorsTable columns={visibleColumns} sortKey={sortKey} sortDir={sortDir} onSort={handleSort} />
           </div>
         </div>
       </div>

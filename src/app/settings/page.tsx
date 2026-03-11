@@ -1,7 +1,13 @@
 "use client";
 import { SettingsShell, SettingsCard } from "@/components/settings-shell";
+import { RichButton } from "@/components/rich-button";
+import { useRouter } from "next/navigation";
+import { useSideNav } from "@/components/sidebar/sidebar-context";
 
 export default function SettingsPage() {
+  const router = useRouter();
+  const { setEditMode } = useSideNav();
+
   return (
     <SettingsShell title="General" description="Manage your workspace settings.">
       <SettingsCard title="Workspace name" description="The name of your workspace.">
@@ -21,10 +27,21 @@ export default function SettingsPage() {
           />
         </div>
       </SettingsCard>
+      <SettingsCard title="Customize sidebar" description="Reorder, show, or hide items in your sidebar navigation.">
+        <RichButton
+          size="sm"
+          onClick={() => {
+            setEditMode(true);
+            router.push("/");
+          }}
+        >
+          Customize sidebar
+        </RichButton>
+      </SettingsCard>
       <SettingsCard title="Delete workspace" description="Permanently delete your workspace and all its data. This action cannot be undone.">
-        <button className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-100">
+        <RichButton size="sm" variant="destructive">
           Delete workspace
-        </button>
+        </RichButton>
       </SettingsCard>
     </SettingsShell>
   );

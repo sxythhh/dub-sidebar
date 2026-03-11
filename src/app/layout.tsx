@@ -10,7 +10,10 @@ import { ThemeProvider } from "@/components/theme-provider";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: "Outpace",
+  title: "Brand Name | Content Rewards",
+  icons: {
+    icon: "/favicon.webp",
+  },
 };
 
 export default function RootLayout({
@@ -20,7 +23,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${GeistSans.className} ${inter.variable} select-none overflow-x-hidden bg-page-outer-bg text-foreground antialiased`}>
+      <body className={`${inter.className} ${GeistSans.variable} select-none overflow-x-hidden bg-page-outer-bg text-foreground antialiased`}>
         <ThemeProvider>
           <ToastProvider position="bottom-right">
             <SideNavProvider>

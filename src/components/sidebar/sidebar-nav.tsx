@@ -29,6 +29,7 @@ import { springs } from "@/lib/springs";
 import { useSideNav, SIDEBAR_COLLAPSED_WIDTH, SIDEBAR_EXPANDED_WIDTH } from "./sidebar-context";
 import { SearchCommand } from "./search-command";
 import { FloatingPortal } from "@floating-ui/react";
+import { EditModeContent } from "./sidebar-edit-mode";
 
 // ── Sidebar Icon ──────────────────────────────────────────────────
 
@@ -70,6 +71,7 @@ export type NavItemCommon = {
   href: string;
   exact?: boolean;
   badge?: ReactNode;
+  shortcut?: string;
   arrow?: boolean;
 };
 
@@ -100,11 +102,13 @@ export type SidebarNavAreas = Record<
 
 export function SidebarNav({
   areas,
+  originalAreas,
   currentArea,
   newsContent,
   bottom,
 }: {
   areas: SidebarNavAreas;
+  originalAreas?: SidebarNavAreas;
   currentArea: string | null;
   newsContent?: ReactNode;
   bottom?: ReactNode;
@@ -219,6 +223,7 @@ export function SidebarNav({
         >
           <SidebarAreasPanel
             areas={areas}
+            originalAreas={originalAreas ?? areas}
             currentArea={currentArea}
             newsContent={newsContent}
             bottom={bottom}
@@ -241,17 +246,36 @@ const AREA_ORDER: Record<string, number> = {
 
 function SidebarAreasPanel({
   areas,
+  originalAreas,
   currentArea,
   newsContent,
   bottom,
 }: {
   areas: SidebarNavAreas;
+  originalAreas: SidebarNavAreas;
   currentArea: string | null;
   newsContent?: ReactNode;
   bottom?: ReactNode;
 }) {
-  const { collapsed, setCollapsed } = useSideNav();
+  const { collapsed, setCollapsed, editMode, setEditMode } = useSideNav();
   const showNews = currentArea && areas[currentArea]?.().showNews;
+
+  // Exit edit mode when navigating away from the default area
+  const prevAreaForEdit = useRef(currentArea);
+  useEffect(() => {
+    const prev = prevAreaForEdit.current;
+    prevAreaForEdit.current = currentArea;
+    if (editMode && prev === "default" && currentArea !== "default") {
+      setEditMode(false);
+    }
+  }, [currentArea, editMode, setEditMode]);
+
+  // Auto-expand sidebar when entering edit mode
+  useEffect(() => {
+    if (editMode && collapsed) {
+      setCollapsed(false);
+    }
+  }, [editMode, collapsed, setCollapsed]);
 
   // Track previous area to determine slide direction
   const prevAreaRef = useRef(currentArea);
@@ -343,26 +367,33 @@ function SidebarAreasPanel({
                         )
                       )}
 
-                      <div className="flex flex-col gap-2">
-                        {content.map(({ name, items }, idx) => (
-                          <div key={idx}>
-                            {name && (
-                              <div className="mb-2 pl-[10px] font-[family-name:var(--font-inter)] text-[11px] font-normal tracking-[-0.02em] text-sidebar-section-label">
-                                {name}
-                              </div>
-                            )}
-                            <ProximityNavSection>
-                              {items.map((item, itemIdx) => (
-                                <NavItem
-                                  key={item.name}
-                                  item={item}
-                                  index={itemIdx}
-                                />
-                              ))}
-                            </ProximityNavSection>
-                          </div>
-                        ))}
-                      </div>
+                      {editMode && currentArea === "default" ? (
+                        <EditModeContent
+                          areaKey={currentArea}
+                          sections={originalAreas[currentArea]().content as { name?: string; items: NavItemType[] }[]}
+                        />
+                      ) : (
+                        <div className="flex flex-col gap-2">
+                          {content.map(({ name, items }, idx) => (
+                            <div key={idx}>
+                              {name && (
+                                <div className={cn("mb-2 pl-[10px] font-[family-name:var(--font-inter)] text-[11px] font-normal tracking-[-0.02em] text-sidebar-section-label", idx === 0 ? "pt-1" : "pt-2")}>
+                                  {name}
+                                </div>
+                              )}
+                              <ProximityNavSection>
+                                {items.map((item, itemIdx) => (
+                                  <NavItem
+                                    key={item.name}
+                                    item={item}
+                                    index={itemIdx}
+                                  />
+                                ))}
+                              </ProximityNavSection>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </motion.div>
                   );
                 })()}
@@ -700,6 +731,11 @@ function NavItem({ item, index }: { item: NavItemType | NavSubItemType; index?: 
           </span>
         </span>
         <span className="ml-2 flex items-center gap-2">
+          {"shortcut" in item && item.shortcut && (
+            <span className="font-[family-name:var(--font-inter)] text-[10px] font-normal leading-none tracking-[-0.02em] text-foreground/50">
+              {item.shortcut}
+            </span>
+          )}
           {"badge" in item && item.badge && typeof item.badge !== "object" && (
               <span
                 className={cn(

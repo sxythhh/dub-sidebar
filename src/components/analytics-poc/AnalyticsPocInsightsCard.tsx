@@ -2,13 +2,9 @@
 
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
-import { GlassActionButton } from "@/components/ui/glass-button";
 import { cn } from "@/lib/utils";
-import { AnalyticsPocCardEffectsLayer } from "./AnalyticsPocCardEffectsLayer";
 import {
-  ANALYTICS_POC_CARD_HEADING_IMAGE_ICON_CLASS,
   AnalyticsPocCardHeader,
 } from "./AnalyticsPocCardPrimitives";
 import { AnalyticsPocMediumCardBase } from "./AnalyticsPocMediumCardBase";
@@ -18,35 +14,11 @@ import type {
   AnalyticsPocInsightsCardProps,
 } from "./types";
 
-const AI_INSIGHTS_DEFAULT_EFFECTS = {
-  accentColor: "#EC3EFF",
-  graphicSrc: "/effects/ai-insights-sparkle.svg",
-} as const;
-
 type SlideDirection = -1 | 0 | 1;
 
-function resolveInsightsEffects(
-  effects: AnalyticsPocInsightsCardProps["effects"],
-): { accentColor: string; graphicSrc: string } | undefined {
-  if (!effects) {
-    return undefined;
-  }
-
-  return {
-    accentColor: effects.accentColor ?? AI_INSIGHTS_DEFAULT_EFFECTS.accentColor,
-    graphicSrc: effects.graphicSrc || AI_INSIGHTS_DEFAULT_EFFECTS.graphicSrc,
-  };
-}
-
 function clampSlideIndex(index: number, total: number) {
-  if (total <= 0) {
-    return 0;
-  }
-
-  if (!Number.isFinite(index)) {
-    return 0;
-  }
-
+  if (total <= 0) return 0;
+  if (!Number.isFinite(index)) return 0;
   return Math.min(total - 1, Math.max(0, Math.trunc(index)));
 }
 
@@ -65,7 +37,6 @@ function buildLegacySlides({
 }): AnalyticsPocInsightSlide[] {
   const totalSlides = Math.max(1, pagerTotal ?? 1);
   const subtitle = contentSubtitle ?? description;
-
   return Array.from({ length: totalSlides }, (_, index) => ({
     contentSubtitle: subtitle,
     contentTitle,
@@ -74,27 +45,33 @@ function buildLegacySlides({
   }));
 }
 
+function SparkleIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="dark:invert">
+      <path
+        d="M8 1L9.79 6.21L15 8L9.79 9.79L8 15L6.21 9.79L1 8L6.21 6.21L8 1Z"
+        fill="#252525"
+        fillOpacity="0.5"
+      />
+    </svg>
+  );
+}
+
 export function AnalyticsPocInsightsCard({
   title,
   description,
   contentTitle,
   contentSubtitle,
   ctaLabel,
-  iconSrc = "/icons/svg/analytics-insights-sparkle.svg",
   slides,
   initialSlide,
   onSlideChange,
   pager,
-  effects,
   showPagerUi = true,
   className,
 }: AnalyticsPocInsightsCardProps) {
-  const resolvedEffects = resolveInsightsEffects(effects);
   const resolvedSlides = useMemo(() => {
-    if (slides?.length) {
-      return slides;
-    }
-
+    if (slides?.length) return slides;
     return buildLegacySlides({
       contentSubtitle,
       contentTitle,
@@ -102,14 +79,8 @@ export function AnalyticsPocInsightsCard({
       description,
       pagerTotal: pager?.total,
     });
-  }, [
-    slides,
-    ctaLabel,
-    contentSubtitle,
-    contentTitle,
-    description,
-    pager?.total,
-  ]);
+  }, [slides, ctaLabel, contentSubtitle, contentTitle, description, pager?.total]);
+
   const dots = Math.max(1, resolvedSlides.length);
   const preferredInitialIndex = initialSlide ?? (pager?.current ?? 1) - 1;
   const prefersReducedMotion = useReducedMotion();
@@ -125,10 +96,7 @@ export function AnalyticsPocInsightsCard({
   useEffect(() => {
     const nextIndex = clampSlideIndex(preferredInitialIndex, dots);
     setActiveSlideIndex((current) => {
-      if (current === nextIndex) {
-        return current;
-      }
-
+      if (current === nextIndex) return current;
       setSlideDirection(nextIndex > current ? 1 : -1);
       return nextIndex;
     });
@@ -147,17 +115,9 @@ export function AnalyticsPocInsightsCard({
   const showPagerControls = showPagerUi && dots > 1;
   const carouselTransition = prefersReducedMotion
     ? { duration: 0 }
-    : {
-        duration: 0.16,
-        ease: [0.22, 1, 0.36, 1] as const,
-      };
+    : { duration: 0.16, ease: [0.22, 1, 0.36, 1] as const };
   const slideVariants = {
-    center: {
-      filter: "blur(0px)",
-      opacity: 1,
-      scale: 1,
-      x: 0,
-    },
+    center: { filter: "blur(0px)", opacity: 1, scale: 1, x: 0 },
     enter: (direction: SlideDirection) => ({
       filter: prefersReducedMotion ? "blur(0px)" : "blur(1px)",
       opacity: prefersReducedMotion ? 1 : 0,
@@ -172,17 +132,6 @@ export function AnalyticsPocInsightsCard({
     }),
   } as const;
 
-  const goToSlide = (nextIndex: number) => {
-    const normalizedIndex = clampSlideIndex(nextIndex, dots);
-
-    if (normalizedIndex === activeSlideIndex) {
-      return;
-    }
-
-    setSlideDirection(normalizedIndex > activeSlideIndex ? 1 : -1);
-    setActiveSlideIndex(normalizedIndex);
-  };
-
   const handlePreviousSlide = () => {
     setSlideDirection(-1);
     setActiveSlideIndex((current) => (current - 1 + dots) % dots);
@@ -195,69 +144,47 @@ export function AnalyticsPocInsightsCard({
 
   return (
     <AnalyticsPocMediumCardBase
-      className={cn(resolvedEffects && "group/card-effects", className)}
+      className={className}
       effectsLayer={
-        resolvedEffects ? (
-          <AnalyticsPocCardEffectsLayer
-            accentColor={resolvedEffects.accentColor}
-            graphicSrc={resolvedEffects.graphicSrc}
-          />
-        ) : undefined
+        <div
+          className="absolute inset-0 rounded-2xl border-2 border-[#EC3EFF] dark:border-[#EC3EFF]"
+          style={{
+            opacity: 0.4,
+            filter: "blur(1px)",
+            transform: "matrix(-1, 0, 0, 1, 0, 0)",
+          }}
+        />
       }
     >
       <AnalyticsPocCardHeader
-        icon={
-          <Image
-            alt=""
-            className={ANALYTICS_POC_CARD_HEADING_IMAGE_ICON_CLASS}
-            height={16}
-            src={iconSrc}
-            width={16}
-          />
-        }
+        icon={<SparkleIcon />}
         rightContent={
           showPagerControls ? (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <button
                 aria-label="Go to previous insight"
                 className={cn(
                   ANALYTICS_POC_SHARE_BUTTON_INTERACTION_CLASS,
-                  "flex size-6 cursor-pointer items-center justify-center rounded-full bg-[var(--ap-badge-pill)] text-[var(--ap-text-tertiary)] transition-[transform,background-color,color,box-shadow] duration-[var(--ap-motion-duration-hover)] ease-[var(--ap-motion-ease-primary)] hover:-translate-y-px hover:bg-[var(--ap-input-bg)] hover:text-[var(--ap-text-strong)] hover:shadow-[0_4px_10px_rgba(0,0,0,0.08)] motion-reduce:transform-none",
+                  "flex size-4 cursor-pointer items-center justify-center text-foreground/50 transition-colors hover:text-foreground",
                 )}
                 onClick={handlePreviousSlide}
                 type="button"
               >
-                <ChevronLeft className="size-3" />
+                <ChevronLeft className="size-4" />
               </button>
-              {Array.from({ length: dots }).map((_, index) => {
-                const isActive = index === activeSlideIndex;
-
-                return (
-                  <button
-                    aria-label={`Go to insight ${index + 1}`}
-                    className={cn(
-                      ANALYTICS_POC_SHARE_BUTTON_INTERACTION_CLASS,
-                      "h-1 cursor-pointer rounded-full transition-[width,background-color,opacity,transform] duration-[var(--ap-motion-duration-hover)] ease-[var(--ap-motion-ease-primary)] hover:-translate-y-px motion-reduce:transform-none",
-                      isActive
-                        ? "w-5 bg-[var(--ap-text-strong)] opacity-100"
-                        : "w-2 bg-[var(--ap-text-quaternary)] opacity-75 hover:opacity-100",
-                    )}
-                    key={`insights-dot-${index + 1}`}
-                    onClick={() => goToSlide(index)}
-                    type="button"
-                  />
-                );
-              })}
+              <span className="font-inter text-sm tracking-[-0.02em] text-foreground">
+                {activeSlideIndex + 1}/{dots}
+              </span>
               <button
                 aria-label="Go to next insight"
                 className={cn(
                   ANALYTICS_POC_SHARE_BUTTON_INTERACTION_CLASS,
-                  "flex size-6 cursor-pointer items-center justify-center rounded-full bg-[var(--ap-badge-pill)] text-[var(--ap-text-tertiary)] transition-[transform,background-color,color,box-shadow] duration-[var(--ap-motion-duration-hover)] ease-[var(--ap-motion-ease-primary)] hover:-translate-y-px hover:bg-[var(--ap-input-bg)] hover:text-[var(--ap-text-strong)] hover:shadow-[0_4px_10px_rgba(0,0,0,0.08)] motion-reduce:transform-none",
+                  "flex size-4 cursor-pointer items-center justify-center text-foreground/50 transition-colors hover:text-foreground",
                 )}
                 onClick={handleNextSlide}
                 type="button"
               >
-                <ChevronRight className="size-3" />
+                <ChevronRight className="size-4" />
               </button>
             </div>
           ) : null
@@ -265,8 +192,8 @@ export function AnalyticsPocInsightsCard({
         title={title}
       />
 
-      <div className="relative mt-auto flex min-h-[86px] items-end justify-between gap-4">
-        <div className="relative -mx-1 min-h-[86px] flex-1 overflow-hidden px-1">
+      <div className="relative mt-auto flex min-h-[86px] flex-col gap-3">
+        <div className="relative -mx-1 min-h-[63px] flex-1 overflow-hidden px-1">
           <AnimatePresence custom={slideDirection} initial={false} mode="sync">
             <motion.div
               animate="center"
@@ -278,18 +205,13 @@ export function AnalyticsPocInsightsCard({
               transition={carouselTransition}
               variants={slideVariants}
             >
-              <div className="max-w-[320px] space-y-[6px]">
+              <div className="flex max-w-[360px] flex-col gap-1.5">
                 {activeTitle ? (
-                  <p className="font-inter text-[14px] font-medium leading-[1.2] tracking-[-0.09px] text-[var(--ap-text)]">
+                  <p className="font-inter text-sm font-medium leading-[1.2] tracking-[-0.02em] text-[var(--ap-text)]">
                     {activeTitle}
                   </p>
                 ) : null}
-                <p
-                  className={cn(
-                    "font-inter text-[14px] font-normal tracking-[-0.09px] text-[var(--ap-text-strong)]",
-                    activeTitle ? "leading-[1.45]" : "leading-[1.35]",
-                  )}
-                >
+                <p className="font-inter text-sm leading-[1.4] tracking-[-0.02em] text-foreground/70">
                   {subtitleText}
                 </p>
               </div>
@@ -297,14 +219,15 @@ export function AnalyticsPocInsightsCard({
           </AnimatePresence>
         </div>
 
-        <GlassActionButton
+        <button
           className={cn(
             ANALYTICS_POC_SHARE_BUTTON_INTERACTION_CLASS,
-            "h-8 min-w-0 shrink-0 cursor-pointer px-3 text-xs",
+            "w-fit cursor-pointer rounded-full bg-foreground/[0.06] px-3 py-1.5 font-inter text-sm font-medium tracking-[-0.02em] text-foreground transition-colors hover:bg-foreground/[0.10]",
           )}
+          type="button"
         >
           {activeCtaLabel}
-        </GlassActionButton>
+        </button>
       </div>
     </AnalyticsPocMediumCardBase>
   );

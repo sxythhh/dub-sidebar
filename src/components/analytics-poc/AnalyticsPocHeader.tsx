@@ -38,7 +38,7 @@ export function AnalyticsPocHeader({
   return (
     <header
       className={cn(
-        "flex h-14 items-center justify-between gap-2 border-b border-foreground/[0.06] px-4 py-4 dark:border-foreground/[0.08] sm:px-5",
+        "sticky top-0 z-30 flex h-14 items-center justify-between gap-2 border-b border-foreground/[0.06] bg-[var(--ap-bg)] px-4 py-4 dark:border-foreground/[0.08] sm:px-5",
         className,
       )}
     >

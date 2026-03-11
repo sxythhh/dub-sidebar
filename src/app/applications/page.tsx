@@ -1,9 +1,12 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
-import { createPortal } from "react-dom";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { PlatformIcon } from "@/components/icons/PlatformIcon";
+import { useProximityHover } from "@/hooks/use-proximity-hover";
+import { springs } from "@/lib/springs";
+import { Modal } from "@/components/ui/modal";
+import { Tabs, TabItem } from "@/components/ui/tabs";
 
 // ── Icons ───────────────────────────────────────────────────────────
 
@@ -220,51 +223,17 @@ function ApplicationDetailsModal({
   onClose: () => void;
   onAction?: (action: "approve" | "reject") => void;
 }) {
-  const [activeTab, setActiveTab] = useState<ModalTab>("application");
-  const overlayRef = useRef<HTMLDivElement>(null);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [onClose]);
-
-  const tabs: { id: ModalTab; label: string }[] = [
-    { id: "application", label: "Application" },
-    { id: "recent-content", label: "Recent content" },
-    { id: "social-accounts", label: "Social accounts" },
-  ];
+  const [activeTabIndex, setActiveTabIndex] = useState(0);
+  const MODAL_TABS: ModalTab[] = ["application", "recent-content", "social-accounts"];
+  const activeTab = MODAL_TABS[activeTabIndex];
 
   const tiktokCount = app.socialAccounts.filter((a) => a.platform === "tiktok").length;
   const instagramCount = app.socialAccounts.filter((a) => a.platform === "instagram").length;
 
-  if (!mounted) return null;
-
-  return createPortal(
-    <motion.div
-      ref={overlayRef}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.15 }}
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/20 backdrop-blur-[2px]"
-      onClick={(e) => {
-        if (e.target === overlayRef.current) onClose();
-      }}
-    >
-      <motion.div
-        initial={{ opacity: 0, scale: 0.96, y: 8 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.96, y: 8 }}
-        transition={{ type: "spring", stiffness: 500, damping: 35 }}
-        className="flex w-[800px] flex-col overflow-hidden rounded-[20px] bg-card-bg shadow-[0_24px_48px_-12px_rgba(0,0,0,0.18)] dark:shadow-[0_24px_48px_-12px_rgba(0,0,0,0.4)]"
+  return (
+    <Modal open onClose={onClose} maxWidth="max-w-[800px]" showClose={false}>
+      <div
+        className="flex flex-col overflow-hidden"
         style={{ height: "min(560px, calc(100vh - 120px))" }}
       >
         {/* Header */}
@@ -310,21 +279,12 @@ function ApplicationDetailsModal({
           </div>
 
           {/* Tabs */}
-          <div className="mt-4 flex border-b border-border">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={[
-                  "cursor-pointer px-5 py-3 font-inter text-sm font-medium leading-[1.2] tracking-[-0.02em] transition-colors",
-                  activeTab === tab.id
-                    ? "border-b border-foreground text-page-text"
-                    : "text-page-text-subtle hover:text-page-text",
-                ].join(" ")}
-              >
-                {tab.label}
-              </button>
-            ))}
+          <div className="mt-4">
+            <Tabs selectedIndex={activeTabIndex} onSelect={setActiveTabIndex} variant="underline">
+              <TabItem label="Application" index={0} />
+              <TabItem label="Recent content" index={1} />
+              <TabItem label="Social accounts" index={2} />
+            </Tabs>
           </div>
 
           {/* Tab content */}
@@ -441,9 +401,8 @@ function ApplicationDetailsModal({
             </span>
           </button>
         </div>
-      </motion.div>
-    </motion.div>,
-    document.body,
+      </div>
+    </Modal>
   );
 }
 
@@ -452,7 +411,7 @@ function ApplicationDetailsModal({
 function ApplicationCard({ app, onClick }: { app: Application; onClick: () => void }) {
   return (
     <div
-      className="flex cursor-pointer flex-col rounded-2xl border border-border bg-card-bg shadow-[0_1px_2px_rgba(0,0,0,0.03)] transition-colors hover:bg-foreground/[0.02]"
+      className="flex cursor-pointer flex-col rounded-2xl border border-border bg-card-bg shadow-[0_1px_2px_rgba(0,0,0,0.03)] transition-[border-color,box-shadow] duration-200 hover:border-foreground/[0.12] hover:shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
       onClick={onClick}
     >
       {/* Header */}
@@ -578,6 +537,11 @@ export default function ApplicationsPage() {
   const [selectedAppId, setSelectedAppId] = useState<number | null>(null);
   const selectedApp = selectedAppId !== null ? APPLICATIONS.find((a) => a.id === selectedAppId) ?? null : null;
 
+  const gridContainerRef = useRef<HTMLDivElement>(null);
+  const { activeIndex, itemRects, sessionRef, handlers, registerItem, measureItems } = useProximityHover(gridContainerRef);
+  useEffect(() => { measureItems(); }, [measureItems]);
+  const activeRect = activeIndex !== null ? itemRects[activeIndex] : null;
+
   return (
     <div>
       {/* Top nav */}
@@ -600,27 +564,43 @@ export default function ApplicationsPage() {
 
       {/* Content */}
       <div className="px-4 pb-6 pt-5 sm:px-5">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {APPLICATIONS.map((app) => (
-            <ApplicationCard
-              key={app.id}
-              app={app}
-              onClick={() => setSelectedAppId(app.id)}
-            />
+        <div
+          ref={gridContainerRef}
+          onMouseMove={handlers.onMouseMove}
+          onMouseEnter={handlers.onMouseEnter}
+          onMouseLeave={handlers.onMouseLeave}
+          className="relative grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+        >
+          <AnimatePresence>
+            {activeRect && (
+              <motion.div
+                className="pointer-events-none absolute z-0 rounded-2xl bg-accent"
+                initial={{ left: activeRect.left, width: activeRect.width, top: activeRect.top, height: activeRect.height, opacity: 0 }}
+                animate={{ left: activeRect.left, width: activeRect.width, top: activeRect.top, height: activeRect.height, opacity: 1 }}
+                exit={{ opacity: 0, transition: { duration: 0.1 } }}
+                transition={{ ...springs.moderate, opacity: { duration: 0.15 } }}
+              />
+            )}
+          </AnimatePresence>
+          {APPLICATIONS.map((app, i) => (
+            <div key={app.id} ref={(el) => registerItem(i, el)} className="relative z-10">
+              <ApplicationCard
+                app={app}
+                onClick={() => setSelectedAppId(app.id)}
+              />
+            </div>
           ))}
         </div>
       </div>
 
       {/* Application Details Modal */}
-      <AnimatePresence>
-        {selectedApp && (
-          <ApplicationDetailsModal
-            key={selectedApp.id}
-            app={selectedApp}
-            onClose={() => setSelectedAppId(null)}
-          />
-        )}
-      </AnimatePresence>
+      {selectedApp && (
+        <ApplicationDetailsModal
+          key={selectedApp.id}
+          app={selectedApp}
+          onClose={() => setSelectedAppId(null)}
+        />
+      )}
     </div>
   );
 }

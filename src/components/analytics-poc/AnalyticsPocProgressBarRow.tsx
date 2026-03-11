@@ -186,8 +186,7 @@ export function AnalyticsPocProgressBarRow({
     >
       <span
         className={cn(
-          "absolute inset-y-0 left-0 rounded-[12px] bg-[var(--ap-pill-bg)]",
-          "opacity-90",
+          "absolute inset-y-0 left-0 rounded-[12px] bg-[var(--ap-pill-bg-solid)]",
           styles.pillGlow,
         )}
         style={fillStyle}

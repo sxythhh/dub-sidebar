@@ -7,11 +7,7 @@
 }
 
 .row:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
-:global(html.dark) .row:hover {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--ap-hover);
 }
 
 /* Hide muted metrics (percent) + separators by default, reveal on hover */
@@ -32,7 +28,6 @@
   z-index: 0;
   overflow: hidden;
   isolation: isolate;
-  opacity: 0.9;
 }
 
 .pillGlow::before {

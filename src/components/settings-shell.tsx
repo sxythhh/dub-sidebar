@@ -1,17 +1,20 @@
 "use client";
 import { PageShell } from "@/components/page-shell";
+import { SaveButton } from "@/components/save-button";
 
 export function SettingsShell({
   title,
   description,
   children,
+  onSave,
 }: {
   title: string;
   description?: string;
   children?: React.ReactNode;
+  onSave?: () => Promise<void> | void;
 }) {
   return (
-    <PageShell title={title} description={description}>
+    <PageShell title={title} description={description} actions={<SaveButton onSave={onSave} />}>
       <div className="mt-4 max-w-2xl space-y-6 sm:mt-6">{children}</div>
     </PageShell>
   );

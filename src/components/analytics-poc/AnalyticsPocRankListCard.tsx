@@ -2,7 +2,7 @@
 
 import { ChevronLeft } from "lucide-react";
 import Image from "next/image";
-import { useState, useRef } from "react";
+import { useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
 import {
@@ -39,9 +39,6 @@ function StaggeredBarList({
   onItemClick?: (id: string) => void;
   direction: 1 | -1;
 }) {
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
-  const isAnyHovered = hoveredId !== null;
-
   return (
     <div className="space-y-1">
       {items.map((item, i) => (
@@ -55,22 +52,10 @@ function StaggeredBarList({
             ease: BAR_EASE,
           }}
         >
-          <div
-            className="transition-opacity duration-150"
-            style={{
-              opacity:
-                onItemClick && isAnyHovered && hoveredId !== item.id
-                  ? 0.4
-                  : 1,
-            }}
-            onMouseEnter={onItemClick ? () => setHoveredId(item.id) : undefined}
-            onMouseLeave={onItemClick ? () => setHoveredId(null) : undefined}
-          >
-            <AnalyticsPocProgressBarRow
-              item={item}
-              onClick={onItemClick ? () => onItemClick(item.id) : undefined}
-            />
-          </div>
+          <AnalyticsPocProgressBarRow
+            item={item}
+            onClick={onItemClick ? () => onItemClick(item.id) : undefined}
+          />
         </motion.div>
       ))}
     </div>

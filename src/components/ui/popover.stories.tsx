@@ -17,7 +17,7 @@ type RenderStory = StoryObj<Meta>;
 export const Default: RenderStory = {
   render: () => (
     <Popover>
-      <PopoverTrigger asChild>
+      <PopoverTrigger>
         <Button variant="outline">Open Popover</Button>
       </PopoverTrigger>
       <PopoverContent>

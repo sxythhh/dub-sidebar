@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   useFloating,
   offset,
@@ -59,51 +60,19 @@ function SearchIcon({ className }: { className?: string }) {
   );
 }
 
-function GridIcon({ className }: { className?: string }) {
+{/* Google Material Symbols — filled */}
+function MaterialAddIcon({ className }: { className?: string }) {
   return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
-      fill="none"
-      className={className}
-    >
-      <rect x="1.5" y="1.5" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.3" />
-      <rect x="9.5" y="1.5" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.3" />
-      <rect x="1.5" y="9.5" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.3" />
-      <rect x="9.5" y="9.5" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.3" />
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className={className}>
+      <path d="M11 17h2v-4h4v-2h-4V7h-2v4H7v2h4v4Zm1 5q-2.075 0-3.9-.788-1.825-.787-3.175-2.137-1.35-1.35-2.137-3.175Q2 14.075 2 12t.788-3.9q.787-1.825 2.137-3.175 1.35-1.35 3.175-2.138Q9.925 2 12 2t3.9.787q1.825.788 3.175 2.138 1.35 1.35 2.137 3.175Q22 9.925 22 12t-.788 3.9q-.787 1.825-2.137 3.175-1.35 1.35-3.175 2.137Q14.075 22 12 22Z"/>
     </svg>
   );
 }
 
-function MarketplaceIcon({ className }: { className?: string }) {
+function MaterialSettingsIcon({ className }: { className?: string }) {
   return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
-      fill="none"
-      className={className}
-    >
-      <path
-        d="M2 6.5V13a1 1 0 001 1h10a1 1 0 001-1V6.5"
-        stroke="currentColor"
-        strokeWidth="1.3"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M1.5 3.5a1 1 0 011-1h11a1 1 0 011 1v2H1.5v-2z"
-        stroke="currentColor"
-        strokeWidth="1.3"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M6.5 10.5h3v3.5h-3z"
-        stroke="currentColor"
-        strokeWidth="1.3"
-        strokeLinejoin="round"
-      />
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className={className}>
+      <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z"/>
     </svg>
   );
 }
@@ -129,6 +98,7 @@ function CheckIcon({ className }: { className?: string }) {
 }
 
 export function WorkspaceDropdown({ onOpenChange }: { onOpenChange?: (open: boolean) => void } = {}) {
+  const router = useRouter();
   const { workspace: selected, setWorkspace: setSelected } = useSideNav();
   const [show, setShowRaw] = useState(false);
   const setShow = useCallback((v: boolean | ((prev: boolean) => boolean)) => {
@@ -282,27 +252,27 @@ export function WorkspaceDropdown({ onOpenChange }: { onOpenChange?: (open: bool
                     <div className="flex flex-col gap-0.5">
                       <button
                         type="button"
-                        onClick={() => setShow(false)}
+                        onClick={() => { setShow(false); router.push("/brands/new"); }}
                         className={cn(
                           "flex cursor-pointer items-center gap-x-2.5 rounded-md px-2.5 py-2 text-sm transition-all duration-75",
                           "hover:bg-dropdown-hover active:bg-dropdown-hover",
                           "outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         )}
                       >
-                        <GridIcon className="size-4 text-dropdown-text-muted" />
-                        <span className="text-dropdown-text">All programs</span>
+                        <MaterialAddIcon className="size-4 text-dropdown-text-muted" />
+                        <span className="text-dropdown-text">Create Brand</span>
                       </button>
                       <button
                         type="button"
-                        onClick={() => setShow(false)}
+                        onClick={() => { setShow(false); router.push("/settings"); }}
                         className={cn(
                           "flex cursor-pointer items-center gap-x-2.5 rounded-md px-2.5 py-2 text-sm transition-all duration-75",
                           "hover:bg-dropdown-hover active:bg-dropdown-hover",
                           "outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         )}
                       >
-                        <MarketplaceIcon className="size-4 text-dropdown-text-muted" />
-                        <span className="text-dropdown-text">Marketplace</span>
+                        <MaterialSettingsIcon className="size-4 text-dropdown-text-muted" />
+                        <span className="text-dropdown-text">Settings</span>
                       </button>
                     </div>
                   </div>

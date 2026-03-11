@@ -1,54 +1,264 @@
 "use client";
 
-import { Popover as PopoverPrimitive } from "@base-ui/react/popover";
-import * as React from "react";
-
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
+import {
+  useFloating,
+  autoUpdate,
+  offset,
+  flip,
+  shift,
+  size as sizeMiddleware,
+  useClick,
+  useDismiss,
+  useInteractions,
+  useRole,
+  FloatingPortal,
+  FloatingFocusManager,
+  type Placement,
+} from "@floating-ui/react";
+import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
 
-const Popover = PopoverPrimitive.Root;
+// ── Context ──────────────────────────────────────────────────────────
 
-function PopoverTrigger({
-  asChild,
+interface PopoverContextValue {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  refs: ReturnType<typeof useFloating>["refs"];
+  floatingStyles: ReturnType<typeof useFloating>["floatingStyles"];
+  getReferenceProps: ReturnType<typeof useInteractions>["getReferenceProps"];
+  getFloatingProps: ReturnType<typeof useInteractions>["getFloatingProps"];
+  context: ReturnType<typeof useFloating>["context"];
+  actualPlacement: Placement;
+}
+
+const PopoverContext = createContext<PopoverContextValue | null>(null);
+
+function usePopoverContext() {
+  const ctx = useContext(PopoverContext);
+  if (!ctx) throw new Error("Popover components must be used within <Popover>");
+  return ctx;
+}
+
+// ── Root ─────────────────────────────────────────────────────────────
+
+interface PopoverRootProps {
+  children: ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  placement?: Placement;
+  offsetPx?: number;
+}
+
+function Popover({
   children,
-  ...props
-}: React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Trigger> & {
-  asChild?: boolean;
-}) {
-  if (asChild && React.isValidElement(children)) {
-    return (
-      <PopoverPrimitive.Trigger render={children} {...props} />
-    );
-  }
+  open: controlledOpen,
+  onOpenChange,
+  placement = "bottom-start",
+  offsetPx = 6,
+}: PopoverRootProps) {
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : uncontrolledOpen;
+
+  const setOpen = useCallback(
+    (v: boolean) => {
+      if (!isControlled) setUncontrolledOpen(v);
+      onOpenChange?.(v);
+    },
+    [isControlled, onOpenChange],
+  );
+
+  const {
+    refs,
+    floatingStyles,
+    context,
+    placement: actualPlacement,
+  } = useFloating({
+    open,
+    onOpenChange: setOpen,
+    placement,
+    middleware: [
+      offset(offsetPx),
+      flip({ padding: 8 }),
+      shift({ padding: 8 }),
+      sizeMiddleware({
+        padding: 8,
+        apply({ availableHeight, elements }) {
+          elements.floating.style.maxHeight = `${availableHeight}px`;
+        },
+      }),
+    ],
+    whileElementsMounted: autoUpdate,
+  });
+
+  const click = useClick(context);
+  const dismiss = useDismiss(context);
+  const role = useRole(context);
+  const { getReferenceProps, getFloatingProps } = useInteractions([
+    click,
+    dismiss,
+    role,
+  ]);
+
+  const value = useMemo(
+    () => ({
+      open,
+      setOpen,
+      refs,
+      floatingStyles,
+      getReferenceProps,
+      getFloatingProps,
+      context,
+      actualPlacement,
+    }),
+    [
+      open,
+      setOpen,
+      refs,
+      floatingStyles,
+      getReferenceProps,
+      getFloatingProps,
+      context,
+      actualPlacement,
+    ],
+  );
+
   return (
-    <PopoverPrimitive.Trigger {...props}>
+    <PopoverContext.Provider value={value}>{children}</PopoverContext.Provider>
+  );
+}
+
+// ── Trigger ──────────────────────────────────────────────────────────
+
+interface PopoverTriggerProps {
+  children: ReactNode;
+  className?: string;
+  asChild?: boolean;
+}
+
+function PopoverTrigger({ children, className }: PopoverTriggerProps) {
+  const { refs, getReferenceProps } = usePopoverContext();
+
+  return (
+    <div
+      ref={refs.setReference}
+      {...getReferenceProps()}
+      className={cn("inline-flex w-fit", className)}
+    >
       {children}
-    </PopoverPrimitive.Trigger>
+    </div>
   );
 }
 PopoverTrigger.displayName = "PopoverTrigger";
 
-const PopoverContent = React.forwardRef<
-  HTMLDivElement,
-  React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Popup> & {
-    align?: "start" | "center" | "end";
-    sideOffset?: number;
-    side?: "top" | "bottom" | "left" | "right";
-    collisionPadding?: number | Partial<Record<"top" | "right" | "bottom" | "left", number>>;
-  }
->(({ className, align = "center", sideOffset = 4, side, collisionPadding, ...props }, ref) => (
-  <PopoverPrimitive.Portal>
-    <PopoverPrimitive.Positioner side={side} sideOffset={sideOffset} align={align} collisionPadding={collisionPadding}>
-      <PopoverPrimitive.Popup
-        ref={ref}
-        className={cn(
-          "z-50 w-72 rounded-md border border-border bg-popover p-4 text-popover-foreground shadow-md outline-none data-[open]:animate-in data-[ending-style]:animate-out data-[ending-style]:fade-out-0 data-[open]:fade-in-0 data-[ending-style]:zoom-out-95 data-[open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
-          className,
+// ── Content ──────────────────────────────────────────────────────────
+
+const SLIDE_PX = 3;
+
+function slideOffset(placement: Placement) {
+  if (placement.startsWith("top")) return { y: SLIDE_PX };
+  if (placement.startsWith("bottom")) return { y: -SLIDE_PX };
+  if (placement.startsWith("left")) return { x: SLIDE_PX };
+  return { x: -SLIDE_PX };
+}
+
+interface PopoverContentProps {
+  children: ReactNode;
+  className?: string;
+  matchTriggerWidth?: boolean;
+  /** @deprecated use Popover placement prop instead */
+  align?: string;
+  /** @deprecated use Popover offsetPx prop instead */
+  sideOffset?: number;
+  /** @deprecated use Popover placement prop instead */
+  side?: string;
+  collisionPadding?: number | Partial<Record<string, number>>;
+}
+
+function PopoverContent({
+  children,
+  className,
+  matchTriggerWidth,
+}: PopoverContentProps) {
+  const { open, refs, floatingStyles, getFloatingProps, context, actualPlacement } =
+    usePopoverContext();
+
+  const dir = slideOffset(actualPlacement);
+  const triggerW = refs.reference.current
+    ? (refs.reference.current as HTMLElement).offsetWidth
+    : undefined;
+
+  return (
+    <FloatingPortal>
+      <AnimatePresence>
+        {open && (
+          <FloatingFocusManager context={context} modal={false}>
+            <div
+              ref={refs.setFloating}
+              style={{
+                ...floatingStyles,
+                ...(matchTriggerWidth && triggerW
+                  ? { minWidth: triggerW }
+                  : {}),
+              }}
+              {...getFloatingProps()}
+              className="z-50 outline-none"
+            >
+              <motion.div
+                className={cn(
+                  "overflow-hidden overflow-y-auto rounded-2xl border border-border bg-card-bg p-1 shadow-lg",
+                  className,
+                )}
+                initial={{ opacity: 0, ...dir, scale: 0.98 }}
+                animate={{ opacity: 1, x: 0, y: 0, scale: 1 }}
+                exit={{ opacity: 0, ...dir, scale: 0.98 }}
+                transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
+              >
+                {children}
+              </motion.div>
+            </div>
+          </FloatingFocusManager>
         )}
-        {...props}
-      />
-    </PopoverPrimitive.Positioner>
-  </PopoverPrimitive.Portal>
-));
+      </AnimatePresence>
+    </FloatingPortal>
+  );
+}
 PopoverContent.displayName = "PopoverContent";
 
-export { Popover, PopoverTrigger, PopoverContent };
+// ── Close helper ─────────────────────────────────────────────────────
+
+function PopoverClose({
+  children,
+  className,
+  onClick,
+}: {
+  children: ReactNode;
+  className?: string;
+  onClick?: () => void;
+}) {
+  const { setOpen } = usePopoverContext();
+  return (
+    <button
+      type="button"
+      className={className}
+      onClick={() => {
+        onClick?.();
+        setOpen(false);
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
+// ── Exports ──────────────────────────────────────────────────────────
+
+export { Popover, PopoverTrigger, PopoverContent, PopoverClose, usePopoverContext };

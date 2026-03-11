@@ -12,7 +12,7 @@ export default function Page() {
   return (
     <div>
       {/* Top nav */}
-      <div className="flex h-14 items-center justify-between border-b border-page-border px-4 sm:px-5">
+      <div className="sticky top-0 z-10 flex h-14 items-center justify-between border-b border-page-border bg-page-bg px-4 sm:px-5">
         <div className="flex items-center gap-2">
           <span className="font-[family-name:var(--font-inter)] text-sm font-medium tracking-[-0.02em] text-page-text">
             Links

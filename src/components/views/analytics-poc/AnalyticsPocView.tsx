@@ -165,7 +165,8 @@ export function AnalyticsPocView() {
   if (showViewsDetail) {
     return (
       <AnalyticsPocPageShell>
-        <motion.div {...DRILLDOWN_TRANSITION}>
+        <AnalyticsPocHeader title={data.header.title} />
+        <motion.div className="mx-auto flex w-full max-w-[1400px] flex-col gap-2 px-4 py-4 sm:px-5 sm:py-5 md:gap-3 lg:px-10" {...DRILLDOWN_TRANSITION}>
           <AnalyticsPocViewsDetail
             rows={analyticsPocViewsDetailMockData}
             onBack={() => setShowViewsDetail(false)}
@@ -178,7 +179,8 @@ export function AnalyticsPocView() {
   if (dayDrilldown) {
     return (
       <AnalyticsPocPageShell>
-        <motion.div {...DRILLDOWN_TRANSITION}>
+        <AnalyticsPocHeader title={data.header.title} />
+        <motion.div className="mx-auto flex w-full max-w-[1400px] flex-col gap-2 px-4 py-4 sm:px-5 sm:py-5 md:gap-3 lg:px-10" {...DRILLDOWN_TRANSITION}>
           <AnalyticsPocDayDrilldown
             data={dayDrilldown}
             onBack={() => setDayDrilldown(null)}

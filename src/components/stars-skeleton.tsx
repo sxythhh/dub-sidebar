@@ -1,0 +1,37 @@
+const STAR_PATHS = [
+  "M2.51191 8.05756L3.9974 6.04528L4.52339 8.47863L6.92511 9.24876L4.7389 10.4939L4.7377 12.9818L2.85955 11.318L0.45721 12.0858L1.48365 9.81196L0 7.79846L2.51191 8.05756Z",
+  "M1.91955 17.6938L1.03009 15.7235L3.11218 16.3893L4.73952 14.9468L4.74012 17.1031L6.63533 18.1821L4.55383 18.8496L4.09784 20.9592L2.81082 19.2149L0.633758 19.4393L1.91955 17.6938Z",
+  "M9.86563 22.4849L8.19142 22.3109L9.44189 21.2001L9.09244 19.5778L10.5511 20.4066L12.0098 19.5778L11.6604 21.2001L12.9114 22.3109L11.2367 22.4849L10.5511 24L9.86563 22.4849Z",
+  "M18.2605 19.1795L16.9929 20.8967L16.5436 18.8196L14.4944 18.1629L16.3604 17.1L16.361 14.9768L17.9634 16.3971L20.0138 15.7415L19.1377 17.6818L20.404 19.4001L18.2605 19.1795Z",
+  "M19.6131 9.80894L20.6397 12.0827L18.2373 11.315L16.3598 12.9788L16.3586 10.4909L14.1718 9.24573L16.5735 8.4756L17.0995 6.04225L18.585 8.05454L21.0969 7.79543L19.6131 9.80894Z",
+  "M11.9185 3.03014L15.2675 3.37862L12.766 5.59965L13.4649 8.84511L10.5475 7.18729L7.63071 8.84511L8.32902 5.59965L5.82744 3.37862L9.17647 3.03014L10.5475 0L11.9185 3.03014Z",
+];
+
+const STARS_MASK_SVG = `url("data:image/svg+xml,${encodeURIComponent(`<svg viewBox="0 0 22 24" xmlns="http://www.w3.org/2000/svg">${STAR_PATHS.map((d) => `<path d="${d}" fill="black"/>`).join("")}</svg>`)}")`;
+
+export function StarsSkeleton({ className }: { className?: string }) {
+  return (
+    <div className={className} style={{ position: "relative" }}>
+      <svg viewBox="0 0 22 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="size-full text-page-text-subtle/10">
+        {STAR_PATHS.map((d, i) => (
+          <path key={i} d={d} fill="currentColor" />
+        ))}
+      </svg>
+      <div
+        className="absolute inset-0 animate-[skeleton-shimmer_1.8s_linear_infinite]"
+        style={{
+          WebkitMaskImage: STARS_MASK_SVG,
+          maskImage: STARS_MASK_SVG,
+          WebkitMaskSize: "contain",
+          maskSize: "contain",
+          WebkitMaskRepeat: "no-repeat",
+          maskRepeat: "no-repeat",
+          WebkitMaskPosition: "center",
+          maskPosition: "center",
+          background: "linear-gradient(110deg, rgba(180,180,180,0.15) 25%, rgba(180,180,180,0.4) 37%, rgba(180,180,180,0.15) 63%)",
+          backgroundSize: "300% 100%",
+        }}
+      />
+    </div>
+  );
+}

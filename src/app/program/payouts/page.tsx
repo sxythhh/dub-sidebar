@@ -330,7 +330,7 @@ export default function PayoutsPage() {
   return (
     <div>
       {/* Top nav */}
-      <div className="flex h-14 items-center justify-between border-b border-border px-4 sm:px-5">
+      <div className="sticky top-0 z-10 flex h-14 items-center justify-between border-b border-border bg-page-bg px-4 sm:px-5">
         <div className="flex items-center gap-2">
           <span className="font-[family-name:var(--font-inter)] text-sm font-medium tracking-[-0.02em] text-page-text">
             Payouts
@@ -359,11 +359,11 @@ export default function PayoutsPage() {
       {/* Content */}
       <div className="flex flex-col gap-3 p-4 sm:p-5">
         {/* Stat cards row */}
-        <div className="flex flex-row items-start gap-2">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
           {STAT_CARDS.map((card) => (
             <div
               key={card.label}
-              className="flex min-w-0 flex-1 flex-col items-start justify-center gap-2 rounded-2xl border border-card-border bg-card-bg p-3"
+              className="flex min-w-0 flex-col items-start justify-center gap-2 rounded-2xl border border-card-border bg-card-bg p-3"
             >
               <div className="flex items-center gap-3">
                 <span className="font-[family-name:var(--font-inter)] text-sm font-medium leading-[120%] tracking-[-0.02em] text-page-text">
@@ -380,9 +380,9 @@ export default function PayoutsPage() {
         </div>
 
         {/* Table */}
-        <div className="flex flex-col items-start justify-center overflow-hidden rounded-2xl border border-card-border bg-card-bg shadow-[0_1px_2px_rgba(0,0,0,0.02)] dark:shadow-[0_1px_2px_rgba(0,0,0,0.15)]">
+        <div className="flex flex-col items-start justify-center overflow-x-auto overflow-y-visible rounded-2xl border border-card-border bg-card-bg shadow-[0_1px_2px_rgba(0,0,0,0.02)] dark:shadow-[0_1px_2px_rgba(0,0,0,0.15)]">
           {/* Header row */}
-          <div className="flex w-full items-center border-b border-card-border px-1">
+          <div className="flex min-w-[800px] items-center border-b border-card-border px-1">
             <div className="flex h-10 w-12 items-center justify-center px-3 pr-5">
               <Checkbox
                 checked={allSelected}
@@ -413,7 +413,7 @@ export default function PayoutsPage() {
           {/* Data rows with proximity hover */}
           <div
             ref={containerRef}
-            className="relative w-full"
+            className="relative min-w-[800px]"
             onMouseEnter={handlers.onMouseEnter}
             onMouseMove={handlers.onMouseMove}
             onMouseLeave={handlers.onMouseLeave}

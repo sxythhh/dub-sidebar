@@ -1,73 +1,187 @@
 "use client";
 
-import { mergeProps } from "@base-ui/react/merge-props";
-import { useRender } from "@base-ui/react/use-render";
-import { cva, type VariantProps } from "class-variance-authority";
-import type * as React from "react";
-
+import * as React from "react";
+import { Slot } from "@radix-ui/react-slot";
+import { motion, type HTMLMotionProps } from "motion/react";
 import { cn } from "@/lib/utils";
 
-const buttonVariants = cva(
-  "[&_svg]:-mx-0.5 relative inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-lg border font-medium text-base outline-none transition-shadow before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-lg)-1px)] pointer-coarse:after:absolute pointer-coarse:after:size-full pointer-coarse:after:min-h-11 pointer-coarse:after:min-w-11 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-64 sm:text-sm [&_svg:not([class*='opacity-'])]:opacity-80 [&_svg:not([class*='size-'])]:size-4.5 sm:[&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0",
-  {
-    defaultVariants: {
-      size: "default",
-      variant: "default",
+// ── Types ────────────────────────────────────────────────────────────
+
+type Variant = "primary" | "secondary" | "outline" | "ghost" | "destructive";
+type Size = "xs" | "sm" | "md" | "lg";
+
+// ── Variant styles ───────────────────────────────────────────────────
+
+const variantStyles: Record<Variant, string> = {
+  primary:
+    "rich-button font-medium hover:brightness-[1.08] active:brightness-95",
+  secondary:
+    "bg-foreground/[0.06] text-page-text font-medium hover:bg-foreground/[0.10] active:bg-foreground/[0.14]",
+  outline:
+    "border border-border bg-card-bg text-page-text font-medium shadow-[0_1px_2px_rgba(0,0,0,0.04)] hover:bg-foreground/[0.04] active:bg-foreground/[0.06]",
+  ghost:
+    "text-page-text font-medium hover:bg-foreground/[0.06] active:bg-foreground/[0.10]",
+  destructive:
+    "rich-button-destructive font-medium hover:brightness-[1.08] active:brightness-95",
+};
+
+// ── Size styles ──────────────────────────────────────────────────────
+
+const sizeStyles: Record<Size, string> = {
+  xs: "h-7 gap-1 rounded-lg px-2.5 text-xs [&_svg:not([class*='size-'])]:size-3.5",
+  sm: "h-8 gap-1.5 rounded-[10px] px-3 text-sm [&_svg:not([class*='size-'])]:size-4",
+  md: "h-9 gap-2 rounded-xl px-4 text-sm [&_svg:not([class*='size-'])]:size-4",
+  lg: "h-10 gap-2 rounded-xl px-5 text-sm [&_svg:not([class*='size-'])]:size-[18px]",
+};
+
+const iconSizeStyles: Record<Size, string> = {
+  xs: "size-7 rounded-lg [&_svg:not([class*='size-'])]:size-3.5",
+  sm: "size-8 rounded-[10px] [&_svg:not([class*='size-'])]:size-4",
+  md: "size-9 rounded-xl [&_svg:not([class*='size-'])]:size-4",
+  lg: "size-10 rounded-xl [&_svg:not([class*='size-'])]:size-[18px]",
+};
+
+// ── Press spring ─────────────────────────────────────────────────────
+
+const PRESS_SPRING = {
+  type: "spring" as const,
+  stiffness: 500,
+  damping: 30,
+  mass: 0.8,
+};
+
+// ── Spinner ──────────────────────────────────────────────────────────
+
+function Spinner({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 16 16"
+      fill="none"
+      className={cn("animate-spin", className)}
+    >
+      <circle
+        cx="8"
+        cy="8"
+        r="6"
+        stroke="currentColor"
+        strokeOpacity="0.25"
+        strokeWidth="2.5"
+      />
+      <path
+        d="M14 8a6 6 0 0 0-6-6"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+// ── Button ───────────────────────────────────────────────────────────
+
+interface ButtonProps
+  extends Omit<HTMLMotionProps<"button">, "ref" | "children"> {
+  children?: React.ReactNode;
+  variant?: Variant;
+  size?: Size;
+  /** Render as square icon button */
+  iconOnly?: boolean;
+  /** Show loading spinner and disable interaction */
+  loading?: boolean;
+  /** Icon before children */
+  leadingIcon?: React.ReactNode;
+  /** Icon after children */
+  trailingIcon?: React.ReactNode;
+  /** Render as child element (Radix Slot pattern) — disables motion press */
+  asChild?: boolean;
+}
+
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  (
+    {
+      children,
+      variant = "primary",
+      size = "md",
+      iconOnly = false,
+      loading = false,
+      leadingIcon,
+      trailingIcon,
+      asChild = false,
+      className,
+      disabled,
+      ...props
     },
-    variants: {
-      size: {
-        default: "h-9 px-[calc(--spacing(3)-1px)] sm:h-8",
-        icon: "size-9 sm:size-8",
-        "icon-lg": "size-10 sm:size-9",
-        "icon-sm": "size-8 sm:size-7",
-        "icon-xl":
-          "size-11 sm:size-10 [&_svg:not([class*='size-'])]:size-5 sm:[&_svg:not([class*='size-'])]:size-4.5",
-        "icon-xs":
-          "size-7 rounded-md before:rounded-[calc(var(--radius-md)-1px)] sm:size-6 not-in-data-[slot=input-group]:[&_svg:not([class*='size-'])]:size-4 sm:not-in-data-[slot=input-group]:[&_svg:not([class*='size-'])]:size-3.5",
-        lg: "h-10 px-[calc(--spacing(3.5)-1px)] sm:h-9",
-        sm: "h-8 gap-1.5 px-[calc(--spacing(2.5)-1px)] sm:h-7",
-        xl: "h-11 px-[calc(--spacing(4)-1px)] text-lg sm:h-10 sm:text-base [&_svg:not([class*='size-'])]:size-5 sm:[&_svg:not([class*='size-'])]:size-4.5",
-        xs: "h-7 gap-1 rounded-md px-[calc(--spacing(2)-1px)] text-sm before:rounded-[calc(var(--radius-md)-1px)] sm:h-6 sm:text-xs [&_svg:not([class*='size-'])]:size-4 sm:[&_svg:not([class*='size-'])]:size-3.5",
-      },
-      variant: {
-        default:
-          "not-disabled:inset-shadow-[0_1px_--theme(--color-white/16%)] border-primary bg-primary text-primary-foreground shadow-primary/24 shadow-xs hover:bg-primary/90 data-pressed:bg-primary/90 [:active,[data-pressed]]:inset-shadow-[0_1px_--theme(--color-black/8%)] [:disabled,:active,[data-pressed]]:shadow-none",
-        destructive:
-          "not-disabled:inset-shadow-[0_1px_--theme(--color-white/16%)] border-destructive bg-destructive text-white shadow-destructive/24 shadow-xs hover:bg-destructive/90 data-pressed:bg-destructive/90 [:active,[data-pressed]]:inset-shadow-[0_1px_--theme(--color-black/8%)] [:disabled,:active,[data-pressed]]:shadow-none",
-        "destructive-outline":
-          "border-input bg-popover not-dark:bg-clip-padding text-destructive-foreground shadow-xs/5 not-disabled:not-active:not-data-pressed:before:shadow-[0_1px_--theme(--color-black/4%)] hover:border-destructive/32 hover:bg-destructive/4 data-pressed:border-destructive/32 data-pressed:bg-destructive/4 dark:bg-input/32 dark:not-disabled:before:shadow-[0_-1px_--theme(--color-white/2%)] dark:not-disabled:not-active:not-data-pressed:before:shadow-[0_-1px_--theme(--color-white/6%)] [:disabled,:active,[data-pressed]]:shadow-none",
-        ghost:
-          "border-transparent text-foreground hover:bg-accent data-pressed:bg-accent",
-        link: "border-transparent underline-offset-4 hover:underline data-pressed:underline",
-        outline:
-          "border-input bg-popover not-dark:bg-clip-padding text-foreground shadow-xs/5 not-disabled:not-active:not-data-pressed:before:shadow-[0_1px_--theme(--color-black/4%)] hover:bg-accent/50 data-pressed:bg-accent/50 dark:bg-input/32 dark:data-pressed:bg-input/64 dark:hover:bg-input/64 dark:not-disabled:before:shadow-[0_-1px_--theme(--color-white/2%)] dark:not-disabled:not-active:not-data-pressed:before:shadow-[0_-1px_--theme(--color-white/6%)] [:disabled,:active,[data-pressed]]:shadow-none",
-        secondary:
-          "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/90 data-pressed:bg-secondary/90 [:active,[data-pressed]]:bg-secondary/80",
-      },
-    },
+    ref,
+  ) => {
+    const classes = cn(
+      "relative inline-flex cursor-pointer items-center justify-center whitespace-nowrap outline-none select-none",
+      "transition-[background,filter,box-shadow,color] duration-150",
+      "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
+      "disabled:pointer-events-none disabled:opacity-50",
+      "[&_svg]:pointer-events-none [&_svg]:shrink-0",
+      variantStyles[variant],
+      iconOnly ? iconSizeStyles[size] : sizeStyles[size],
+      className,
+    );
+
+    const content = loading ? (
+      <Spinner />
+    ) : (
+      <>
+        {leadingIcon}
+        {children}
+        {trailingIcon}
+      </>
+    );
+
+    // asChild renders as Slot — no motion wrapper
+    if (asChild) {
+      return (
+        <Slot ref={ref} className={classes}>
+          {content}
+        </Slot>
+      );
+    }
+
+    return (
+      <motion.button
+        ref={ref}
+        whileTap={{ scale: 0.97 }}
+        transition={PRESS_SPRING}
+        className={classes}
+        disabled={disabled || loading}
+        {...props}
+      >
+        {content}
+      </motion.button>
+    );
   },
 );
 
-interface ButtonProps extends useRender.ComponentProps<"button"> {
-  variant?: VariantProps<typeof buttonVariants>["variant"];
-  size?: VariantProps<typeof buttonVariants>["size"];
+Button.displayName = "Button";
+
+// CVA-compatible helper for class-only usage (e.g. toast action buttons)
+function buttonVariants({
+  variant = "primary",
+  size = "md",
+  className,
+}: {
+  variant?: Variant;
+  size?: Size | "xs";
+  className?: string;
+} = {}) {
+  const resolvedSize = size === "xs" ? "xs" : (size as Size);
+  return cn(
+    "relative inline-flex cursor-pointer items-center justify-center whitespace-nowrap font-medium outline-none select-none",
+    "transition-[background,filter,box-shadow,color] duration-150",
+    "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
+    "disabled:pointer-events-none disabled:opacity-50",
+    "[&_svg]:pointer-events-none [&_svg]:shrink-0",
+    variantStyles[variant],
+    sizeStyles[resolvedSize],
+    className,
+  );
 }
 
-function Button({ className, variant, size, render, ...props }: ButtonProps) {
-  const typeValue: React.ButtonHTMLAttributes<HTMLButtonElement>["type"] =
-    render ? undefined : "button";
-
-  const defaultProps = {
-    className: cn(buttonVariants({ className, size, variant })),
-    "data-slot": "button",
-    type: typeValue,
-  };
-
-  return useRender({
-    defaultTagName: "button",
-    props: mergeProps<"button">(defaultProps, props),
-    render,
-  });
-}
-
-export { Button, buttonVariants };
+export { Button, Spinner, buttonVariants };
+export type { ButtonProps, Variant as ButtonVariant, Size as ButtonSize };

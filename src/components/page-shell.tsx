@@ -10,7 +10,7 @@ export function PageShell({
 }) {
   return (
     <div>
-      <div className="flex h-14 items-center justify-between gap-3 border-b border-page-border px-4 sm:px-5">
+      <div className="sticky top-0 z-10 flex h-14 items-center justify-between gap-3 border-b border-page-border bg-page-bg px-4 sm:px-5">
         <div className="min-w-0 flex-1">
           <span className="block truncate font-[family-name:var(--font-inter)] text-sm font-medium tracking-[-0.02em] text-page-text">
             {title}

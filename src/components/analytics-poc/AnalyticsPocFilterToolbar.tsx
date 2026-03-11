@@ -20,7 +20,8 @@ function PlatformPill({
       className={cn(
         "relative flex size-9 items-center justify-center rounded-full cursor-pointer",
         "bg-foreground/[0.06] backdrop-blur-[12px]",
-        "transition-[transform,opacity] duration-150 ease-[cubic-bezier(0.165,0.84,0.44,1)] active:scale-[0.95]",
+        "transition-[transform,opacity,background-color] duration-150 ease-[cubic-bezier(0.165,0.84,0.44,1)] active:scale-[0.95]",
+        "hover:bg-foreground/[0.10]",
         active
           ? "text-foreground"
           : "text-foreground/30 dark:text-white/40",
@@ -42,7 +43,7 @@ export function AnalyticsPocFilterToolbar({
   return (
     <div
       className={cn(
-        "flex flex-wrap items-center gap-2",
+        "flex flex-wrap items-center justify-between gap-2",
         className,
       )}
     >

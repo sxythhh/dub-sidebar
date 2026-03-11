@@ -56,6 +56,8 @@ type SideNavContextType = {
   setWorkspace: Dispatch<SetStateAction<Workspace>>;
   searchOpen: boolean;
   setSearchOpen: Dispatch<SetStateAction<boolean>>;
+  editMode: boolean;
+  setEditMode: Dispatch<SetStateAction<boolean>>;
 };
 
 export const SideNavContext = createContext<SideNavContextType>({
@@ -67,6 +69,8 @@ export const SideNavContext = createContext<SideNavContextType>({
   setWorkspace: () => {},
   searchOpen: false,
   setSearchOpen: () => {},
+  editMode: false,
+  setEditMode: () => {},
 });
 
 export function SideNavProvider({ children }: { children: ReactNode }) {
@@ -75,6 +79,7 @@ export function SideNavProvider({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const [workspace, setWorkspace] = useState<Workspace>(WORKSPACES[2]);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [editMode, setEditMode] = useState(false);
 
   // Close side nav when pathname changes
   useEffect(() => {
@@ -90,7 +95,7 @@ export function SideNavProvider({ children }: { children: ReactNode }) {
   }, [isOpen]);
 
   return (
-    <SideNavContext.Provider value={{ isOpen, setIsOpen, collapsed, setCollapsed, workspace, setWorkspace, searchOpen, setSearchOpen }}>
+    <SideNavContext.Provider value={{ isOpen, setIsOpen, collapsed, setCollapsed, workspace, setWorkspace, searchOpen, setSearchOpen, editMode, setEditMode }}>
       {children}
     </SideNavContext.Provider>
   );

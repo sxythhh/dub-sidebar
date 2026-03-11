@@ -1,123 +1,136 @@
-import Image from "next/image";
-import { GlassActionButton } from "@/components/ui/glass-button";
+"use client";
+
 import { cn } from "@/lib/utils";
-import { AnalyticsPocCardEffectsLayer } from "./AnalyticsPocCardEffectsLayer";
 import {
-  ANALYTICS_POC_CARD_HEADING_IMAGE_ICON_CLASS,
-  ANALYTICS_POC_CARD_TOOLTIP_IMAGE_ICON_CLASS,
-  ANALYTICS_POC_STATUS_SUCCESS_CLASS,
   AnalyticsPocCardHeader,
 } from "./AnalyticsPocCardPrimitives";
 import { AnalyticsPocMediumCardBase } from "./AnalyticsPocMediumCardBase";
 import { ANALYTICS_POC_SHARE_BUTTON_INTERACTION_CLASS } from "./interaction";
 import type { AnalyticsPocHealthCardProps } from "./types";
 
-const HEALTH_CARD_DEFAULT_EFFECTS = {
-  accentColor: "#98D172",
-  graphicSrc: "/effects/analytics-health-wave.svg",
-} as const;
+const RING_SIZE = 148;
+const RING_CIRCLE_SIZE = 140;
+const RING_STROKE_WIDTH = 4;
+const RING_RADIUS = (RING_CIRCLE_SIZE - RING_STROKE_WIDTH) / 2;
+const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 
-function resolveHealthEffects(effects: AnalyticsPocHealthCardProps["effects"]) {
-  if (!effects) {
-    return undefined;
-  }
-
-  return {
-    accentColor: effects.accentColor ?? HEALTH_CARD_DEFAULT_EFFECTS.accentColor,
-    graphicSrc: effects.graphicSrc || HEALTH_CARD_DEFAULT_EFFECTS.graphicSrc,
-  };
+function HeartbeatIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="dark:invert">
+      <path
+        d="M1 8.5H3.5L5.5 4L8 12L10 6.5L11.5 8.5H15"
+        stroke="#252525"
+        strokeOpacity="0.5"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
 }
+
+function ScoreRing({
+  score,
+  progressPercent,
+  accentColor,
+}: {
+  score: string;
+  progressPercent: number;
+  accentColor: string;
+}) {
+  const bounded = Math.min(100, Math.max(0, progressPercent));
+  const strokeDashoffset = RING_CIRCUMFERENCE * (1 - bounded / 100);
+
+  return (
+    <div
+      className="relative shrink-0"
+      style={{ width: RING_SIZE, height: RING_SIZE }}
+    >
+      <svg
+        className="absolute inset-0"
+        width={RING_SIZE}
+        height={RING_SIZE}
+        viewBox={`0 0 ${RING_SIZE} ${RING_SIZE}`}
+      >
+        <circle
+          cx={RING_SIZE / 2}
+          cy={RING_SIZE / 2}
+          r={RING_RADIUS}
+          fill="none"
+          stroke={accentColor}
+          strokeWidth={RING_STROKE_WIDTH}
+          opacity={0.2}
+        />
+        <circle
+          cx={RING_SIZE / 2}
+          cy={RING_SIZE / 2}
+          r={RING_RADIUS}
+          fill="none"
+          stroke={accentColor}
+          strokeWidth={RING_STROKE_WIDTH}
+          strokeLinecap="round"
+          strokeDasharray={RING_CIRCUMFERENCE}
+          strokeDashoffset={strokeDashoffset}
+          transform={`rotate(-90 ${RING_SIZE / 2} ${RING_SIZE / 2})`}
+        />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="font-inter text-5xl font-medium leading-none tracking-[-0.96px] text-[var(--ap-text)]">
+          {score}
+        </span>
+        <span
+          className="mt-1 font-inter text-xs font-medium leading-none"
+          style={{ color: accentColor }}
+        >
+          Healthy
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export function AnalyticsPocHealthCard({
   title,
   score,
   statusText,
-  trendLabel,
   ctaLabel,
-  infoTooltipText = "Overall campaign health score based on recent creator activity and performance signals.",
-  iconSrc = "/icons/svg/analytics-health-ecg.svg",
-  showInfoIcon = true,
-  infoIconSrc = "/icons/svg/analytics-info-circle.svg",
   progressPercent = 75,
-  effects,
   className,
 }: AnalyticsPocHealthCardProps) {
-  const boundedProgress = Math.min(100, Math.max(0, progressPercent));
-  const barHeight = Math.max(4, Math.round((boundedProgress / 100) * 56));
-  const resolvedEffects = resolveHealthEffects(effects);
-  const accentColor =
-    resolvedEffects?.accentColor ?? HEALTH_CARD_DEFAULT_EFFECTS.accentColor;
-
   return (
-    <AnalyticsPocMediumCardBase
-      className={cn(resolvedEffects && "group/card-effects", className)}
-      effectsLayer={
-        resolvedEffects ? (
-          <AnalyticsPocCardEffectsLayer
-            accentColor={accentColor}
-            graphicSrc={resolvedEffects.graphicSrc}
-          />
-        ) : undefined
-      }
-    >
+    <AnalyticsPocMediumCardBase className={className}>
       <AnalyticsPocCardHeader
-        icon={
-          <Image
-            alt=""
-            className={ANALYTICS_POC_CARD_HEADING_IMAGE_ICON_CLASS}
-            height={16}
-            src={iconSrc}
-            width={16}
-          />
-        }
-        rightContent={
-          <p className={ANALYTICS_POC_STATUS_SUCCESS_CLASS}>{statusText}</p>
-        }
+        icon={<HeartbeatIcon />}
         title={title}
-        tooltipIcon={
-          <Image
-            alt=""
-            className={ANALYTICS_POC_CARD_TOOLTIP_IMAGE_ICON_CLASS}
-            fill
-            sizes="16px"
-            src={infoIconSrc}
-          />
-        }
-        tooltipText={showInfoIcon ? infoTooltipText : undefined}
       />
 
       <div className="mt-auto flex items-end justify-between gap-4">
-        <div className="flex items-end gap-3">
-          <p className="font-inter text-[64px] font-medium leading-none tracking-[-1.28px] text-[var(--ap-text)]">
-            {score}
-          </p>
+        <div className="flex flex-col gap-3">
+          <div className="flex max-w-[220px] flex-col gap-1.5">
+            <p className="font-inter text-sm font-medium leading-[1.2] tracking-[-0.02em] text-[var(--ap-text)]">
+              Looking healthy!
+            </p>
+            <p className="font-inter text-sm leading-[1.4] tracking-[-0.02em] text-foreground/70">
+              {statusText}
+            </p>
+          </div>
 
-          <span
-            className="relative mb-[5px] h-[56px] w-1 shrink-0 overflow-hidden rounded-[999px]"
-            style={{ backgroundColor: `${accentColor}33` }}
+          <button
+            className={cn(
+              ANALYTICS_POC_SHARE_BUTTON_INTERACTION_CLASS,
+              "w-fit cursor-pointer rounded-full bg-foreground/[0.06] px-3 py-1.5 font-inter text-sm font-medium tracking-[-0.02em] text-foreground transition-colors hover:bg-foreground/[0.10]",
+            )}
+            type="button"
           >
-            <span
-              className="absolute inset-x-0 bottom-0 rounded-[999px] bg-[#15803d]"
-              style={{ backgroundColor: accentColor, height: `${barHeight}px` }}
-            />
-          </span>
-
-          {trendLabel ? (
-            <span
-              className={cn("mb-[9px]", ANALYTICS_POC_STATUS_SUCCESS_CLASS)}
-            >
-              {trendLabel}
-            </span>
-          ) : null}
+            {ctaLabel}
+          </button>
         </div>
 
-        <GlassActionButton
-          className={cn(
-            ANALYTICS_POC_SHARE_BUTTON_INTERACTION_CLASS,
-            "h-8 min-w-0 shrink-0 cursor-pointer px-3 text-xs",
-          )}
-        >
-          {ctaLabel}
-        </GlassActionButton>
+        <ScoreRing
+          score={score}
+          progressPercent={progressPercent}
+          accentColor="#00B259"
+        />
       </div>
     </AnalyticsPocMediumCardBase>
   );

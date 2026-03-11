@@ -960,8 +960,8 @@ export const analyticsPocMockData: AnalyticsPocPageData = {
     delta: "~27/day",
     metrics: [
       {
-        accentColor: "#22C55E",
-        dotColorClass: "bg-emerald-500",
+        accentColor: "#13C368",
+        dotColorClass: "bg-[#13C368]",
         enabled: true,
         label: "TikTok",
         metricKey: "tiktok",
@@ -970,8 +970,8 @@ export const analyticsPocMockData: AnalyticsPocPageData = {
         value: "345 · 43%",
       },
       {
-        accentColor: "#9D5AEF",
-        dotColorClass: "bg-violet-500",
+        accentColor: "#AE4EEE",
+        dotColorClass: "bg-[#AE4EEE]",
         enabled: true,
         label: "Instagram",
         metricKey: "instagram",
@@ -980,8 +980,8 @@ export const analyticsPocMockData: AnalyticsPocPageData = {
         value: "289 · 35%",
       },
       {
-        accentColor: "#EF4444",
-        dotColorClass: "bg-red-500",
+        accentColor: "#EE4E51",
+        dotColorClass: "bg-[#EE4E51]",
         enabled: true,
         label: "YouTube",
         metricKey: "youtube",
@@ -990,8 +990,8 @@ export const analyticsPocMockData: AnalyticsPocPageData = {
         value: "123 · 13%",
       },
       {
-        accentColor: "#4D81EE",
-        dotColorClass: "bg-blue-500",
+        accentColor: "#4E8EEE",
+        dotColorClass: "bg-[#4E8EEE]",
         enabled: true,
         label: "Facebook",
         metricKey: "facebook",

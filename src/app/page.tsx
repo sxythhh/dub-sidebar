@@ -1,11 +1,15 @@
 "use client";
 
-import { useState, useCallback, type SVGProps } from "react";
+import { useState, useCallback, useRef, useEffect, type SVGProps } from "react";
+import { createPortal } from "react-dom";
+import { motion, AnimatePresence } from "motion/react";
 import { StarsLogo } from "@/components/sidebar/icons/stars-logo";
 import { WorkspaceAvatar } from "@/components/sidebar/workspace-avatar";
 import { cn } from "@/lib/utils";
 import { NewCampaignButton } from "@/components/sidebar/new-campaign-dropdown";
 import { RichButton } from "@/components/rich-button";
+import { useProximityHover } from "@/hooks/use-proximity-hover";
+import { springs } from "@/lib/springs";
 
 // ── Icons ──────────────────────────────────────────────────────────
 
@@ -220,11 +224,46 @@ const CAMPAIGNS = [
   { name: "Fortnite Festival Clips", meta: "CPM · 121k views · 31 creators", pct: 45, color: "#00B259" },
 ];
 
+function AttentionVideoIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <path fillRule="evenodd" clipRule="evenodd" d="M1.6 0.8C1.6 0.358 1.958 0 2.4 0H13.6C14.042 0 14.4 0.358 14.4 0.8C14.4 1.242 14.042 1.6 13.6 1.6H2.4C1.958 1.6 1.6 1.242 1.6 0.8ZM0 4.8C0 3.474 1.074 2.4 2.4 2.4H13.6C14.926 2.4 16 3.474 16 4.8V12C16 13.326 14.926 14.4 13.6 14.4H2.4C1.074 14.4 0 13.326 0 12V4.8ZM6.853 6.079C7.131 5.946 7.46 5.983 7.7 6.175L9.7 7.775C9.89 7.927 10 8.158 10 8.4C10 8.642 9.89 8.873 9.7 9.025L7.7 10.625C7.46 10.817 7.131 10.854 6.853 10.721C6.576 10.588 6.4 10.307 6.4 10V6.8C6.4 6.493 6.576 6.212 6.853 6.079Z" fill="#FF9025"/>
+    </svg>
+  );
+}
+
+function AttentionUserAddIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <path d="M6.68 0C4.69 0 3.08 1.61 3.08 3.6C3.08 5.59 4.69 7.2 6.68 7.2C8.67 7.2 10.28 5.59 10.28 3.6C10.28 1.61 8.67 0 6.68 0Z" fill="#AE4EEE"/>
+      <path d="M11.48 9.6C11.92 9.6 12.28 9.96 12.28 10.4V12H13.88C14.32 12 14.68 12.36 14.68 12.8C14.68 13.24 14.32 13.6 13.88 13.6H12.28V15.2C12.28 15.64 11.92 16 11.48 16C11.04 16 10.68 15.64 10.68 15.2V13.6H9.08C8.64 13.6 8.28 13.24 8.28 12.8C8.28 12.36 8.64 12 9.08 12H10.68V10.4C10.68 9.96 11.04 9.6 11.48 9.6Z" fill="#AE4EEE"/>
+      <path d="M0.04 13.36C0.72 10.31 3.24 8 6.68 8C7.83 8 8.87 8.26 9.78 8.71C9.35 9.14 9.08 9.74 9.08 10.4C7.76 10.4 6.68 11.47 6.68 12.8C6.68 14.13 7.76 15.2 9.08 15.2H1.56C0.65 15.2 -0.19 14.39 0.04 13.36Z" fill="#AE4EEE"/>
+    </svg>
+  );
+}
+
+function AttentionContractIcon() {
+  return (
+    <svg width="12" height="14" viewBox="0 0 12 14" fill="none">
+      <path d="M2 0C0.895431 0 0 0.89543 0 2V11.3333C0 12.4379 0.895431 13.3333 2 13.3333H7.44714C7.37344 13.1248 7.33333 12.9004 7.33333 12.6667C6.22876 12.6667 5.33333 11.7712 5.33333 10.6667C5.33333 9.5621 6.22876 8.66667 7.33333 8.66667C7.33333 7.5621 8.22876 6.66667 9.33333 6.66667C9.84557 6.66667 10.3128 6.85924 10.6667 7.17593V2C10.6667 0.895431 9.77124 0 8.66667 0H2Z" fill="#00B259"/>
+      <path d="M10 8.66667C10 8.29848 9.70152 8 9.33333 8C8.96514 8 8.66667 8.29848 8.66667 8.66667V10H7.33333C6.96514 10 6.66667 10.2985 6.66667 10.6667C6.66667 11.0349 6.96514 11.3333 7.33333 11.3333H8.66667V12.6667C8.66667 13.0349 8.96514 13.3333 9.33333 13.3333C9.70152 13.3333 10 13.0349 10 12.6667V11.3333H11.3333C11.7015 11.3333 12 11.0349 12 10.6667C12 10.2985 11.7015 10 11.3333 10H10V8.66667Z" fill="#00B259"/>
+    </svg>
+  );
+}
+
+function AttentionWarningIcon() {
+  return (
+    <svg width="14" height="13" viewBox="0 0 14 13" fill="none">
+      <path fillRule="evenodd" clipRule="evenodd" d="M4.95407 0.992259C5.72583 -0.330751 7.63743 -0.330754 8.40919 0.992257L13.0878 9.01275C13.8656 10.3461 12.9038 12.0205 11.3602 12.0205H2.00301C0.459432 12.0205 -0.502312 10.3461 0.275454 9.01275L4.95407 0.992259ZM6.68229 4.02051C7.05048 4.02051 7.34896 4.31898 7.34896 4.68717V6.68717C7.34896 7.05536 7.05048 7.35384 6.68229 7.35384C6.3141 7.35384 6.01562 7.05536 6.01562 6.68717V4.68717C6.01562 4.31898 6.3141 4.02051 6.68229 4.02051ZM5.84896 8.68717C5.84896 8.22694 6.22205 7.85384 6.68229 7.85384C7.14253 7.85384 7.51562 8.22694 7.51562 8.68717C7.51562 9.14741 7.14253 9.52051 6.68229 9.52051C6.22205 9.52051 5.84896 9.14741 5.84896 8.68717Z" fill="#EE4E51"/>
+    </svg>
+  );
+}
+
 const ATTENTION_ITEMS = [
-  { icon: VideoIcon, iconBg: "rgba(255,144,37,0.1)", iconDotBg: "rgba(255,144,37,0.06)", iconColor: "#FF9025", title: "24 submissions", subtitle: "Awaiting review" },
-  { icon: UserAddIcon, iconBg: "rgba(174,78,238,0.1)", iconDotBg: "rgba(174,78,238,0.06)", iconColor: "#AE4EEE", title: "2 applications", subtitle: "Awaiting review" },
-  { icon: UserAddIcon, iconBg: "rgba(0,178,89,0.1)", iconDotBg: "rgba(0,178,89,0.06)", iconColor: "#00B259", title: "1 contract pending", subtitle: "Awaiting review" },
-  { icon: UserAddIcon, iconBg: "rgba(238,78,81,0.1)", iconDotBg: "rgba(238,78,81,0.06)", iconColor: "#EE4E51", title: "2 budget warnings", subtitle: "G Fuel Critical, Caffeine AI low" },
+  { icon: AttentionVideoIcon, iconBg: "rgba(255,144,37,0.06)", title: "24 submissions", subtitle: "Awaiting review" },
+  { icon: AttentionUserAddIcon, iconBg: "rgba(174,78,238,0.06)", title: "2 applications", subtitle: "Awaiting review" },
+  { icon: AttentionContractIcon, iconBg: "rgba(0,178,89,0.04)", title: "1 contract pending", subtitle: "Awaiting review" },
+  { icon: AttentionWarningIcon, iconBg: "rgba(238,78,81,0.06)", title: "2 budget warnings", subtitle: "G Fuel critical, Caffeine AI low" },
 ];
 
 const ACTIVITY_ITEMS = [
@@ -279,9 +318,263 @@ function BudgetBar({ pct, color }: { pct: number; color: string }) {
   );
 }
 
+// ── Onboarding Step Row ────────────────────────────────────────────
+
+function OnboardingStepRow({
+  step,
+  isComplete,
+  onToggle,
+  isFirst,
+  isLast,
+  prevComplete,
+  nextComplete,
+}: {
+  step: typeof STEPS[number];
+  isComplete: boolean;
+  onToggle: () => void;
+  isFirst: boolean;
+  isLast: boolean;
+  prevComplete: boolean;
+  nextComplete: boolean;
+}) {
+  return (
+    <div className="relative flex w-full gap-3">
+      {/* Vertical connector line + icon column */}
+      <div className="relative flex w-10 shrink-0 flex-col items-center">
+        {/* Top connector */}
+        {!isFirst && (
+          <div className="absolute left-1/2 top-0 h-[calc(50%-20px)] w-px -translate-x-1/2">
+            <div
+              className="h-full w-full transition-colors duration-500"
+              style={{
+                background: prevComplete && isComplete
+                  ? "linear-gradient(to bottom, #00B36E, #00B36E)"
+                  : prevComplete
+                    ? "linear-gradient(to bottom, rgba(0,179,110,0.3), rgba(0,0,0,0.06))"
+                    : "rgba(0,0,0,0.06)",
+              }}
+            />
+          </div>
+        )}
+        {/* Bottom connector */}
+        {!isLast && (
+          <div className="absolute bottom-0 left-1/2 h-[calc(50%-20px)] w-px -translate-x-1/2">
+            <div
+              className="h-full w-full transition-colors duration-500"
+              style={{
+                background: isComplete && nextComplete
+                  ? "linear-gradient(to bottom, #00B36E, #00B36E)"
+                  : isComplete
+                    ? "linear-gradient(to bottom, rgba(0,179,110,0.3), rgba(0,0,0,0.06))"
+                    : "rgba(0,0,0,0.06)",
+              }}
+            />
+          </div>
+        )}
+        {/* Icon */}
+        <div className="relative z-10 flex items-center justify-center self-center py-3">
+          <AnimatePresence mode="wait">
+            {isComplete ? (
+              <motion.div
+                key="done"
+                className="flex size-10 items-center justify-center rounded-full bg-[#00B36E] shadow-[0px_0px_0px_2px_var(--card-bg)]"
+                initial={{ scale: 0.5, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: "spring", stiffness: 500, damping: 25, mass: 0.8 }}
+              >
+                <motion.div
+                  initial={{ scale: 0, rotate: -45 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ type: "spring", stiffness: 600, damping: 20, delay: 0.1 }}
+                >
+                  <CheckCircleIcon className="size-[17px] text-white" />
+                </motion.div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="pending"
+                className="flex size-10 items-center justify-center rounded-full border border-page-border bg-card-bg shadow-[0px_0px_0px_2px_var(--card-bg)]"
+                initial={false}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.8, opacity: 0 }}
+                transition={{ duration: 0.15 }}
+              >
+                {step.icon && <step.icon className="size-5 text-page-text-subtle" />}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="flex flex-1 items-center gap-3 py-3">
+        <motion.div
+          className="flex flex-1 flex-col justify-center gap-1"
+          animate={{
+            opacity: isComplete ? 0.45 : 1,
+          }}
+          transition={{ duration: 0.4 }}
+        >
+          <span className="relative w-fit text-sm font-medium tracking-[-0.02em] text-page-text">
+            {step.title}
+            {/* Strikethrough line animation */}
+            <motion.span
+              className="absolute left-0 top-1/2 h-px origin-left bg-page-text/40"
+              initial={{ scaleX: 0 }}
+              animate={{ scaleX: isComplete ? 1 : 0 }}
+              style={{ width: "100%" }}
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1], delay: isComplete ? 0.15 : 0 }}
+            />
+          </span>
+          <span className="text-sm leading-[150%] tracking-[-0.02em] text-page-text-subtle">{step.description}</span>
+        </motion.div>
+        {step.action && (
+          <AnimatePresence>
+            {!isComplete && (
+              <motion.button
+                onClick={onToggle}
+                className="cursor-pointer whitespace-nowrap rounded-full bg-[rgba(37,37,37,0.06)] px-4 py-2 text-sm font-medium tracking-[-0.02em] text-page-text transition-colors duration-150 hover:bg-[rgba(37,37,37,0.12)] active:bg-[rgba(37,37,37,0.16)] dark:bg-[rgba(255,255,255,0.06)] dark:hover:bg-[rgba(255,255,255,0.12)] dark:active:bg-[rgba(255,255,255,0.16)]"
+                initial={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
+              >
+                {step.action}
+              </motion.button>
+            )}
+          </AnimatePresence>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Floating Onboarding Checklist ──────────────────────────────────
+
+function FloatingChecklist({
+  completed,
+  onToggle,
+}: {
+  completed: Record<string, boolean>;
+  onToggle: (key: string) => void;
+}) {
+  const [expanded, setExpanded] = useState(true);
+  const completedCount = STEPS.filter((s) => s.completed || completed[s.key]).length;
+  const progress = completedCount / STEPS.length;
+
+  return (
+    <motion.div
+      className="fixed bottom-5 right-5 z-50 w-[340px] overflow-hidden rounded-2xl border border-page-border bg-card-bg shadow-[0_8px_30px_rgba(0,0,0,0.12)]"
+      initial={{ y: 80, opacity: 0, scale: 0.95 }}
+      animate={{ y: 0, opacity: 1, scale: 1 }}
+      transition={{ type: "spring", stiffness: 400, damping: 30, delay: 0.3 }}
+    >
+      {/* Header — always visible */}
+      <button
+        onClick={() => setExpanded((v) => !v)}
+        className="flex w-full cursor-pointer items-center gap-3 border-b border-page-border/50 px-4 py-3"
+      >
+        <div
+          className="flex size-8 items-center justify-center rounded-full"
+          style={{
+            background: "#FF9025",
+            boxShadow: "inset 0px 0.5px 2px rgba(0,0,0,0.12)",
+          }}
+        >
+          <StarsLogo className="size-4 text-white" />
+        </div>
+        <div className="flex flex-1 flex-col items-start gap-1">
+          <span className="text-sm font-medium tracking-[-0.02em] text-page-text">
+            Setup checklist
+          </span>
+          {/* Progress bar */}
+          <div className="h-1 w-full overflow-hidden rounded-full bg-foreground/[0.06]">
+            <motion.div
+              className="h-full rounded-full bg-[#00B36E]"
+              initial={false}
+              animate={{ width: `${progress * 100}%` }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            />
+          </div>
+        </div>
+        <span className="text-xs font-medium tracking-[-0.02em] text-page-text-muted">
+          {completedCount}/{STEPS.length}
+        </span>
+        <motion.div
+          animate={{ rotate: expanded ? 180 : 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" className="text-page-text-muted" />
+          </svg>
+        </motion.div>
+      </button>
+
+      {/* Expandable items */}
+      <AnimatePresence>
+        {expanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 400, damping: 35 }}
+            className="overflow-hidden"
+          >
+            <div className="px-2 py-2">
+              {STEPS.map((step) => {
+                const isComplete = step.completed || completed[step.key];
+                return (
+                  <button
+                    key={step.key}
+                    disabled={isComplete || step.completed}
+                    onClick={() => !isComplete && step.action && onToggle(step.key)}
+                    className={cn(
+                      "flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-left transition-colors",
+                      !isComplete && step.action && "cursor-pointer hover:bg-foreground/[0.04]",
+                    )}
+                  >
+                    <AnimatePresence mode="wait">
+                      {isComplete ? (
+                        <motion.div
+                          key="done"
+                          initial={{ scale: 0.5 }}
+                          animate={{ scale: 1 }}
+                          className="flex size-5 items-center justify-center rounded-full bg-[#00B36E]"
+                        >
+                          <CheckCircleIcon className="size-3 text-white" />
+                        </motion.div>
+                      ) : (
+                        <div className="size-5 rounded-full border border-page-border" />
+                      )}
+                    </AnimatePresence>
+                    <span
+                      className={cn(
+                        "flex-1 text-sm tracking-[-0.02em]",
+                        isComplete ? "text-page-text-muted line-through" : "text-page-text",
+                      )}
+                    >
+                      {step.title}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+}
+
 // ── Onboarding View ────────────────────────────────────────────────
 
-function OnboardingView({ completed, onToggle }: { completed: Record<string, boolean>; onToggle: (key: string) => void }) {
+function OnboardingView({
+  completed,
+  onToggle,
+  onSkip,
+}: {
+  completed: Record<string, boolean>;
+  onToggle: (key: string) => void;
+  onSkip: () => void;
+}) {
   return (
     <div className="relative flex flex-col items-start gap-2 self-stretch p-4 sm:flex-1 sm:px-8 sm:py-4">
       {/* Radial gradient background with noise to prevent banding */}
@@ -303,12 +596,17 @@ function OnboardingView({ completed, onToggle }: { completed: Record<string, boo
         </svg>
       </div>
 
-      <div className="relative z-[1] flex flex-col items-center self-stretch rounded-[20px] px-0 py-2 sm:py-4 sm:flex-1">
-        <div className="flex flex-col items-center sm:flex-1 sm:justify-center">
+      <div className="relative z-[1] flex flex-col items-center self-stretch rounded-[20px] px-0 py-2 sm:flex-1 sm:py-4">
+        <div className="flex w-full max-w-[720px] flex-col items-center sm:flex-1 sm:justify-center">
           {/* Header */}
-          <div className="flex w-full max-w-[720px] flex-col items-center gap-4 pb-6">
+          <motion.div
+            className="flex w-full max-w-[720px] flex-col items-center gap-4 pb-6"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          >
             <div className="flex items-center drop-shadow-[0_-1px_3px_rgba(0,0,0,0.06)]">
-              <div
+              <motion.div
                 className="-mr-2 flex size-14 items-center justify-center rounded-full border border-[rgba(37,37,37,0.1)]"
                 style={{
                   background: [
@@ -319,10 +617,19 @@ function OnboardingView({ completed, onToggle }: { completed: Record<string, boo
                   ].join(", "),
                   boxShadow: "inset 0px 0.5px 2px rgba(0,0,0,0.12), inset 0px 0.972px 0px rgba(255,255,255,0.36)",
                 }}
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: "spring", stiffness: 400, damping: 25, delay: 0.1 }}
               >
                 <StarsLogo className="size-7 text-white" />
-              </div>
-              <WorkspaceAvatar />
+              </motion.div>
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0, x: -8 }}
+                animate={{ scale: 1, opacity: 1, x: 0 }}
+                transition={{ type: "spring", stiffness: 400, damping: 25, delay: 0.2 }}
+              >
+                <WorkspaceAvatar />
+              </motion.div>
             </div>
             <div className="flex flex-col items-center gap-1.5 px-5">
               <h1 className="text-center text-lg font-medium tracking-[-0.02em] text-page-text sm:text-xl">
@@ -332,48 +639,50 @@ function OnboardingView({ completed, onToggle }: { completed: Record<string, boo
                 Your agency dashboard lets you run multiple brand campaigns from one place. Add your first brand client to get started.
               </p>
             </div>
-          </div>
+          </motion.div>
 
           {/* Checklist card */}
-          <div className="flex w-full max-w-[720px] flex-col items-center gap-4 rounded-2xl border border-page-border bg-card-bg p-4 sm:p-6">
+          <motion.div
+            className="flex w-full max-w-[720px] flex-col rounded-2xl border border-page-border bg-card-bg p-4 sm:p-6"
+            initial={{ opacity: 0, y: 20, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
+          >
             {STEPS.map((step, i) => {
               const isComplete = step.completed || completed[step.key];
+              const prevComplete = i === 0 || STEPS[i - 1].completed || completed[STEPS[i - 1].key];
+              const nextComplete = i < STEPS.length - 1 && (STEPS[i + 1].completed || completed[STEPS[i + 1].key]);
               return (
-                <div key={step.key} className="w-full">
-                  {i > 0 && (
-                    <div className="pb-4 pl-[52px]">
-                      <div className="h-px w-full bg-page-border" />
-                    </div>
-                  )}
-                  <div className="flex items-center gap-3">
-                    {isComplete ? (
-                      <div className="flex size-10 items-center justify-center">
-                        <div className="flex size-10 items-center justify-center rounded-full bg-[#00B36E] shadow-[0px_0px_0px_2px_var(--card-bg)]">
-                          <CheckCircleIcon className="size-[17px] text-white" />
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex size-10 items-center justify-center rounded-full border border-page-border bg-card-bg shadow-[0px_0px_0px_2px_var(--card-bg)]">
-                        {step.icon && <step.icon className="size-5 text-page-text-subtle" />}
-                      </div>
-                    )}
-                    <div className={`flex flex-1 flex-col justify-center gap-1 ${isComplete ? "opacity-50" : ""}`}>
-                      <span className="text-sm font-medium tracking-[-0.02em] text-page-text">{step.title}</span>
-                      <span className="text-sm leading-[150%] tracking-[-0.02em] text-page-text-subtle">{step.description}</span>
-                    </div>
-                    {step.action && !isComplete && (
-                      <button
-                        onClick={() => onToggle(step.key)}
-                        className="cursor-pointer rounded-full bg-[rgba(37,37,37,0.06)] px-4 py-2 text-sm font-medium tracking-[-0.02em] text-page-text transition-colors duration-150 hover:bg-[rgba(37,37,37,0.12)] active:bg-[rgba(37,37,37,0.16)] dark:bg-[rgba(255,255,255,0.06)] dark:hover:bg-[rgba(255,255,255,0.12)] dark:active:bg-[rgba(255,255,255,0.16)]"
-                      >
-                        {step.action}
-                      </button>
-                    )}
-                  </div>
-                </div>
+                <motion.div
+                  key={step.key}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1], delay: 0.2 + i * 0.06 }}
+                >
+                  <OnboardingStepRow
+                    step={step}
+                    isComplete={isComplete}
+                    onToggle={() => onToggle(step.key)}
+                    isFirst={i === 0}
+                    isLast={i === STEPS.length - 1}
+                    prevComplete={prevComplete}
+                    nextComplete={nextComplete}
+                  />
+                </motion.div>
               );
             })}
-          </div>
+          </motion.div>
+
+          {/* Skip button */}
+          <motion.button
+            onClick={onSkip}
+            className="mt-4 cursor-pointer text-sm tracking-[-0.02em] text-page-text-muted transition-colors hover:text-page-text"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 }}
+          >
+            I&apos;ll do this later
+          </motion.button>
         </div>
       </div>
     </div>
@@ -383,12 +692,23 @@ function OnboardingView({ completed, onToggle }: { completed: Record<string, boo
 // ── Dashboard View ─────────────────────────────────────────────────
 
 function DashboardView() {
+  const campaignsContainerRef = useRef<HTMLDivElement>(null);
+  const campaignHover = useProximityHover(campaignsContainerRef);
+  const campaignActiveRect = campaignHover.activeIndex !== null ? campaignHover.itemRects[campaignHover.activeIndex] : null;
+
+  const activityContainerRef = useRef<HTMLDivElement>(null);
+  const activityHover = useProximityHover(activityContainerRef);
+  const activityActiveRect = activityHover.activeIndex !== null ? activityHover.itemRects[activityHover.activeIndex] : null;
+
+  useEffect(() => { campaignHover.measureItems(); }, [campaignHover.measureItems]);
+  useEffect(() => { activityHover.measureItems(); }, [activityHover.measureItems]);
+
   return (
-    <div className="flex flex-col gap-4 px-4 pb-6 pt-4 sm:px-6">
+    <div className="flex flex-col gap-4 px-4 pb-6 pt-4 sm:px-5">
       {/* AI Tip Banner */}
-      <div className="flex items-center gap-4 rounded-2xl border border-border bg-card-bg p-4">
+      <div className="flex items-center gap-3 rounded-2xl border border-border bg-card-bg p-4 sm:gap-4">
         <SparkleIcon className="size-4 shrink-0 text-page-text-muted dark:text-white" />
-        <div className="flex flex-1 items-center justify-center gap-3">
+        <div className="flex min-w-0 flex-1 flex-wrap items-center justify-center gap-3">
           <span className="font-inter text-sm tracking-[-0.02em] text-page-text-muted">
             You&apos;ve spent <span className="font-semibold text-[#FF9025]">78%</span> of your budget in the <span className="font-semibold text-page-text">Caffeine AI</span> campaign, with <span className="font-semibold text-page-text">4 days left.</span>
           </span>
@@ -403,36 +723,39 @@ function DashboardView() {
       </div>
 
       {/* KPI Cards Row */}
-      <div className="flex gap-2">
-        {/* Balance card - wider */}
-        <div className="flex w-[320px] shrink-0 flex-col gap-4 rounded-2xl border border-border bg-card-bg p-4">
-          <div className="flex flex-1 flex-col gap-2">
+      {/* KPI Cards Row — subgrid aligns numbers across all 5 cards */}
+      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap lg:flex-nowrap">
+        {/* Balance card — fixed 320px on lg+, full width on mobile */}
+        <div className="flex w-full flex-col justify-between gap-4 rounded-2xl border border-border bg-card-bg p-4 sm:w-[calc(50%-4px)] lg:w-[320px] lg:shrink-0">
+          <div className="flex items-center gap-1.5">
             <span className="font-inter text-xs tracking-[-0.02em] text-page-text-muted">Balance</span>
-            <div className="flex items-baseline gap-3">
-              <span className="font-inter text-xl font-semibold tracking-[-0.02em] text-page-text">$14,200</span>
+          </div>
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center gap-2">
+              <span className="flex-1 font-inter text-xl font-medium tracking-[-0.02em] text-page-text">$14,200</span>
               <span className="font-inter text-xs tracking-[-0.02em] text-page-text-muted">$2,880 unallocated</span>
             </div>
-          </div>
-          <div className="flex gap-2">
-            <RichButton size="sm" className="flex-1 rounded-full">
-              <PlusIcon className="size-4" />
-              Deposit
-            </RichButton>
-            <button className="flex h-8 flex-1 items-center justify-center gap-1.5 rounded-full bg-foreground/[0.06] font-inter text-sm font-medium tracking-[-0.02em] text-page-text">
-              <HistoryIcon className="size-4" />
-              History
-            </button>
+            <div className="flex gap-2">
+              <RichButton size="sm" className="flex-1 rounded-full">
+                <PlusIcon className="size-3" />
+                Deposit
+              </RichButton>
+              <button className="flex h-8 flex-1 items-center justify-center gap-1.5 rounded-full bg-foreground/[0.06] font-inter text-xs font-medium tracking-[-0.02em] text-page-text">
+                <HistoryIcon className="size-3" />
+                History
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Active */}
-        <div className="flex flex-1 flex-col justify-between rounded-2xl border border-border bg-card-bg p-4">
+        <div className="flex w-full flex-col justify-between rounded-2xl border border-border bg-card-bg p-4 sm:w-[calc(50%-4px)] lg:min-w-0 lg:flex-1">
           <div className="flex items-start justify-between">
             <span className="font-inter text-xs tracking-[-0.02em] text-page-text-muted">Active</span>
             <MiniSparkline />
           </div>
           <div className="flex flex-col gap-1">
-            <span className="font-inter text-xl font-semibold tracking-[-0.02em] text-page-text">24</span>
+            <span className="font-inter text-xl font-medium tracking-[-0.02em] text-page-text">24</span>
             <div className="flex gap-1">
               <span className="flex h-6 items-center rounded-full bg-[rgba(59,130,246,0.12)] px-2.5 font-inter text-xs font-medium leading-none tracking-[-0.02em] text-[#3B82F6]">3 CPM</span>
               <span className="flex h-6 items-center rounded-full bg-[#FFF2E5] px-2.5 font-inter text-xs font-medium leading-none tracking-[-0.02em] text-[#FF9025] dark:bg-[rgba(255,144,37,0.15)]">2 Retainer</span>
@@ -441,48 +764,48 @@ function DashboardView() {
         </div>
 
         {/* Views */}
-        <div className="flex flex-1 flex-col justify-between rounded-2xl border border-border bg-card-bg p-4">
+        <div className="flex w-full flex-col justify-between rounded-2xl border border-border bg-card-bg p-4 sm:w-[calc(50%-4px)] lg:min-w-0 lg:flex-1">
           <div className="flex items-start justify-between">
             <span className="font-inter text-xs tracking-[-0.02em] text-page-text-muted">Views</span>
             <MiniSparkline />
           </div>
           <div className="flex flex-col gap-1">
-            <span className="font-inter text-xl font-semibold tracking-[-0.02em] text-page-text">10</span>
+            <span className="font-inter text-xl font-medium tracking-[-0.02em] text-page-text">10</span>
             <span className="w-fit rounded-full bg-[rgba(0,178,89,0.1)] px-2 py-1 font-inter text-xs font-medium tracking-[-0.02em] text-[#00B259]">+31% this week</span>
           </div>
         </div>
 
         {/* Avg CPM */}
-        <div className="flex flex-1 flex-col justify-between rounded-2xl border border-border bg-card-bg p-4">
+        <div className="flex w-full flex-col justify-between rounded-2xl border border-border bg-card-bg p-4 sm:w-[calc(50%-4px)] lg:min-w-0 lg:flex-1">
           <div className="flex items-start justify-between">
             <span className="font-inter text-xs tracking-[-0.02em] text-page-text-muted">Avg CPM</span>
             <MiniSparkline />
           </div>
           <div className="flex flex-col gap-1">
-            <span className="font-inter text-xl font-semibold tracking-[-0.02em] text-page-text">$0.67</span>
+            <span className="font-inter text-xl font-medium tracking-[-0.02em] text-page-text">$0.67</span>
             <span className="w-fit rounded-full bg-[rgba(0,178,89,0.1)] px-2 py-1 font-inter text-xs font-medium tracking-[-0.02em] text-[#00B259]">-$0.05 (better)</span>
           </div>
         </div>
 
         {/* Paid Out */}
-        <div className="flex flex-1 flex-col justify-between rounded-2xl border border-border bg-card-bg p-4">
+        <div className="flex w-full flex-col justify-between rounded-2xl border border-border bg-card-bg p-4 sm:w-[calc(50%-4px)] lg:min-w-0 lg:flex-1">
           <div className="flex items-start justify-between">
             <span className="font-inter text-xs tracking-[-0.02em] text-page-text-muted">Paid Out</span>
             <MiniSparkline />
           </div>
           <div className="flex flex-col gap-1">
-            <span className="font-inter text-xl font-semibold tracking-[-0.02em] text-page-text">$18.4k</span>
+            <span className="font-inter text-xl font-medium tracking-[-0.02em] text-page-text">$18.4k</span>
             <span className="font-inter text-xs font-medium tracking-[-0.02em] text-page-text-muted">$10.7k spend this period</span>
           </div>
         </div>
       </div>
 
       {/* Active Campaigns + Needs Attention Row */}
-      <div className="flex gap-2">
+      <div className="flex flex-col gap-2 lg:flex-row">
         {/* Active Campaigns Table */}
-        <div className="flex flex-1 flex-col overflow-hidden rounded-2xl border border-border bg-card-bg shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
+        <div className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border bg-card-bg shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-border px-6 py-2.5">
+          <div className="flex items-center justify-between border-b border-border px-4 py-2.5 sm:px-6">
             <span className="font-inter text-xs font-medium tracking-[-0.02em] text-page-text-muted">Active Campaigns</span>
             <button className="group flex cursor-pointer items-center gap-1.5">
               <span className="font-inter text-xs font-medium tracking-[-0.02em] text-page-text-muted transition-colors duration-150 group-hover:text-page-text">View All</span>
@@ -490,42 +813,72 @@ function DashboardView() {
             </button>
           </div>
           {/* Rows */}
-          {CAMPAIGNS.map((c, i) => (
-            <div key={i} className="flex cursor-pointer items-center px-6 transition-colors duration-150 hover:bg-foreground/[0.03]">
-              <div className={cn("flex flex-1 items-center justify-between py-3", i < CAMPAIGNS.length - 1 && "border-b border-foreground/[0.03]")}>
-                <div className="flex items-center gap-3">
-                  <div className="size-8 shrink-0 rounded bg-foreground/[0.06]" />
-                  <div className="flex flex-col gap-1.5">
-                    <span className="font-inter text-sm font-medium tracking-[-0.02em] text-page-text">{c.name}</span>
-                    <span className="font-inter text-xs tracking-[-0.02em] text-page-text-muted">{c.meta}</span>
+          <div
+            ref={campaignsContainerRef}
+            className="relative flex flex-col"
+            onMouseEnter={campaignHover.handlers.onMouseEnter}
+            onMouseMove={campaignHover.handlers.onMouseMove}
+            onMouseLeave={campaignHover.handlers.onMouseLeave}
+          >
+            <AnimatePresence>
+              {campaignActiveRect && (
+                <motion.div
+                  key={campaignHover.sessionRef.current}
+                  className="pointer-events-none absolute rounded-lg bg-foreground/[0.04]"
+                  initial={{ opacity: 0, top: campaignActiveRect.top, left: campaignActiveRect.left, width: campaignActiveRect.width, height: campaignActiveRect.height }}
+                  animate={{ opacity: 1, top: campaignActiveRect.top, left: campaignActiveRect.left, width: campaignActiveRect.width, height: campaignActiveRect.height }}
+                  exit={{ opacity: 0, transition: { duration: 0.12 } }}
+                  transition={{ ...springs.moderate, opacity: { duration: 0.16 } }}
+                />
+              )}
+            </AnimatePresence>
+            {CAMPAIGNS.map((c, i) => {
+              const hideBorder = campaignHover.activeIndex === i || campaignHover.activeIndex === i + 1;
+              return (
+                <div
+                  key={i}
+                  ref={(el) => campaignHover.registerItem(i, el)}
+                  data-proximity-index={i}
+                  className="flex cursor-pointer items-center px-4 transition-colors duration-150 sm:px-6"
+                >
+                  <div className={cn("flex flex-1 items-center justify-between py-3", i < CAMPAIGNS.length - 1 && "border-b", hideBorder ? "border-transparent" : "border-foreground/[0.03]")}>
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="size-8 shrink-0 rounded bg-foreground/[0.06]" />
+                      <div className="flex min-w-0 flex-col gap-1.5">
+                        <span className="truncate font-inter text-sm font-medium tracking-[-0.02em] text-page-text">{c.name}</span>
+                        <span className="truncate font-inter text-xs tracking-[-0.02em] text-page-text-muted">{c.meta}</span>
+                      </div>
+                    </div>
+                    <BudgetBar pct={c.pct} color={c.color} />
                   </div>
                 </div>
-                <BudgetBar pct={c.pct} color={c.color} />
-              </div>
-            </div>
-          ))}
+              );
+            })}
+          </div>
         </div>
 
         {/* Needs Attention */}
-        <div className="flex w-[300px] shrink-0 flex-col gap-4 rounded-2xl border border-border bg-card-bg p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
+        <div className="flex flex-col gap-4 rounded-2xl border border-border bg-card-bg p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)] lg:w-[300px] lg:shrink-0">
           <span className="font-inter text-xs tracking-[-0.02em] text-page-text-muted">Needs Attention</span>
           <div className="flex flex-col gap-2">
             {ATTENTION_ITEMS.map((item, i) => (
               <button
                 key={i}
-                className="group flex cursor-pointer items-center gap-2 rounded-xl p-2 text-left transition-all duration-200"
-                style={{ background: item.iconBg }}
-                onMouseEnter={(e) => e.currentTarget.style.background = item.iconColor + "18"}
-                onMouseLeave={(e) => e.currentTarget.style.background = item.iconBg}
+                className="group flex cursor-pointer items-center gap-3 rounded-2xl border border-[rgba(37,37,37,0.06)] bg-white px-3 py-4 text-left transition-colors hover:bg-foreground/[0.02] dark:border-foreground/[0.06] dark:bg-card-bg"
               >
-                <div className="flex size-6 items-center justify-center rounded-full" style={{ background: item.iconDotBg }}>
-                  <item.icon className="size-3" style={{ color: item.iconColor }} />
+                <div
+                  className="flex size-8 shrink-0 items-center justify-center rounded-full backdrop-blur-[12px]"
+                  style={{ background: item.iconBg }}
+                >
+                  <item.icon />
                 </div>
-                <div className="flex flex-1 flex-col gap-1.5">
-                  <span className="font-inter text-xs font-medium tracking-[-0.02em] text-page-text">{item.title}</span>
-                  <span className="font-inter text-xs tracking-[-0.02em] text-page-text-muted">{item.subtitle}</span>
+                <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                  <span className="font-inter text-xs font-medium leading-none tracking-[-0.02em] text-page-text">{item.title}</span>
+                  <span className="truncate font-inter text-xs leading-none tracking-[-0.02em] text-foreground/50">{item.subtitle}</span>
                 </div>
-                <ChevronRightIcon className="size-4 text-page-text-muted transition-transform duration-200 ease-out group-hover:translate-x-0.5" />
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="shrink-0 text-foreground/50 transition-transform duration-200 ease-out group-hover:translate-x-0.5">
+                  <path d="M6 2.667L10 8L6 13.333" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                </svg>
               </button>
             ))}
           </div>
@@ -545,11 +898,11 @@ function DashboardView() {
             ].join(", "),
           }}
         />
-        <div className="relative flex items-center gap-4">
+        <div className="relative flex min-w-0 items-center gap-4">
           <div className="flex size-14 shrink-0 items-center justify-center rounded-full bg-card-bg shadow-[0_0_0_2px_var(--card-bg)]">
             <RobotIcon />
           </div>
-          <div className="flex flex-col gap-1.5">
+          <div className="flex min-w-0 flex-col gap-1.5">
             <span className="font-inter text-sm font-medium tracking-[-0.02em] text-page-text">AI Weekly Insight</span>
             <span className="font-inter text-xs leading-[150%] tracking-[-0.02em] text-page-text-muted">
               Your COD BO7 campaign is outperforming by 2.4x - consider increasing budget by $500 to capture momentum. 3 creators are consistently hitting 90%+ approval, ideal candidates for retainer contracts.
@@ -560,9 +913,9 @@ function DashboardView() {
       </div>
 
       {/* Bottom Row: Recent Activity + Top Creators + Pending Drafts */}
-      <div className="flex gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {/* Recent Activity */}
-        <div className="relative flex flex-1 flex-col gap-4 overflow-hidden rounded-2xl border border-border bg-card-bg p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
+        <div className="relative flex min-w-0 flex-col gap-4 overflow-hidden rounded-2xl border border-border bg-card-bg p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
           <div className="flex items-center justify-between">
             <span className="font-inter text-xs tracking-[-0.02em] text-page-text-muted">Recent activity</span>
             <button className="group flex cursor-pointer items-center gap-1.5">
@@ -570,17 +923,40 @@ function DashboardView() {
               <ArrowRightIcon className="size-3 text-page-text-muted transition-all duration-200 ease-out group-hover:translate-x-0.5 group-hover:text-page-text" />
             </button>
           </div>
-          <div className="flex flex-col gap-2">
+          <div
+            ref={activityContainerRef}
+            className="relative flex flex-col gap-2"
+            onMouseEnter={activityHover.handlers.onMouseEnter}
+            onMouseMove={activityHover.handlers.onMouseMove}
+            onMouseLeave={activityHover.handlers.onMouseLeave}
+          >
+            <AnimatePresence>
+              {activityActiveRect && (
+                <motion.div
+                  key={activityHover.sessionRef.current}
+                  className="pointer-events-none absolute rounded-lg bg-foreground/[0.04]"
+                  initial={{ opacity: 0, top: activityActiveRect.top, left: activityActiveRect.left, width: activityActiveRect.width, height: activityActiveRect.height }}
+                  animate={{ opacity: 1, top: activityActiveRect.top, left: activityActiveRect.left, width: activityActiveRect.width, height: activityActiveRect.height }}
+                  exit={{ opacity: 0, transition: { duration: 0.12 } }}
+                  transition={{ ...springs.moderate, opacity: { duration: 0.16 } }}
+                />
+              )}
+            </AnimatePresence>
             {ACTIVITY_ITEMS.map((item, i) => (
-              <div key={i} className="flex cursor-pointer items-center gap-2 rounded-xl px-2 py-1.5 transition-colors duration-150 hover:bg-foreground/[0.03]">
-                <div className="flex size-6 items-center justify-center rounded-full bg-foreground/[0.06]">
+              <div
+                key={i}
+                ref={(el) => activityHover.registerItem(i, el)}
+                data-proximity-index={i}
+                className="flex cursor-pointer items-center gap-2 rounded-xl px-2 py-1.5 transition-colors duration-150"
+              >
+                <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-foreground/[0.06]">
                   <item.icon className="size-3 text-page-text" />
                 </div>
-                <div className="flex flex-1 flex-col gap-1.5">
-                  <span className="font-inter text-xs font-medium tracking-[-0.02em] text-page-text">{item.title}</span>
-                  <span className="font-inter text-xs tracking-[-0.02em] text-page-text-muted">{item.subtitle}</span>
+                <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                  <span className="truncate font-inter text-xs font-medium tracking-[-0.02em] text-page-text">{item.title}</span>
+                  <span className="truncate font-inter text-xs tracking-[-0.02em] text-page-text-muted">{item.subtitle}</span>
                 </div>
-                <span className="font-inter text-[10px] tracking-[-0.02em] text-page-text-muted">{item.time}</span>
+                <span className="shrink-0 font-inter text-[10px] tracking-[-0.02em] text-page-text-muted">{item.time}</span>
               </div>
             ))}
           </div>
@@ -589,7 +965,7 @@ function DashboardView() {
         </div>
 
         {/* Top Creators This Week */}
-        <div className="relative flex flex-1 flex-col gap-4 overflow-hidden rounded-2xl border border-border bg-card-bg p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
+        <div className="relative flex min-w-0 flex-col gap-4 overflow-hidden rounded-2xl border border-border bg-card-bg p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
           <div className="flex items-center justify-between">
             <span className="font-inter text-xs tracking-[-0.02em] text-page-text-muted">Top creators this week</span>
             <button className="group flex cursor-pointer items-center gap-1.5">
@@ -635,7 +1011,7 @@ function DashboardView() {
         </div>
 
         {/* Pending Drafts */}
-        <div className="flex flex-1 flex-col gap-4 rounded-2xl border border-border bg-card-bg p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
+        <div className="flex min-w-0 flex-col gap-4 rounded-2xl border border-border bg-card-bg p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)] sm:col-span-2 lg:col-span-1">
           <div className="flex items-center justify-between">
             <span className="font-inter text-xs tracking-[-0.02em] text-page-text-muted">Pending drafts</span>
             <button className="group flex cursor-pointer items-center gap-1.5">
@@ -646,14 +1022,14 @@ function DashboardView() {
           <div className="flex flex-col gap-2">
             {PENDING_DRAFTS.map((draft, i) => (
               <div key={i} className="flex items-center gap-2 rounded-xl p-2" style={{ background: draft.bg }}>
-                <div className="flex size-6 items-center justify-center rounded-full" style={{ background: `${draft.tagColor}10` }}>
+                <div className="flex size-6 shrink-0 items-center justify-center rounded-full" style={{ background: `${draft.tagColor}10` }}>
                   <VideoIcon className="size-3" style={{ color: draft.tagColor }} />
                 </div>
-                <div className="flex flex-1 flex-col gap-1.5">
-                  <span className="font-inter text-xs font-medium tracking-[-0.02em] text-page-text">{draft.name}</span>
-                  <span className="font-inter text-xs tracking-[-0.02em] text-page-text-muted">{draft.campaign}</span>
+                <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                  <span className="truncate font-inter text-xs font-medium tracking-[-0.02em] text-page-text">{draft.name}</span>
+                  <span className="truncate font-inter text-xs tracking-[-0.02em] text-page-text-muted">{draft.campaign}</span>
                 </div>
-                <span className="font-inter text-[10px] tracking-[-0.02em]" style={{ color: draft.tagColor }}>{draft.tag}</span>
+                <span className="shrink-0 font-inter text-[10px] tracking-[-0.02em]" style={{ color: draft.tagColor }}>{draft.tag}</span>
               </div>
             ))}
           </div>
@@ -667,24 +1043,82 @@ function DashboardView() {
 
 export default function Home() {
   const [completed, setCompleted] = useState<Record<string, boolean>>({});
+  const [skipped, setSkipped] = useState(false);
+  const [showDashboard, setShowDashboard] = useState(false);
 
   const onToggle = useCallback((key: string) => {
     setCompleted((prev) => ({ ...prev, [key]: true }));
   }, []);
 
   const allDone = STEPS.every((s) => s.completed || completed[s.key]);
+  const showOnboarding = !allDone && !skipped;
+
+  // Trigger the reveal animation when all steps complete or user skips
+  useEffect(() => {
+    if (!showOnboarding && !showDashboard) {
+      const timer = setTimeout(() => setShowDashboard(true), 500);
+      return () => clearTimeout(timer);
+    }
+  }, [showOnboarding, showDashboard]);
+
+  // Show floating checklist when skipped (not all done)
+  const showFloatingChecklist = skipped && !allDone;
 
   return (
-    <div className={allDone ? "" : "flex min-h-full flex-col"}>
-      {/* Top nav header — hidden during onboarding */}
-      {allDone && (
-        <div className="sticky top-0 z-10 flex h-[56px] items-center justify-between border-b border-border bg-page-bg px-5">
-          <span className="font-inter text-sm font-medium tracking-[-0.02em] text-page-text">Home</span>
-          <NewCampaignButton />
-        </div>
-      )}
+    <div className={showOnboarding ? "flex min-h-full flex-col" : ""}>
+      <AnimatePresence mode="wait">
+        {showOnboarding ? (
+          <motion.div
+            key="onboarding"
+            className="flex min-h-full flex-1 flex-col"
+            exit={{
+              opacity: 0,
+              scale: 0.97,
+              filter: "blur(8px)",
+              transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] },
+            }}
+          >
+            <OnboardingView
+              completed={completed}
+              onToggle={onToggle}
+              onSkip={() => setSkipped(true)}
+            />
+          </motion.div>
+        ) : showDashboard ? (
+          <motion.div
+            key="dashboard"
+            initial={{ opacity: 0, y: 20, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{
+              duration: 0.6,
+              ease: [0.16, 1, 0.3, 1],
+              opacity: { duration: 0.4 },
+            }}
+          >
+            {/* Top nav header */}
+            <motion.div
+              className="sticky top-0 z-10 flex h-[56px] items-center justify-between border-b border-border bg-page-bg px-4 sm:px-5"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <span className="font-inter text-sm font-medium tracking-[-0.02em] text-page-text">Home</span>
+              <NewCampaignButton />
+            </motion.div>
+            <DashboardView />
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
 
-      {allDone ? <DashboardView /> : <OnboardingView completed={completed} onToggle={onToggle} />}
+      {/* Floating checklist for skipped users — portaled to body to escape contain:layout */}
+      {typeof document !== "undefined" && createPortal(
+        <AnimatePresence>
+          {showFloatingChecklist && (
+            <FloatingChecklist completed={completed} onToggle={onToggle} />
+          )}
+        </AnimatePresence>,
+        document.body,
+      )}
     </div>
   );
 }

@@ -16,7 +16,7 @@ export function MoneyBag({
         { transform: "scaleX(1.05) scaleY(0.95)" },
         { transform: "scaleX(1) scaleY(1)" },
       ],
-      { duration: 400, easing: "ease-in-out" },
+      { duration: 300, easing: "ease-in-out" },
     );
   }, [hovered]);
 

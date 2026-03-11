@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   IconSettingsFilled,
   IconLogout,
@@ -28,6 +29,7 @@ import { useTheme } from "@/components/theme-provider";
 export function UserInfoRow() {
   const [show, setShow] = useState(false);
   const { darkMode, toggleDarkMode } = useTheme();
+  const router = useRouter();
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const { refs, floatingStyles } = useFloating({
@@ -158,25 +160,37 @@ export function UserInfoRow() {
                           icon={IconSettingsFilled}
                           label="Account settings"
                           index={0}
-                          onSelect={() => setShow(false)}
+                          onSelect={() => {
+                            setShow(false);
+                            router.push("/account/settings");
+                          }}
                         />
                         <MenuItem
                           icon={IconShieldCheckFilled}
                           label="Security"
                           index={1}
-                          onSelect={() => setShow(false)}
+                          onSelect={() => {
+                            setShow(false);
+                            router.push("/account/settings/security");
+                          }}
                         />
                         <MenuItem
                           icon={IconGiftFilled}
                           label="Referrals"
                           index={2}
-                          onSelect={() => setShow(false)}
+                          onSelect={() => {
+                            setShow(false);
+                            router.push("/account/settings/referrals");
+                          }}
                         />
                         <MenuItem
                           icon={IconReplaceFilled}
                           label="Switch to Creator"
                           index={3}
-                          onSelect={() => setShow(false)}
+                          onSelect={() => {
+                            router.push("/creator");
+                            setTimeout(() => setShow(false), 50);
+                          }}
                         />
                       </Dropdown>
 

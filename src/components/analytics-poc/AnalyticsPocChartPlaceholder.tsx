@@ -4,6 +4,7 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react"
 import {
   Bar,
   BarChart,
+  CartesianGrid,
   Line,
   LineChart,
   Tooltip as RechartsTooltip,
@@ -179,6 +180,7 @@ function usePrefersReducedMotion() {
   return prefersReducedMotion;
 }
 
+
 interface StackedBarSegmentShapeProps {
   x?: number | string;
   y?: number | string;
@@ -188,6 +190,7 @@ interface StackedBarSegmentShapeProps {
   stroke?: string;
   strokeWidth?: number;
   opacity?: number | string;
+  radius?: number;
 }
 
 function toFiniteNumber(value?: number | string) {
@@ -420,6 +423,7 @@ function StackedBarSegmentShape({
   stroke,
   strokeWidth = 1,
   opacity,
+  radius: radiusProp = 0,
 }: StackedBarSegmentShapeProps) {
   const normalizedX = toFiniteNumber(x);
   const normalizedY = toFiniteNumber(y);
@@ -438,10 +442,7 @@ function StackedBarSegmentShape({
     return null;
   }
 
-  const radius = Math.max(
-    0,
-    Math.min(2, normalizedWidth / 2, normalizedHeight),
-  );
+  const radius = Math.max(0, Math.min(radiusProp, normalizedWidth / 2, normalizedHeight));
   const right = normalizedX + normalizedWidth;
   const bottom = normalizedY + normalizedHeight;
 
@@ -689,8 +690,23 @@ function PerformanceMainLineChartBody({
       : (lineChart.rightDomain as [number, number]) ?? [0, 8];
 
   return (
-    <div className="absolute inset-0" ref={chartHoverRootRef}>
+    <div className="absolute inset-0 chart-no-focus-ring" ref={chartHoverRootRef}>
       <div className="absolute inset-x-0 bottom-7 top-0 flex items-end gap-4">
+        {/* Y-axis labels — left side */}
+        <div className="relative h-full w-5 shrink-0">
+          <div className="absolute inset-0 flex flex-col items-end justify-between">
+            {animatedYLabels.map((label, i) => (
+              <span
+                className="font-inter text-[10px] font-normal leading-[1.2] text-right"
+                key={`y-${i}`}
+                style={{ color: "rgba(37,37,37,0.5)" }}
+              >
+                {label}
+              </span>
+            ))}
+          </div>
+        </div>
+
         <div className="relative h-full min-h-0 flex-1" ref={chartPlotAreaRef}>
           <ResponsiveContainer height="100%" width="100%">
             <LineChart
@@ -830,46 +846,32 @@ function PerformanceMainLineChartBody({
               />
             </div>
           </div>
-        </div>
 
-        <div className="relative h-full w-8 shrink-0">
-          <div className="absolute inset-0 flex flex-col justify-between pb-[7px] pt-[7px]">
-            {animatedYLabels.map((label, i) => (
-              <span
-                className="text-right font-inter text-[10px] font-normal leading-[1.2] tracking-[0.1px] transition-[color] duration-300 ease-out"
-                key={`right-${i}`}
-                style={{ color: primaryColor }}
-              >
-                {label}
-              </span>
-            ))}
-          </div>
         </div>
       </div>
 
-      <div className="pointer-events-none absolute bottom-0 left-0 top-0" style={{ right: 48 }}>
-        {(() => {
-          const stepWidth = dataset.length > 1 ? chartPlotWidth / (dataset.length - 1) : chartPlotWidth;
-          const colWidth = Math.max(stepWidth, 8);
-          const colLeft = activeHoverX !== undefined ? activeHoverX - colWidth / 2 : 0;
-          return (
-            <span
-              className="absolute bottom-0"
-              style={{
-                background: "currentColor",
-                borderRadius: 0,
-                left: colLeft,
-                opacity: shouldShowHoverState && activeHoverX !== undefined ? 0.05 : 0,
-                top: 0,
-                transition: "left 100ms cubic-bezier(0.22, 1, 0.36, 1), opacity 100ms ease-out",
-                width: colWidth,
-              }}
-            />
-          );
-        })()}
+      {/* Hover crosshair line */}
+      <div
+        className="pointer-events-none absolute top-0 right-0"
+        style={{
+          bottom: 24,
+          left: 36,
+        }}
+      >
+        <div
+          className="absolute top-0 bottom-0"
+          style={{
+            left: activeHoverX ?? 0,
+            width: 0,
+            borderLeft: "1px solid var(--foreground)",
+            opacity: shouldShowHoverState && activeHoverX !== undefined ? 0.2 : 0,
+            transition: "left 100ms cubic-bezier(0.22, 1, 0.36, 1), opacity 100ms ease-out",
+          }}
+        />
       </div>
 
-      <div className="absolute bottom-0 left-0 flex h-6 items-center justify-between gap-2" style={{ right: 48 }}>
+      {/* X-axis labels + hover date pill */}
+      <div className="absolute bottom-0 right-0 flex h-6 items-center justify-between gap-2" style={{ left: 36 }}>
         {lineChart.xTicks.map((tick) => (
           <span
             className="font-inter text-[10px] font-normal leading-[1.2] tracking-[0.1px] text-[var(--ap-text-tertiary)]"
@@ -878,7 +880,23 @@ function PerformanceMainLineChartBody({
             {tick.label}
           </span>
         ))}
+
+        {/* Hover date pill */}
+        <div
+          className="pointer-events-none absolute inset-y-0 z-20 flex items-center justify-center"
+          style={{
+            left: activeHoverX ?? 0,
+            transform: "translateX(-50%)",
+            opacity: shouldShowHoverState ? 1 : 0,
+            transition: "left 100ms cubic-bezier(0.22, 1, 0.36, 1), opacity 100ms ease-out",
+          }}
+        >
+          <span className="whitespace-nowrap rounded-full border border-card-border bg-card-bg px-[10px] py-[6px] font-inter text-[10px] font-medium leading-[1.2] tracking-[0.1px] text-page-text-muted">
+            {activeHoverLabel}
+          </span>
+        </div>
       </div>
+
     </div>
   );
 }
@@ -919,6 +937,15 @@ function StackedBarChartBody({
     [activeMetricKeys, stackedBarChart.points],
   );
   const renderedStackSeries = [...stackedBarChart.series].reverse();
+  // Find the topmost VISIBLE series key (last in renderedStackSeries that is active)
+  const topVisibleSeriesKey = useMemo(() => {
+    for (let i = renderedStackSeries.length - 1; i >= 0; i--) {
+      if (activeMetricKeys.has(renderedStackSeries[i].key)) {
+        return renderedStackSeries[i].key;
+      }
+    }
+    return null;
+  }, [renderedStackSeries, activeMetricKeys]);
   const isInteractionEnabled = activeMetricKeys.size > 0;
   const { activeHover, handleChartClick, handleMouseLeave, handleMouseMove } =
     useAnalyticsPocChartHover({
@@ -966,26 +993,56 @@ function StackedBarChartBody({
       tooltipRows.length > 0,
   );
 
-  const maxValue =
-    stackedBarChart.maxValue ??
-    Math.max(
-      ...stackedBarChart.points.map(
-        (point) =>
-          point.tiktok + point.instagram + point.youtube + point.facebook,
+  // Compute dynamic max from visible data
+  const dynamicMax = useMemo(() => {
+    const seriesKeys = stackedBarChart.series.map((s) => s.key);
+    const visibleKeys = seriesKeys.filter((k) => activeMetricKeys.has(k));
+    if (visibleKeys.length === 0) return 1;
+    return Math.max(
+      ...chartPoints.map((point) =>
+        visibleKeys.reduce((sum, key) => sum + (Number((point as unknown as Record<string, unknown>)[key]) || 0), 0),
       ),
       1,
     );
+  }, [chartPoints, activeMetricKeys, stackedBarChart.series]);
+
+  // Compute nice yLabels from dynamic max
+  const dynamicYLabels = useMemo(() => {
+    const steps = stackedBarChart.yLabels.length - 1;
+    if (steps <= 0) return stackedBarChart.yLabels;
+    // Round max up to a nice number
+    const magnitude = 10 ** Math.floor(Math.log10(dynamicMax));
+    const niceMax = Math.ceil(dynamicMax / magnitude) * magnitude;
+    const labels: string[] = [];
+    for (let i = 0; i <= steps; i++) {
+      const val = niceMax * (1 - i / steps);
+      if (val >= 1000) {
+        const k = val / 1000;
+        labels.push(k === Math.round(k) ? `${Math.round(k)}k` : `${k.toFixed(1)}k`);
+      } else {
+        labels.push(`${Math.round(val)}`);
+      }
+    }
+    return labels;
+  }, [dynamicMax, stackedBarChart.yLabels.length]);
+
+  const animatedYLabels = useAnimatedLabels(dynamicYLabels);
+  const maxValue = useMemo(() => {
+    const parsed = parseYLabel(dynamicYLabels[0]);
+    return parsed.value || dynamicMax;
+  }, [dynamicYLabels, dynamicMax]);
 
   return (
-    <div className="absolute inset-0 flex gap-4" ref={chartHoverRootRef}>
-      <div className="flex h-full w-5 shrink-0 flex-col justify-between pb-7 pt-[7px]">
-        {stackedBarChart.yLabels.map((label) => (
-          <span
-            className="text-right font-inter text-[10px] font-normal leading-[1.2] tracking-[0.1px] text-[var(--ap-text-tertiary)]"
-            key={`left-${label}`}
-          >
-            {label}
-          </span>
+    <div className="absolute inset-0 flex gap-4 chart-no-focus-ring" ref={chartHoverRootRef}>
+      <div className="flex h-full w-16 shrink-0 flex-col justify-between pb-7 pt-[7px]">
+        {animatedYLabels.map((label, i) => (
+          <div className="flex items-center justify-end" key={`left-${i}`}>
+            <span
+              className="inline-flex h-5 items-center justify-center rounded-md border border-[var(--ap-border,#e5e5e5)] bg-[var(--card-bg,#fff)] px-1.5 font-inter text-[10px] font-normal leading-[1.2] tracking-[0.1px] text-[var(--ap-text-tertiary)]"
+            >
+              {label}
+            </span>
+          </div>
         ))}
       </div>
 
@@ -1004,6 +1061,12 @@ function StackedBarChartBody({
               onMouseMove={handleMouseMove}
               style={onDayClick ? { cursor: "pointer" } : undefined}
             >
+              <CartesianGrid
+                horizontal
+                stroke="var(--ap-border, #ebebeb)"
+                strokeOpacity={0.6}
+                vertical={false}
+              />
               <RechartsTooltip
                 content={() => null}
                 cursor={false}
@@ -1015,21 +1078,23 @@ function StackedBarChartBody({
               <YAxis domain={[0, maxValue]} hide />
 
               {renderedStackSeries.map(
-                (series: AnalyticsPocStackedBarSeries) => (
-                  <Bar
-                    animationDuration={400}
-                    animationEasing="ease-out"
-                    dataKey={series.key}
-                    fill={series.color}
-                    isAnimationActive={isAnimationEnabled}
-                    key={series.key}
-                    maxBarSize={STACKED_BAR_MAX_SIZE}
-                    shape={<StackedBarSegmentShape />}
-                    stackId="posts"
-                    stroke="none"
-                    strokeWidth={0}
-                  />
-                ),
+                (series: AnalyticsPocStackedBarSeries) => {
+                  return (
+                    <Bar
+                      animationDuration={400}
+                      animationEasing="ease-out"
+                      dataKey={series.key}
+                      fill={series.color}
+                      isAnimationActive={isAnimationEnabled}
+                      key={series.key}
+                      maxBarSize={STACKED_BAR_MAX_SIZE}
+                      shape={<StackedBarSegmentShape radius={series.key === topVisibleSeriesKey ? 4 : 0} />}
+                      stackId="posts"
+                      stroke="none"
+                      strokeWidth={0}
+                    />
+                  );
+                },
               )}
             </BarChart>
           </ResponsiveContainer>
@@ -1085,6 +1150,7 @@ function StackedBarChartBody({
               />
             );
           })()}
+
         </div>
 
         <div className="absolute bottom-0 left-0 right-0 flex h-6 items-center justify-between gap-2">

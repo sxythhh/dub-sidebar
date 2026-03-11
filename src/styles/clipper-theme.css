@@ -20,7 +20,7 @@ a {
 
   --font-sans: var(--font-inter-display), "Arial", "Helvetica", sans-serif;
   --font-geist: var(--font-geist-sans), "Arial", "Helvetica", sans-serif;
-  --font-inter: "Inter", "Arial", "Helvetica", sans-serif;
+  /* --font-inter is set by Next.js font loader on <body> */
 
   @keyframes fade-in {
     0% { opacity: 0; }
@@ -50,6 +50,14 @@ a {
 
 @utility font-inter-display {
   font-family: var(--font-inter-display), Arial, Helvetica, sans-serif;
+}
+
+@utility font-inter {
+  font-family: var(--font-inter), "Inter", Arial, Helvetica, sans-serif;
+}
+
+@utility font-geist {
+  font-family: var(--font-geist-sans), "Geist Sans", Arial, Helvetica, sans-serif;
 }
 
 @theme inline {

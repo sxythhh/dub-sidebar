@@ -138,6 +138,21 @@ export function useAnalyticsPocChartHover({
     };
   }, [chartContainerRef, pinnedHover]);
 
+  // Native mouseleave fallback — Recharts' onMouseLeave can miss fast exits
+  useEffect(() => {
+    const container = chartContainerRef.current;
+    if (!container || !isEnabled) return;
+
+    const handleNativeLeave = () => {
+      if (!pinnedHover) {
+        setTransientHover(null);
+      }
+    };
+
+    container.addEventListener("mouseleave", handleNativeLeave);
+    return () => container.removeEventListener("mouseleave", handleNativeLeave);
+  }, [chartContainerRef, isEnabled, pinnedHover]);
+
   useEffect(() => {
     if (pinnedHover && pinnedHover.index >= data.length) {
       setPinnedHover(null);

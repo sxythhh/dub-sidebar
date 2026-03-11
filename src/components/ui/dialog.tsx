@@ -52,7 +52,7 @@ const DialogOverlay = React.forwardRef<
   <DialogPrimitive.Backdrop
     ref={ref}
     className={cn(
-      "fixed inset-0 z-50 bg-background/50 backdrop-blur-md",
+      "fixed inset-0 z-50 bg-neutral-100/50 backdrop-blur-md dark:bg-neutral-900/50",
       "data-[open]:animate-in data-[ending-style]:animate-out",
       "data-[ending-style]:fade-out-0 data-[open]:fade-in-0",
       className,

@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef, useState, useCallback } from "react";
 import { Sparkles, Zap, Shield, Bug } from "lucide-react";
 
 type ChangeType = "feature" | "improvement" | "fix" | "security";
@@ -15,30 +16,34 @@ interface ChangeEntry {
 
 const TYPE_CONFIG: Record<
   ChangeType,
-  { label: string; color: string; bg: string; icon: typeof Sparkles }
+  { label: string; color: string; bg: string; dotColor: string; icon: typeof Sparkles }
 > = {
   feature: {
     label: "Feature",
-    color: "text-emerald-600",
-    bg: "bg-emerald-50 border-emerald-200",
+    color: "text-emerald-600 dark:text-emerald-400",
+    bg: "bg-emerald-50 border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/20",
+    dotColor: "bg-emerald-500",
     icon: Sparkles,
   },
   improvement: {
     label: "Improvement",
-    color: "text-blue-600",
-    bg: "bg-blue-50 border-blue-200",
+    color: "text-blue-600 dark:text-blue-400",
+    bg: "bg-blue-50 border-blue-200 dark:bg-blue-500/10 dark:border-blue-500/20",
+    dotColor: "bg-blue-500",
     icon: Zap,
   },
   fix: {
     label: "Fix",
-    color: "text-amber-600",
-    bg: "bg-amber-50 border-amber-200",
+    color: "text-amber-600 dark:text-amber-400",
+    bg: "bg-amber-50 border-amber-200 dark:bg-amber-500/10 dark:border-amber-500/20",
+    dotColor: "bg-amber-500",
     icon: Bug,
   },
   security: {
     label: "Security",
-    color: "text-red-600",
-    bg: "bg-red-50 border-red-200",
+    color: "text-red-600 dark:text-red-400",
+    bg: "bg-red-50 border-red-200 dark:bg-red-500/10 dark:border-red-500/20",
+    dotColor: "bg-red-500",
     icon: Shield,
   },
 };
@@ -54,10 +59,7 @@ const CHANGELOG: ChangeEntry[] = [
     changes: [
       { text: "Inline section editing for docs pages", type: "feature" },
       { text: "Rich markdown editor with live preview", type: "feature" },
-      {
-        text: "Improved scroll behavior for article navigation",
-        type: "fix",
-      },
+      { text: "Improved scroll behavior for article navigation", type: "fix" },
       { text: "Better scroll-to-top on article changes", type: "fix" },
     ],
   },
@@ -72,10 +74,7 @@ const CHANGELOG: ChangeEntry[] = [
       { text: "Real-time campaign performance metrics", type: "feature" },
       { text: "Custom date range selector", type: "feature" },
       { text: "Export reports as CSV and PDF", type: "feature" },
-      {
-        text: "Faster data loading with query optimization",
-        type: "improvement",
-      },
+      { text: "Faster data loading with query optimization", type: "improvement" },
     ],
   },
   {
@@ -101,14 +100,8 @@ const CHANGELOG: ChangeEntry[] = [
     type: "feature",
     changes: [
       { text: "Support for 11 languages", type: "feature" },
-      {
-        text: "Auto-detect browser language preference",
-        type: "improvement",
-      },
-      {
-        text: "Translated documentation for all supported languages",
-        type: "feature",
-      },
+      { text: "Auto-detect browser language preference", type: "improvement" },
+      { text: "Translated documentation for all supported languages", type: "feature" },
       { text: "RTL layout preparation", type: "improvement" },
     ],
   },
@@ -120,19 +113,10 @@ const CHANGELOG: ChangeEntry[] = [
       "A complete visual overhaul with a new design system, dark mode, and improved navigation across all pages.",
     type: "improvement",
     changes: [
-      {
-        text: "New design system with dark and light modes",
-        type: "feature",
-      },
-      {
-        text: "Rebuilt navigation with floating footer",
-        type: "improvement",
-      },
+      { text: "New design system with dark and light modes", type: "feature" },
+      { text: "Rebuilt navigation with floating footer", type: "improvement" },
       { text: "Improved mobile responsiveness", type: "improvement" },
-      {
-        text: "Accessibility improvements (WCAG 2.1 AA)",
-        type: "improvement",
-      },
+      { text: "Accessibility improvements (WCAG 2.1 AA)", type: "improvement" },
       { text: "SOC 2 compliance audit completed", type: "security" },
     ],
   },
@@ -180,117 +164,137 @@ const CHANGELOG: ChangeEntry[] = [
   },
 ];
 
-function TimelineLine() {
-  return (
-    <div className="absolute bottom-0 left-[23px] top-0 w-[2px] md:left-1/2 md:-translate-x-px">
-      <div className="absolute inset-0 bg-border" />
-    </div>
-  );
-}
-
-function ChangelogEntry({
-  entry,
-  index,
-}: {
-  entry: ChangeEntry;
-  index: number;
-}) {
-  const isLeft = index % 2 === 0;
+function ChangelogEntry({ entry }: { entry: ChangeEntry }) {
   const typeConfig = TYPE_CONFIG[entry.type];
 
   return (
     <div
-      className={`relative flex items-start gap-8 md:gap-0 ${
-        isLeft ? "md:flex-row" : "md:flex-row-reverse"
-      }`}
+      id={`v${entry.version}`}
+      className="scroll-mt-16"
     >
-      <div
-        className={`ml-14 md:ml-0 md:w-[calc(50%-40px)] ${
-          isLeft ? "md:mr-auto md:pr-0" : "md:ml-auto md:pl-0"
-        }`}
-      >
-        <div className="group relative rounded-xl border border-border bg-card-bg p-6 transition-colors duration-200 hover:border-border">
-          <div className="mb-3 flex items-center gap-3">
-            <span className="rounded-md bg-accent px-2.5 py-1 font-[family-name:var(--font-inter)] text-xs font-bold tracking-[-0.02em] text-page-text">
-              v{entry.version}
-            </span>
-            <span className="font-[family-name:var(--font-inter)] text-xs tracking-[-0.02em] text-page-text-muted">
-              {entry.date}
-            </span>
-            <span
-              className={`rounded-full border px-2 py-0.5 font-[family-name:var(--font-inter)] text-[10px] font-semibold uppercase tracking-wider ${typeConfig.bg} ${typeConfig.color}`}
-            >
-              {typeConfig.label}
-            </span>
-          </div>
-
-          <h3 className="mb-2 font-[family-name:var(--font-inter)] text-lg font-semibold tracking-[-0.02em] text-page-text">
-            {entry.title}
-          </h3>
-          <p className="mb-4 font-[family-name:var(--font-inter)] text-sm leading-relaxed tracking-[-0.02em] text-page-text-muted">
-            {entry.description}
-          </p>
-
-          <ul className="space-y-2">
-            {entry.changes.map((change, i) => {
-              const changeConfig = TYPE_CONFIG[change.type];
-              const ChangeIcon = changeConfig.icon;
-              return (
-                <li
-                  key={i}
-                  className="flex items-start gap-2.5 font-[family-name:var(--font-inter)] text-sm tracking-[-0.02em] text-page-text-subtle"
-                >
-                  <ChangeIcon
-                    className={`mt-0.5 h-3.5 w-3.5 shrink-0 ${changeConfig.color}`}
-                  />
-                  {change.text}
-                </li>
-              );
-            })}
-          </ul>
-
-          <div
-            className={`absolute top-7 hidden h-3 w-3 rotate-45 border bg-card-bg md:block ${
-              isLeft
-                ? "right-[-7px] border-r border-t border-border group-hover:border-border"
-                : "left-[-7px] border-b border-l border-border group-hover:border-border"
-            } transition-colors duration-300`}
-          />
+      <div className="rounded-xl border border-border bg-card-bg px-5 py-4">
+        {/* Version + date + badge row */}
+        <div className="mb-2.5 flex flex-wrap items-center gap-2">
+          <span className="rounded-md bg-accent px-2 py-0.5 text-xs font-bold tracking-[-0.02em] text-page-text">
+            v{entry.version}
+          </span>
+          <span className="text-xs tracking-[-0.02em] text-page-text-muted">
+            {entry.date}
+          </span>
+          <span
+            className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${typeConfig.bg} ${typeConfig.color}`}
+          >
+            {typeConfig.label}
+          </span>
         </div>
+
+        {/* Title */}
+        <h3 className="mb-1.5 text-[15px] font-semibold tracking-[-0.02em] text-page-text">
+          {entry.title}
+        </h3>
+
+        {/* Description */}
+        <p className="mb-3 text-sm leading-relaxed tracking-[-0.02em] text-page-text-muted">
+          {entry.description}
+        </p>
+
+        {/* Changes */}
+        <ul className="space-y-1.5">
+          {entry.changes.map((change, i) => {
+            const changeConfig = TYPE_CONFIG[change.type];
+            const ChangeIcon = changeConfig.icon;
+            return (
+              <li
+                key={i}
+                className="flex items-start gap-2 text-[13px] tracking-[-0.02em] text-page-text-subtle"
+              >
+                <ChangeIcon
+                  className={`mt-0.5 h-3.5 w-3.5 shrink-0 ${changeConfig.color}`}
+                />
+                {change.text}
+              </li>
+            );
+          })}
+        </ul>
       </div>
     </div>
   );
 }
 
-function YearMarker({ year }: { year: string }) {
+function YearDivider({ year }: { year: string }) {
   return (
-    <div className="relative my-12 flex justify-center">
-      <div className="relative z-10 rounded-full border border-border bg-page-bg px-5 py-2">
-        <span className="font-[family-name:var(--font-inter)] text-sm font-bold tracking-wide text-page-text">
-          {year}
-        </span>
-      </div>
+    <div className="flex items-center gap-3 py-2">
+      <div className="h-px flex-1 bg-border" />
+      <span className="text-[11px] font-bold uppercase tracking-widest text-page-text-muted">
+        {year}
+      </span>
+      <div className="h-px flex-1 bg-border" />
     </div>
   );
 }
 
 export default function Page() {
-  const entriesWithMarkers: (
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const [activeVersion, setActiveVersion] = useState(CHANGELOG[0].version);
+
+  // Find the scroll container (the overflow-y-auto parent from main-nav)
+  const setScrollRef = useCallback((node: HTMLDivElement | null) => {
+    if (node) {
+      // Walk up to find the scrollable parent
+      let el: HTMLElement | null = node;
+      while (el) {
+        const style = getComputedStyle(el);
+        if (style.overflowY === "auto" || style.overflowY === "scroll") {
+          scrollContainerRef.current = el as HTMLDivElement;
+          break;
+        }
+        el = el.parentElement;
+      }
+    }
+  }, []);
+
+  const scrollToVersion = useCallback((version: string) => {
+    const target = document.getElementById(`v${version}`);
+    if (!target) return;
+
+    setActiveVersion(version);
+
+    const container = scrollContainerRef.current;
+    if (container) {
+      const targetRect = target.getBoundingClientRect();
+      const containerRect = container.getBoundingClientRect();
+      const offset = targetRect.top - containerRect.top + container.scrollTop - 64; // 64px for sticky header
+      container.scrollTo({ top: offset, behavior: "smooth" });
+    } else {
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, []);
+
+  // Group entries by year for the TOC
+  const years = new Map<string, ChangeEntry[]>();
+  CHANGELOG.forEach((entry) => {
+    const year = entry.date.split(" ").pop() || "";
+    if (!years.has(year)) years.set(year, []);
+    years.get(year)!.push(entry);
+  });
+
+  // Build timeline items
+  const entriesWithDividers: (
     | { kind: "year"; year: string }
-    | { kind: "entry"; entry: ChangeEntry; index: number }
+    | { kind: "entry"; entry: ChangeEntry }
   )[] = [];
   let lastYear = "";
-  CHANGELOG.forEach((entry, index) => {
+  CHANGELOG.forEach((entry) => {
     const year = entry.date.split(" ").pop() || "";
     if (year !== lastYear) {
-      entriesWithMarkers.push({ kind: "year", year });
+      entriesWithDividers.push({ kind: "year", year });
       lastYear = year;
     }
-    entriesWithMarkers.push({ kind: "entry", entry, index });
+    entriesWithDividers.push({ kind: "entry", entry });
   });
 
   return (
-    <div className="min-h-full bg-page-bg">
+    <div ref={setScrollRef} className="min-h-full bg-page-bg">
       {/* Header */}
       <div className="sticky top-0 z-10 flex h-14 items-center border-b border-border bg-page-bg px-4 sm:px-5">
         <span className="font-[family-name:var(--font-inter)] text-sm font-medium tracking-[-0.02em] text-page-text">
@@ -298,36 +302,54 @@ export default function Page() {
         </span>
       </div>
 
-      {/* Hero */}
-      <div className="px-4 pb-8 pt-16">
-        <div className="mx-auto max-w-2xl text-center">
-          <h1 className="font-[family-name:var(--font-inter)] text-4xl font-bold tracking-tight text-page-text sm:text-5xl">
-            Changelog
-          </h1>
-          <p className="mt-4 font-[family-name:var(--font-inter)] text-lg tracking-[-0.02em] text-page-text-muted">
-            New updates and improvements to the platform.
-          </p>
-        </div>
-      </div>
+      {/* Hero + TOC */}
+      <div className="mx-auto max-w-xl px-6 pb-8 pt-16 text-center sm:px-8">
+        <h1 className="text-3xl font-bold tracking-tight text-page-text sm:text-4xl">
+          <span className="font-bold">NEW</span>
+        </h1>
+        <p className="mt-3 text-sm tracking-[-0.02em] text-page-text-muted">
+          Updates and improvements to the platform.
+        </p>
 
-      {/* Timeline */}
-      <div className="relative mx-auto max-w-4xl px-4 pb-32">
-        <TimelineLine />
-
-        <div className="space-y-12">
-          {entriesWithMarkers.map((item) => {
-            if (item.kind === "year") {
-              return <YearMarker key={`year-${item.year}`} year={item.year} />;
-            }
+        {/* Version pills — clickable TOC */}
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
+          {CHANGELOG.map((entry, i) => {
+            const isActive = activeVersion === entry.version;
             return (
-              <ChangelogEntry
-                key={item.entry.version}
-                entry={item.entry}
-                index={item.index}
-              />
+              <button
+                key={entry.version}
+                onClick={() => scrollToVersion(entry.version)}
+                className={`cursor-pointer rounded-full border px-4 py-2 text-[13px] font-medium tracking-[-0.01em] transition-colors ${
+                  isActive
+                    ? "border-foreground/20 bg-foreground text-white dark:border-foreground/40"
+                    : "border-border bg-card-bg text-page-text-muted hover:border-foreground/20 hover:text-page-text"
+                }`}
+              >
+                v{entry.version}
+                {i === 0 && (
+                  <span className="ml-1.5 text-[10px] font-bold uppercase tracking-wider opacity-50">
+                    latest
+                  </span>
+                )}
+              </button>
             );
           })}
         </div>
+      </div>
+
+      {/* Entries — single centered column */}
+      <div className="mx-auto max-w-xl space-y-3 px-6 pb-32 sm:px-8">
+        {entriesWithDividers.map((item) => {
+          if (item.kind === "year") {
+            return <YearDivider key={`year-${item.year}`} year={item.year} />;
+          }
+          return (
+            <ChangelogEntry
+              key={item.entry.version}
+              entry={item.entry}
+            />
+          );
+        })}
       </div>
     </div>
   );

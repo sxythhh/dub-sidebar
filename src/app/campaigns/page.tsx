@@ -1,21 +1,11 @@
 "use client";
 
-import {
-  useRef,
-  useState,
-  useCallback,
-  useEffect,
-  createContext,
-  useContext,
-  forwardRef,
-  type ReactNode,
-  type HTMLAttributes,
-} from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
-import { springs } from "@/lib/springs";
-import { fontWeights } from "@/lib/font-weight";
 import { useProximityHover } from "@/hooks/use-proximity-hover";
+import { springs } from "@/lib/springs";
+import { Tabs, TabItem } from "@/components/ui/tabs";
 import { PlatformIcon } from "@/components/icons/PlatformIcon";
 import { NewCampaignButton } from "@/components/sidebar/new-campaign-dropdown";
 import { RichButton } from "@/components/rich-button";
@@ -36,220 +26,6 @@ import { ArchiveIcon } from "@/components/sidebar/icons/archive";
 import { PencilIcon } from "@/components/sidebar/icons/pencil";
 import { PauseIcon, PlayIcon } from "@/components/sidebar/icons/pause";
 import { UsersIcon } from "@/components/sidebar/icons/users";
-
-// ── Subtle Tab primitives (same as creators) ─────────────────────
-
-interface TabContextValue {
-  registerTab: (index: number, element: HTMLElement | null) => void;
-  hoveredIndex: number | null;
-  selectedIndex: number;
-  onSelect: (index: number) => void;
-}
-
-const TabContext = createContext<TabContextValue | null>(null);
-
-function useTab() {
-  const ctx = useContext(TabContext);
-  if (!ctx) throw new Error("useTab must be used within Tabs");
-  return ctx;
-}
-
-const Tabs = forwardRef<
-  HTMLDivElement,
-  Omit<HTMLAttributes<HTMLDivElement>, "onSelect"> & {
-    children: ReactNode;
-    selectedIndex: number;
-    onSelect: (index: number) => void;
-  }
->(({ children, selectedIndex, onSelect, className, ...props }, ref) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const isMouseInside = useRef(false);
-
-  const {
-    activeIndex: hoveredIndex,
-    itemRects: tabRects,
-    handlers,
-    registerItem: registerTab,
-    measureItems: measureTabs,
-  } = useProximityHover(containerRef, { axis: "x" });
-
-  useEffect(() => {
-    measureTabs();
-  }, [measureTabs, children]);
-
-  const handleMouseMove = useCallback(
-    (e: React.MouseEvent) => {
-      isMouseInside.current = true;
-      handlers.onMouseMove(e);
-    },
-    [handlers],
-  );
-
-  const handleMouseLeave = useCallback(() => {
-    isMouseInside.current = false;
-    handlers.onMouseLeave();
-  }, [handlers]);
-
-  const selectedRect = tabRects[selectedIndex];
-  const hoverRect = hoveredIndex !== null ? tabRects[hoveredIndex] : null;
-  const isHoveringSelected = hoveredIndex === selectedIndex;
-  const isHovering = hoveredIndex !== null && !isHoveringSelected;
-
-  return (
-    <TabContext.Provider
-      value={{ registerTab, hoveredIndex, selectedIndex, onSelect }}
-    >
-      <div
-        ref={(node) => {
-          (containerRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
-          if (typeof ref === "function") ref(node);
-          else if (ref) (ref as React.MutableRefObject<HTMLDivElement | null>).current = node;
-        }}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-        className={cn(
-          "relative flex w-fit items-center gap-0.5 rounded-2xl bg-accent p-0.5 select-none",
-          className,
-        )}
-        role="tablist"
-        {...props}
-      >
-        {selectedRect && (
-          <motion.div
-            className="pointer-events-none absolute rounded-xl bg-card-bg shadow-[0_2px_4px_rgba(0,0,0,0.06)] dark:bg-white/[0.10] dark:shadow-none"
-            initial={false}
-            animate={{
-              left: selectedRect.left,
-              width: selectedRect.width,
-              top: selectedRect.top,
-              height: selectedRect.height,
-              opacity: isHovering ? 0.85 : 1,
-            }}
-            transition={{
-              ...springs.moderate,
-              opacity: { duration: 0.16 },
-            }}
-          />
-        )}
-
-        <AnimatePresence>
-          {hoverRect && !isHoveringSelected && selectedRect && (
-            <motion.div
-              className="pointer-events-none absolute rounded-xl bg-accent dark:bg-white/[0.06]"
-              initial={{
-                left: selectedRect.left,
-                width: selectedRect.width,
-                top: selectedRect.top,
-                height: selectedRect.height,
-                opacity: 0,
-              }}
-              animate={{
-                left: hoverRect.left,
-                width: hoverRect.width,
-                top: hoverRect.top,
-                height: hoverRect.height,
-                opacity: 1,
-              }}
-              exit={
-                !isMouseInside.current && selectedRect
-                  ? {
-                      left: selectedRect.left,
-                      width: selectedRect.width,
-                      top: selectedRect.top,
-                      height: selectedRect.height,
-                      opacity: 0,
-                      transition: {
-                        ...springs.moderate,
-                        opacity: { duration: 0.12 },
-                      },
-                    }
-                  : { opacity: 0, transition: { duration: 0.12 } }
-              }
-              transition={{
-                ...springs.moderate,
-                opacity: { duration: 0.16 },
-              }}
-            />
-          )}
-        </AnimatePresence>
-
-        {children}
-      </div>
-    </TabContext.Provider>
-  );
-});
-Tabs.displayName = "Tabs";
-
-const TabItem = forwardRef<
-  HTMLButtonElement,
-  HTMLAttributes<HTMLButtonElement> & {
-    label: string;
-    count?: number;
-    index: number;
-  }
->(({ label, count, index, className, ...props }, ref) => {
-  const internalRef = useRef<HTMLButtonElement>(null);
-  const { registerTab, hoveredIndex, selectedIndex, onSelect } = useTab();
-
-  useEffect(() => {
-    registerTab(index, internalRef.current);
-    return () => registerTab(index, null);
-  }, [index, registerTab]);
-
-  const isSelected = selectedIndex === index;
-  const isHovered = hoveredIndex === index;
-
-  return (
-    <button
-      ref={(node) => {
-        (internalRef as React.MutableRefObject<HTMLButtonElement | null>).current = node;
-        if (typeof ref === "function") ref(node);
-        else if (ref) (ref as React.MutableRefObject<HTMLButtonElement | null>).current = node;
-      }}
-      data-proximity-index={index}
-      role="tab"
-      aria-selected={isSelected}
-      tabIndex={isSelected ? 0 : -1}
-      onClick={() => onSelect(index)}
-      className={cn(
-        "relative z-10 flex h-8 cursor-pointer items-center gap-1.5 rounded-xl border-none bg-transparent px-4 font-[family-name:var(--font-inter)] tracking-[-0.02em] outline-none",
-        className,
-      )}
-      {...props}
-    >
-      <span className="inline-grid text-sm">
-        <span
-          className="invisible col-start-1 row-start-1"
-          style={{ fontVariationSettings: fontWeights.semibold }}
-          aria-hidden="true"
-        >
-          {label}
-        </span>
-        <span
-          className={cn(
-            "col-start-1 row-start-1 transition-[color,font-variation-settings] duration-75",
-            isSelected || isHovered
-              ? "text-page-text"
-              : "text-page-text-subtle",
-          )}
-          style={{
-            fontVariationSettings: isSelected
-              ? fontWeights.semibold
-              : fontWeights.medium,
-          }}
-        >
-          {label}
-        </span>
-      </span>
-      {count !== undefined && (
-        <span className="text-sm font-normal text-page-text-muted">
-          {count}
-        </span>
-      )}
-    </button>
-  );
-});
-TabItem.displayName = "TabItem";
 
 // ── Types ──────────────────────────────────────────────────────────
 
@@ -402,15 +178,15 @@ function CategoryIcon({ type }: { type: "user" | "swords" | "music" }) {
 
 function ActiveCampaignCard({ campaign }: { campaign: Campaign }) {
   return (
-    <div className="group relative flex h-[189px] cursor-pointer items-center gap-4 rounded-[20px] border border-[rgba(37,37,37,0.06)] bg-[linear-gradient(86.46deg,rgba(255,255,255,0)_87.34%,rgba(0,178,110,0.07)_100%),#FFFFFF] shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:border-foreground/[0.06] dark:bg-[linear-gradient(86.46deg,rgba(255,255,255,0)_87.34%,rgba(0,178,110,0.07)_100%),var(--card-bg)] before:pointer-events-none before:absolute before:inset-0 before:rounded-[20px] before:bg-foreground/0 before:transition-colors before:duration-200 hover:before:bg-foreground/[0.03]">
+    <div className="group relative flex flex-col sm:h-[189px] sm:flex-row cursor-pointer items-stretch sm:items-center gap-0 sm:gap-4 rounded-[20px] border border-[rgba(37,37,37,0.06)] bg-[linear-gradient(86.46deg,rgba(255,255,255,0)_87.34%,rgba(0,178,110,0.07)_100%),#FFFFFF] shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:border-foreground/[0.06] dark:bg-[linear-gradient(86.46deg,rgba(255,255,255,0)_87.34%,rgba(0,178,110,0.07)_100%),var(--card-bg)] before:pointer-events-none before:absolute before:inset-0 before:rounded-[20px] before:bg-foreground/0 before:transition-colors before:duration-200 hover:before:bg-foreground/[0.03]">
       {/* Left section: thumbnail + info */}
-      <div className="flex min-w-0 flex-1 items-center gap-4 self-stretch pr-8">
+      <div className="flex min-w-0 flex-1 flex-col sm:flex-row items-stretch sm:items-center gap-0 sm:gap-4 sm:self-stretch sm:pr-8">
         {/* Thumbnail */}
-        <div className="relative shrink-0 self-stretch p-1">
+        <div className="relative shrink-0 sm:self-stretch p-1">
           <img
             src={campaign.thumbnail}
             alt=""
-            className="h-full w-[307px] rounded-[18px] object-cover"
+            className="h-[160px] sm:h-full w-full sm:w-[200px] lg:w-[307px] rounded-[18px] object-cover"
           />
           {/* CPM badge */}
           <div className="absolute left-4 top-4 z-[1] flex items-center justify-center gap-[1px] rounded-full bg-blue-500/40 px-2.5 py-2 backdrop-blur-[8px]">
@@ -486,7 +262,7 @@ function ActiveCampaignCard({ campaign }: { campaign: Campaign }) {
       </div>
 
       {/* Right section: stats + actions */}
-      <div className="flex shrink-0 flex-col items-end gap-4 self-stretch p-4 pl-8">
+      <div className="flex shrink-0 flex-col items-end gap-4 self-stretch px-4 sm:p-4 sm:pl-8 pb-4">
         {/* Stats */}
         <div className="flex flex-1 flex-col items-end gap-4">
           {/* Stat pills */}
@@ -550,20 +326,20 @@ function DetailCampaignCard({ campaign }: { campaign: Campaign }) {
 
   return (
     <div
-      className={`group relative flex h-[189px] cursor-pointer items-center gap-4 rounded-[20px] border border-[rgba(37,37,37,0.06)] shadow-[0_1px_2px_rgba(0,0,0,0.03)] before:pointer-events-none before:absolute before:inset-0 before:rounded-[20px] before:bg-foreground/0 before:transition-colors before:duration-200 hover:before:bg-foreground/[0.03] dark:border-foreground/[0.06] ${
+      className={`group relative flex flex-col sm:h-[189px] sm:flex-row cursor-pointer items-stretch sm:items-center gap-0 sm:gap-4 rounded-[20px] border border-[rgba(37,37,37,0.06)] shadow-[0_1px_2px_rgba(0,0,0,0.03)] before:pointer-events-none before:absolute before:inset-0 before:rounded-[20px] before:bg-foreground/0 before:transition-colors before:duration-200 hover:before:bg-foreground/[0.03] dark:border-foreground/[0.06] ${
         isCompleted
           ? "bg-white opacity-70 dark:bg-card-bg"
           : "bg-[linear-gradient(86.46deg,rgba(255,255,255,0)_87.34%,rgba(0,178,110,0.07)_100%),#FFFFFF] dark:bg-[linear-gradient(86.46deg,rgba(255,255,255,0)_87.34%,rgba(0,178,110,0.07)_100%),var(--card-bg)]"
       }`}
     >
       {/* Left: thumbnail + info */}
-      <div className="flex min-w-0 flex-1 items-center gap-4 self-stretch pr-8">
+      <div className="flex min-w-0 flex-1 flex-col sm:flex-row items-stretch sm:items-center gap-0 sm:gap-4 sm:self-stretch sm:pr-8">
         {/* Thumbnail */}
-        <div className="relative shrink-0 self-stretch p-1">
+        <div className="relative shrink-0 sm:self-stretch p-1">
           <img
             src={campaign.thumbnail}
             alt=""
-            className="h-full w-[307px] rounded-[18px] object-cover"
+            className="h-[160px] sm:h-full w-full sm:w-[200px] lg:w-[307px] rounded-[18px] object-cover"
           />
           <div className="absolute left-4 top-4 z-[1] flex items-center justify-center gap-[1px] rounded-full bg-blue-500/40 px-2.5 py-2 backdrop-blur-[8px]">
             <span className="font-inter text-xs font-medium leading-none tracking-[-0.02em] text-[#DBEAFE]">
@@ -698,12 +474,12 @@ function DetailCampaignCard({ campaign }: { campaign: Campaign }) {
       </div>
 
       {/* Divider */}
-      <div className="flex self-stretch py-4">
+      <div className="hidden sm:flex self-stretch py-4">
         <div className="w-px bg-[rgba(37,37,37,0.06)] dark:bg-foreground/[0.06]" />
       </div>
 
       {/* Right section */}
-      <div className="flex shrink-0 flex-col items-end justify-end gap-4 self-stretch p-4 pl-8">
+      <div className="flex shrink-0 flex-col items-end justify-end gap-4 self-stretch px-4 sm:p-4 sm:pl-8 pb-4">
         <div className="flex flex-1 flex-col items-end gap-2">
           {isCompleted && (
             <div className="flex items-center gap-1.5 rounded-full border border-[rgba(37,37,37,0.06)] bg-white px-2 py-1.5 dark:border-foreground/[0.06] dark:bg-card-bg">
@@ -744,6 +520,125 @@ function CampaignCard({ campaign }: { campaign: Campaign }) {
   return <DetailCampaignCard campaign={campaign} />;
 }
 
+// ── Header Tabs with proximity hover ────────────────────────────────
+
+function HeaderTabs({ selectedIndex, onSelect }: { selectedIndex: number; onSelect: (i: number) => void }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const isMouseInside = useRef(false);
+
+  const {
+    activeIndex: hoveredIndex,
+    itemRects: tabRects,
+    handlers,
+    registerItem: registerTab,
+    measureItems: measureTabs,
+  } = useProximityHover(containerRef, { axis: "x" });
+
+  useEffect(() => {
+    measureTabs();
+  }, [measureTabs]);
+
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      isMouseInside.current = true;
+      handlers.onMouseMove(e);
+    },
+    [handlers],
+  );
+
+  const handleMouseLeave = useCallback(() => {
+    isMouseInside.current = false;
+    handlers.onMouseLeave();
+  }, [handlers]);
+
+  const selectedRect = tabRects[selectedIndex];
+  const hoverRect = hoveredIndex !== null ? tabRects[hoveredIndex] : null;
+  const isHoveringSelected = hoveredIndex === selectedIndex;
+
+  return (
+    <div
+      ref={containerRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className="relative flex h-14 items-stretch"
+    >
+      {/* Selected underline */}
+      {selectedRect && (
+        <motion.div
+          className="pointer-events-none absolute bottom-0 h-px bg-page-text"
+          initial={false}
+          animate={{
+            left: selectedRect.left,
+            width: selectedRect.width,
+          }}
+          transition={springs.moderate}
+        />
+      )}
+
+      {/* Hover highlight */}
+      <AnimatePresence>
+        {hoverRect && !isHoveringSelected && (
+          <motion.div
+            className="pointer-events-none absolute bottom-0 h-8 rounded-lg bg-foreground/[0.04]"
+            initial={{
+              left: selectedRect?.left ?? hoverRect.left,
+              width: selectedRect?.width ?? hoverRect.width,
+              opacity: 0,
+            }}
+            animate={{
+              left: hoverRect.left,
+              width: hoverRect.width,
+              opacity: 1,
+            }}
+            exit={
+              !isMouseInside.current && selectedRect
+                ? {
+                    left: selectedRect.left,
+                    width: selectedRect.width,
+                    opacity: 0,
+                    transition: {
+                      ...springs.moderate,
+                      opacity: { duration: 0.12 },
+                    },
+                  }
+                : { opacity: 0, transition: { duration: 0.12 } }
+            }
+            transition={{
+              ...springs.moderate,
+              opacity: { duration: 0.16 },
+            }}
+            style={{ bottom: 12 }}
+          />
+        )}
+      </AnimatePresence>
+
+      {FILTER_TABS.map((tab, i) => {
+        const isSelected = selectedIndex === i;
+        const isHovered = hoveredIndex === i;
+        return (
+          <button
+            key={tab.label}
+            data-proximity-index={i}
+            ref={(el) => {
+              registerTab(i, el);
+            }}
+            onClick={() => onSelect(i)}
+            className={cn(
+              "relative z-10 flex cursor-pointer items-center justify-center gap-2 px-5 font-inter text-sm tracking-[-0.02em] transition-colors",
+              isSelected || isHovered
+                ? "text-page-text"
+                : "text-page-text/70",
+            )}
+          >
+            <span className="font-medium">{tab.label}</span>
+            <span className="font-normal text-page-text/50">{tab.count}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 // ── Page ───────────────────────────────────────────────────────────
 
 const STATUS_FILTER_TABS = [
@@ -770,39 +665,13 @@ export default function CampaignsPage() {
     <div className="min-h-full bg-page-bg">
       {/* Header with underline tabs */}
       <div className="sticky top-0 z-20 flex items-center justify-between border-b border-border bg-page-bg px-4 sm:px-5">
-        <div className="flex h-14 items-stretch">
-          {FILTER_TABS.map((tab, i) => {
-            const isSelected = selectedHeaderTab === i;
-            return (
-              <button
-                key={tab.label}
-                onClick={() => setSelectedHeaderTab(i)}
-                className={cn(
-                  "relative flex cursor-pointer items-center justify-center gap-2 px-5 font-inter text-sm tracking-[-0.02em] transition-colors",
-                  isSelected
-                    ? "text-page-text"
-                    : "text-page-text/70 hover:text-page-text/90",
-                )}
-              >
-                <span className="font-medium">{tab.label}</span>
-                <span className="font-normal text-page-text/50">{tab.count}</span>
-                {isSelected && (
-                  <motion.div
-                    className="absolute inset-x-0 bottom-0 h-px bg-page-text"
-                    layoutId="campaign-tab-underline"
-                    transition={{ type: "spring", duration: 0.3, bounce: 0.1 }}
-                  />
-                )}
-              </button>
-            );
-          })}
-        </div>
+        <HeaderTabs selectedIndex={selectedHeaderTab} onSelect={setSelectedHeaderTab} />
         <NewCampaignButton />
       </div>
 
       {/* Status filter tabs */}
       <div className="px-4 pt-[21px] sm:px-5">
-        <Tabs selectedIndex={selectedFilter} onSelect={setSelectedFilter}>
+        <Tabs selectedIndex={selectedFilter} onSelect={setSelectedFilter} className="w-fit">
           {STATUS_FILTER_TABS.map((tab, i) => (
             <TabItem
               key={tab.label}
