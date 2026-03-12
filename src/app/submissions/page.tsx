@@ -16,6 +16,7 @@ import type { AnalyticsPocPerformanceLineChartData } from "@/components/analytic
 import { PlatformIcon } from "@/components/icons/PlatformIcon";
 import { Tabs, TabItem } from "@/components/ui/tabs";
 import { FilterSelect, type Filter } from "@/components/ui/dub-filter";
+import { Modal } from "@/components/ui/modal";
 
 // ── Filter Icon ─────────────────────────────────────────────────────
 
@@ -2358,12 +2359,122 @@ function SpringPopItem({ children }: { children: ReactNode }) {
 }
 
 
+// ── Scores & Matches Modal ──────────────────────────────────────────
+
+const SCORE_CARDS = [
+  {
+    title: "AI Quality Score",
+    description:
+      "Measures how well a submission meets the campaign\u2019s content, visual, and audio requirements. Scored 0\u2013100. Calculated by: AI content analysis.",
+  },
+  {
+    title: "Bot Score",
+    description:
+      "Detects artificial engagement on a submission. Higher means more suspicious activity. Calculated by: Engagement pattern analysis.",
+  },
+  {
+    title: "Match Score",
+    description:
+      "How well a creator\u2019s profile and audience align with a campaign. Higher is a stronger fit. Calculated by: Profile + audience data.",
+  },
+  {
+    title: "Engagement Score",
+    description:
+      "Measures the real quality of engagement a video receives, beyond just view counts. Scored 0\u2013100. Calculated by: Comment quality, save rate, share-to-like ratio, watch time, replay rate, follower-to-viewer ratio",
+  },
+] as const;
+
+function LightBulbIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M9 21H15M12 3C8.68629 3 6 5.68629 6 9C6 11.2208 7.20832 13.1599 9 14.1973V16C9 16.5523 9.44772 17 10 17H14C14.5523 17 15 16.5523 15 16V14.1973C16.7917 13.1599 18 11.2208 18 9C18 5.68629 15.3137 3 12 3Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function ScoresModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  return (
+    <Modal open={open} onClose={onClose} showClose={false}>
+      <div className="relative flex max-h-[90vh] flex-col">
+        {/* Close button */}
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute right-4 top-4 z-10 flex size-6 cursor-pointer items-center justify-center rounded-full bg-foreground/[0.06] text-foreground/30 transition-colors hover:bg-foreground/[0.10]"
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M4.667 4.667L11.333 11.333M11.333 4.667L4.667 11.333" stroke="currentColor" strokeWidth="1.52381" strokeLinecap="round" />
+          </svg>
+        </button>
+
+        {/* Scrollable content */}
+        <div className="scrollbar-hide flex flex-col items-center gap-4 overflow-y-auto p-5">
+          {/* Icon + Title + Description */}
+          <div className="flex flex-col items-center gap-4">
+            {/* Icon circle */}
+            <div className="relative flex size-14 items-center justify-center rounded-full bg-card-bg shadow-[0_0_0_2px_var(--card-bg)]">
+              <LightBulbIcon />
+              <div
+                className="pointer-events-none absolute inset-0 rounded-full"
+                style={{
+                  background: "linear-gradient(180deg, rgba(37,37,37,0) 0%, rgba(37,37,37,0.12) 100%)",
+                  mask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+                  maskComposite: "exclude",
+                  WebkitMaskComposite: "xor",
+                  padding: 1,
+                }}
+              />
+            </div>
+
+            {/* Text */}
+            <div className="flex flex-col items-center gap-2">
+              <h2 className="font-inter text-lg font-medium leading-[1.2] tracking-[-0.02em] text-page-text">
+                Understanding Scores and Matches
+              </h2>
+              <p className="max-w-[300px] text-center font-inter text-sm font-normal leading-[1.5] tracking-[-0.02em] text-foreground/70">
+                These metrics help you make faster, more informed decisions.
+              </p>
+            </div>
+          </div>
+
+          {/* Score cards */}
+          <div className="flex w-full flex-col gap-2">
+            {SCORE_CARDS.map((card) => (
+              <div
+                key={card.title}
+                className="flex flex-col gap-2 rounded-2xl border border-border bg-card-bg p-4"
+              >
+                <span className="font-inter text-sm font-medium leading-[1] tracking-[-0.02em] text-page-text">
+                  {card.title}
+                </span>
+                <p className="font-inter text-sm font-normal leading-[1.5] tracking-[-0.02em] text-foreground/50">
+                  {card.description}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          {/* Got it button — scrolls into view */}
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex w-full shrink-0 cursor-pointer items-center justify-center rounded-full bg-foreground/[0.06] px-4 py-2 font-inter text-sm font-medium tracking-[-0.02em] text-page-text transition-colors hover:bg-foreground/[0.10]"
+          >
+            Got it
+          </button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
 // ── Page ─────────────────────────────────────────────────────────────
 
 export default function SubmissionsPage() {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [scrollVariant, setScrollVariant] = useState<ScrollVariant>("spring-pop");
   const [actions, setActions] = useState<Record<string, "approve" | "reject">>({});
+  const [scoresOpen, setScoresOpen] = useState(false);
 
   const handleAction = useCallback((id: string, action: "approve" | "reject") => {
     setActions((prev) => ({ ...prev, [id]: action }));
@@ -2397,7 +2508,11 @@ export default function SubmissionsPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <button className="flex h-9 items-center gap-1.5 rounded-full px-4 font-[family-name:var(--font-inter)] text-sm font-medium tracking-[-0.02em] text-page-text-muted transition-colors hover:bg-accent">
+          <button
+            type="button"
+            onClick={() => setScoresOpen(true)}
+            className="flex h-9 cursor-pointer items-center gap-1.5 rounded-full px-4 font-[family-name:var(--font-inter)] text-sm font-medium tracking-[-0.02em] text-page-text-muted transition-colors hover:bg-accent"
+          >
             Understanding scores &amp; matches
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <circle cx="8" cy="8" r="6.25" stroke="currentColor" strokeWidth="1.5" />
@@ -2551,6 +2666,7 @@ export default function SubmissionsPage() {
         )}
       </div>
 
+      <ScoresModal open={scoresOpen} onClose={() => setScoresOpen(false)} />
     </div>
   );
 }

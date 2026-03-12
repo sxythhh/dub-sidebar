@@ -189,6 +189,161 @@ const PAYOUT_HISTORY = [
 
 type PayoutDetailTab = "review" | "history";
 
+const CLAWBACK_REASONS = [
+  "Bot/fake views",
+  "Content violation",
+  "Deleted video",
+  "Below threshold",
+  "Other",
+] as const;
+
+function ClawbackView({
+  row,
+  onClose,
+  onBack,
+}: {
+  row: PayoutRow;
+  onClose: () => void;
+  onBack: () => void;
+}) {
+  const [selectedReason, setSelectedReason] = useState<string>("Deleted video");
+  const [note, setNote] = useState("");
+
+  return (
+    <>
+      {/* Header bar */}
+      <div className="relative flex items-center justify-center border-b border-foreground/[0.06] px-5 py-3">
+        <span className="font-inter text-sm font-medium tracking-[-0.02em] text-page-text">
+          Clawback
+        </span>
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute right-4 top-3 flex size-4 cursor-pointer items-center justify-center text-foreground/50"
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M4.667 4.667L11.333 11.333M11.333 4.667L4.667 11.333" stroke="currentColor" strokeWidth="1.52381" strokeLinecap="round" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Content */}
+      <div className="scrollbar-hide flex-1 overflow-y-auto">
+      <div className="flex flex-col items-center gap-4 px-5 pb-5 pt-5">
+        {/* Subtitle */}
+        <span className="font-inter text-sm font-medium tracking-[-0.02em] text-page-text">
+          Review and confirm clawback for selected payouts
+        </span>
+
+        {/* Selected payouts card */}
+        <div className="flex w-full flex-col gap-3 rounded-2xl bg-foreground/[0.02] p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:bg-foreground/[0.04]">
+          <div className="flex items-center justify-between">
+            <span className="font-inter text-xs tracking-[-0.02em] text-foreground/50">
+              Selected Payouts
+            </span>
+            <span className="font-inter text-sm font-medium tracking-[-0.02em] text-page-text">
+              {row.estPayout}
+            </span>
+          </div>
+
+          {/* Payout rows */}
+          <div className="flex flex-col gap-2">
+            {[
+              { name: "xKaizen", campaign: "NFL - Superbowl UGC", amount: "$502.50" },
+              { name: "Cryptoclipz", campaign: "NFL - Superbowl UGC", amount: "$425.00" },
+              { name: "ViralVince", campaign: "NFL - Superbowl UGC", amount: "$365.50" },
+            ].map((item) => (
+              <div
+                key={item.name}
+                className="flex items-center gap-3 rounded-2xl border border-border bg-card-bg px-3 py-4"
+              >
+                <div
+                  className="flex size-6 shrink-0 items-center justify-center rounded-full text-[10px] font-medium text-white"
+                  style={{ backgroundColor: AVATAR_COLORS[item.name.length % AVATAR_COLORS.length] }}
+                >
+                  {item.name[0]}
+                </div>
+                <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                  <span className="font-inter text-xs font-medium tracking-[-0.02em] text-page-text">
+                    {item.name}
+                  </span>
+                  <span className="font-inter text-xs tracking-[-0.02em] text-foreground/50">
+                    {item.campaign}
+                  </span>
+                </div>
+                <span className="font-inter text-xs font-medium tracking-[-0.02em] text-foreground/70">
+                  {item.amount}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Reason for selection */}
+        <div className="flex w-full flex-col gap-2 rounded-2xl border border-border bg-card-bg p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
+          <span className="font-inter text-xs tracking-[-0.02em] text-foreground/50">
+            Reason for selected
+          </span>
+          <div className="flex flex-wrap gap-2">
+            {CLAWBACK_REASONS.map((reason) => (
+              <button
+                key={reason}
+                type="button"
+                onClick={() => setSelectedReason(reason)}
+                className={cn(
+                  "flex cursor-pointer items-center justify-center rounded-full border px-3 py-2 font-inter text-xs font-medium tracking-[-0.02em] shadow-[0_1px_2px_rgba(0,0,0,0.03)] transition-colors",
+                  selectedReason === reason
+                    ? "border-foreground text-page-text"
+                    : "border-border bg-card-bg text-foreground/70 hover:border-foreground/20",
+                )}
+              >
+                {reason}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Internal note */}
+        <div className="flex w-full flex-col gap-2">
+          <span className="font-inter text-xs tracking-[-0.02em] text-foreground/50">
+            Internal note (optional)
+          </span>
+          <textarea
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder="Add context for your team..."
+            className="h-[74px] w-full resize-none rounded-xl border border-border bg-card-bg p-4 font-inter text-xs tracking-[-0.02em] text-page-text shadow-[0_1px_2px_rgba(0,0,0,0.03)] outline-none placeholder:text-foreground/30"
+          />
+        </div>
+
+        {/* Info text */}
+        <p className="text-center font-inter text-xs leading-[1.4] tracking-[-0.02em] text-foreground/70">
+          Clawbacks are deducted from creators&apos; next payouts. If their balance is insufficient, it will be flagged for manual review. Creators will be notified via email and in-app.
+        </p>
+      </div>
+
+      </div>
+
+      {/* Footer */}
+      <div className="flex shrink-0 items-center gap-2 px-5 pb-5">
+        <button
+          type="button"
+          onClick={onBack}
+          className="flex h-10 cursor-pointer items-center justify-center rounded-full bg-foreground/[0.06] px-4 font-inter text-sm font-medium tracking-[-0.02em] text-page-text transition-colors hover:bg-foreground/[0.10]"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          className="flex h-10 flex-1 cursor-pointer items-center justify-center rounded-full bg-[rgba(255,37,37,0.06)] font-inter text-sm font-medium tracking-[-0.02em] text-[#FF2525] transition-colors hover:bg-[rgba(255,37,37,0.10)]"
+        >
+          Confirm Clawback (3 payouts)
+        </button>
+      </div>
+    </>
+  );
+}
+
 function PayoutDetailDialog({
   row,
   index,
@@ -199,7 +354,16 @@ function PayoutDetailDialog({
   onClose: () => void;
 }) {
   const [tabIndex, setTabIndex] = useState(0);
+  const [showClawback, setShowClawback] = useState(false);
   const tab: PayoutDetailTab = tabIndex === 0 ? "review" : "history";
+
+  if (showClawback) {
+    return (
+      <Modal open onClose={onClose} showClose={false}>
+        <ClawbackView row={row} onClose={onClose} onBack={() => setShowClawback(false)} />
+      </Modal>
+    );
+  }
 
   return (
     <Modal open onClose={onClose}>
@@ -447,14 +611,15 @@ function PayoutDetailDialog({
         <div className="flex w-full shrink-0 items-center justify-end gap-2 border-t border-card-border bg-card-bg px-5 py-4 sm:border-t-0 sm:pb-5 sm:pt-0">
           <button
             type="button"
-            className="flex h-10 flex-1 items-center justify-center rounded-full bg-foreground/[0.06] font-inter text-sm font-medium tracking-[-0.02em] text-page-text"
+            onClick={() => setShowClawback(true)}
+            className="flex h-10 flex-1 cursor-pointer items-center justify-center rounded-full bg-[rgba(255,37,37,0.06)] font-inter text-sm font-medium tracking-[-0.02em] text-[#FF2525] transition-colors hover:bg-[rgba(255,37,37,0.10)]"
           >
             Request clawback
           </button>
           <button
             type="button"
             onClick={onClose}
-            className="flex h-10 flex-1 items-center justify-center rounded-full bg-foreground font-inter text-sm font-medium tracking-[-0.02em] text-background"
+            className="flex h-10 flex-1 cursor-pointer items-center justify-center rounded-full bg-foreground/[0.06] font-inter text-sm font-medium tracking-[-0.02em] text-page-text transition-colors hover:bg-foreground/[0.10]"
           >
             Approve payout
           </button>

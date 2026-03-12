@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
 import { Tabs, TabItem } from "@/components/ui/tabs";
+import { Modal } from "@/components/ui/modal";
 import { useProximityHover } from "@/hooks/use-proximity-hover";
 import { springs } from "@/lib/springs";
 
@@ -323,12 +324,251 @@ const CONTRACT_FILTERS = [
   { label: "Expired", count: 3 },
 ];
 
+// ── Contract Types ───────────────────────────────────────────────────
+
+const CONTRACT_TYPES = [
+  "Retainer",
+  "Per Post",
+  "CPM",
+  "UGC / License",
+  "Affiliate",
+  "Ambassador",
+];
+
+const DURATION_OPTIONS = ["1 month", "3 months", "6 months", "12 months", "Ongoing"];
+
+const MOCK_SELECTED_PAYOUTS = [
+  { name: "xKaizen", campaign: "NFL - Superbowl UGC", amount: "$502.50", avatar: "https://i.pravatar.cc/48?img=11" },
+  { name: "Cryptoclipz", campaign: "NFL - Superbowl UGC", amount: "$425.00", avatar: "https://i.pravatar.cc/48?img=12" },
+  { name: "ViralVince", campaign: "NFL - Superbowl UGC", amount: "$365.50", avatar: "https://i.pravatar.cc/48?img=13" },
+];
+
+function SendIcon() {
+  return (
+    <svg width="15" height="13" viewBox="0 0 15 13" fill="none">
+      <path d="M0.50446 2.37563C-0.481509 1.58905 0.0746884 0 1.33597 0H13.3823C14.4061 0 15.048 1.10618 14.5398 1.99506L8.64431 12.3079C8.0281 13.3858 6.40259 13.1104 6.17585 11.8897L5.2135 6.70834L9.02748 4.54003C9.34756 4.35806 9.45952 3.95107 9.27755 3.63099C9.09558 3.31091 8.68859 3.19895 8.36851 3.38092L4.51252 5.57312L0.50446 2.37563Z" fill="currentColor" />
+    </svg>
+  );
+}
+
+function ChevronDownSmallIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+      <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function NewContractModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const [contractType, setContractType] = useState("CPM");
+  const [duration, setDuration] = useState("3 months");
+  const [showDurationDropdown, setShowDurationDropdown] = useState(false);
+
+  return (
+    <Modal open={open} onClose={onClose} showClose={false}>
+      <div className="relative flex max-h-[90vh] flex-col">
+        {/* Header */}
+        <div className="relative flex h-10 shrink-0 items-center justify-center border-b border-foreground/[0.06] px-5">
+          <span className="font-inter text-sm font-medium tracking-[-0.02em] text-page-text">
+            New Creator Contract
+          </span>
+          <button
+            type="button"
+            onClick={onClose}
+            className="absolute right-4 top-1/2 flex size-4 -translate-y-1/2 cursor-pointer items-center justify-center text-foreground/50 transition-colors hover:text-foreground"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M4 4L12 12M12 4L4 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Scrollable content */}
+        <div className="scrollbar-hide flex flex-col items-center gap-4 overflow-y-auto p-5">
+          {/* Subtitle */}
+          <p className="font-inter text-sm font-medium tracking-[-0.02em] text-page-text">
+            Easily set up an agreement with a creator.
+          </p>
+
+          {/* Contract type */}
+          <div className="flex w-full flex-col gap-3 rounded-2xl border border-foreground/[0.06] bg-card-bg p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
+            <span className="font-inter text-xs tracking-[-0.02em] text-foreground/50">
+              Contract type
+            </span>
+            <div className="flex flex-wrap items-center gap-2">
+              {CONTRACT_TYPES.map((type) => {
+                const isSelected = contractType === type;
+                return (
+                  <button
+                    key={type}
+                    type="button"
+                    onClick={() => setContractType(type)}
+                    className={cn(
+                      "flex h-7 cursor-pointer items-center justify-center rounded-full px-3 font-inter text-xs font-medium tracking-[-0.02em] transition-colors",
+                      isSelected
+                        ? "border border-[#1A67E5] text-[#1A67E5]"
+                        : "border border-foreground/[0.06] bg-card-bg text-foreground/70 shadow-[0_1px_2px_rgba(0,0,0,0.03)] hover:bg-foreground/[0.04]",
+                    )}
+                  >
+                    {type}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Creator */}
+          <div className="flex w-full flex-col gap-2">
+            <span className="font-inter text-xs tracking-[-0.02em] text-foreground/50">
+              Creator
+            </span>
+            <div className="flex h-[38px] items-center justify-between rounded-xl border border-foreground/[0.06] bg-card-bg px-3 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
+              <span className="font-inter text-xs tracking-[-0.02em] text-foreground/30">
+                Select a creator...
+              </span>
+              <span className="text-foreground/50">
+                <ChevronDownSmallIcon />
+              </span>
+            </div>
+          </div>
+
+          {/* Monthly rate + Duration */}
+          <div className="flex w-full gap-4">
+            {/* Monthly rate */}
+            <div className="flex flex-1 flex-col gap-2">
+              <span className="font-inter text-xs tracking-[-0.02em] text-foreground/50">
+                Monthly rate
+              </span>
+              <div className="flex h-[38px] items-center rounded-xl border border-foreground/[0.06] bg-card-bg px-3 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
+                <span className="font-inter text-xs tracking-[-0.02em] text-foreground/30">$</span>
+                <span className="ml-2 font-inter text-xs font-medium tracking-[-0.02em] text-page-text">2,000</span>
+              </div>
+            </div>
+
+            {/* Duration */}
+            <div className="relative flex flex-1 flex-col gap-2">
+              <span className="font-inter text-xs tracking-[-0.02em] text-foreground/50">
+                Duration
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowDurationDropdown(!showDurationDropdown)}
+                className="flex h-[38px] cursor-pointer items-center justify-between rounded-xl border border-foreground/[0.06] bg-card-bg px-3 shadow-[0_1px_2px_rgba(0,0,0,0.03)]"
+              >
+                <span className="font-inter text-xs font-medium tracking-[-0.02em] text-page-text">{duration}</span>
+                <span className="text-foreground/50">
+                  <ChevronDownSmallIcon />
+                </span>
+              </button>
+              {showDurationDropdown && (
+                <div className="absolute left-0 top-full z-20 mt-1 w-full rounded-xl border border-foreground/[0.06] bg-card-bg py-1 shadow-lg">
+                  {DURATION_OPTIONS.map((opt) => (
+                    <button
+                      key={opt}
+                      type="button"
+                      onClick={() => {
+                        setDuration(opt);
+                        setShowDurationDropdown(false);
+                      }}
+                      className={cn(
+                        "flex w-full cursor-pointer items-center px-3 py-2 font-inter text-xs tracking-[-0.02em] transition-colors hover:bg-foreground/[0.04]",
+                        duration === opt ? "font-medium text-page-text" : "text-foreground/70",
+                      )}
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Selected Payouts */}
+          <div className="flex w-full flex-col gap-3 rounded-2xl bg-foreground/[0.02] p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
+            <div className="flex items-center justify-between">
+              <span className="font-inter text-xs tracking-[-0.02em] text-foreground/50">
+                Selected Payouts
+              </span>
+              <span className="font-inter text-sm font-medium tracking-[-0.02em] text-page-text">
+                $1,293.00
+              </span>
+            </div>
+            <div className="flex flex-col gap-2">
+              {MOCK_SELECTED_PAYOUTS.map((payout) => (
+                <div
+                  key={payout.name}
+                  className="flex items-center gap-3 rounded-2xl border border-foreground/[0.06] bg-card-bg px-3 py-4"
+                >
+                  <img
+                    src={payout.avatar}
+                    alt=""
+                    className="size-6 shrink-0 rounded-full object-cover"
+                  />
+                  <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                    <span className="truncate font-inter text-xs font-medium tracking-[-0.02em] text-page-text">
+                      {payout.name}
+                    </span>
+                    <span className="truncate font-inter text-xs tracking-[-0.02em] text-foreground/50">
+                      {payout.campaign}
+                    </span>
+                  </div>
+                  <span className="shrink-0 font-inter text-xs font-medium tracking-[-0.02em] text-foreground/70">
+                    {payout.amount}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Additional information */}
+          <div className="flex w-full flex-col gap-2">
+            <span className="font-inter text-xs tracking-[-0.02em] text-foreground/50">
+              Additional information (optional)
+            </span>
+            <div className="rounded-xl border border-foreground/[0.06] bg-card-bg p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
+              <textarea
+                className="w-full resize-none bg-transparent font-inter text-xs tracking-[-0.02em] text-page-text outline-none placeholder:text-foreground/30"
+                placeholder="Notes, brand guidelines, posting schedule, special requirements..."
+                rows={3}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Footer — fixed at bottom */}
+        <div className="flex shrink-0 items-center justify-between gap-4 bg-card-bg px-5 pb-5 pt-4">
+          <p className="max-w-[215px] font-inter text-[10px] leading-[1.4] tracking-[-0.02em] text-foreground/70">
+            The creator will receive this contract for review. They can accept, request changes, or decline.
+          </p>
+          <div className="flex shrink-0 items-center gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex h-10 cursor-pointer items-center justify-center rounded-full bg-foreground/[0.06] px-4 font-inter text-sm font-medium tracking-[-0.02em] text-page-text transition-colors hover:bg-foreground/[0.10]"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="flex h-10 cursor-pointer items-center gap-2 rounded-full bg-foreground px-4 font-inter text-sm font-medium tracking-[-0.02em] text-white transition-colors hover:bg-foreground/90 dark:bg-white dark:text-foreground dark:hover:bg-white/90"
+            >
+              <SendIcon />
+              Send Contract
+            </button>
+          </div>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
 // ── Page ─────────────────────────────────────────────────────────────
 
 export default function ContractsPage() {
   const [selectedFilter, setSelectedFilter] = useState(0);
   const [sortKey, setSortKey] = useState<ContractSortKey | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>("desc");
+  const [newContractOpen, setNewContractOpen] = useState(false);
 
   const handleSort = useCallback((key: ContractSortKey) => {
     if (sortKey === key) {
@@ -361,10 +601,20 @@ export default function ContractsPage() {
   return (
     <div className="min-h-full bg-page-bg">
       {/* Top nav */}
-      <div className="sticky top-0 z-10 flex h-14 items-center justify-between border-b border-border bg-page-bg px-4 sm:px-5">
+      <div className="sticky top-0 z-20 flex h-14 items-center justify-between border-b border-border bg-page-bg px-4 sm:px-5">
         <span className="font-inter text-sm font-medium tracking-[-0.02em] text-page-text">
           Contracts
         </span>
+        <button
+          type="button"
+          onClick={() => setNewContractOpen(true)}
+          className="flex h-8 cursor-pointer items-center gap-1.5 rounded-full bg-foreground px-3 font-inter text-xs font-medium tracking-[-0.02em] text-white transition-colors hover:bg-foreground/90 dark:bg-white dark:text-foreground dark:hover:bg-white/90"
+        >
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M6 2V10M2 6H10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+          </svg>
+          New Contract
+        </button>
       </div>
 
       {/* Content */}
@@ -466,6 +716,8 @@ export default function ContractsPage() {
           </div>
         </div>
       </div>
+
+      <NewContractModal open={newContractOpen} onClose={() => setNewContractOpen(false)} />
     </div>
   );
 }

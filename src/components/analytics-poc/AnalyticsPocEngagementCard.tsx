@@ -18,8 +18,8 @@ import type {
 } from "./types";
 
 const FUNNEL_STEP_SURFACE_STYLE: CSSProperties = {
-  background: "var(--ap-surface)",
-  border: "1px solid var(--ap-surface-border)",
+  background: "var(--card-bg)",
+  border: "1px solid var(--border)",
   borderRadius: "12px",
 };
 

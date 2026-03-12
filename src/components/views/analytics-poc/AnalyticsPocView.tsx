@@ -322,15 +322,6 @@ export function AnalyticsPocView() {
         <div className="space-y-3">
           <AnalyticsPocSectionHeader
             className="pb-0"
-            icon={
-              <Image
-                alt=""
-                className="shrink-0 object-contain dark:invert"
-                height={16}
-                src="/icons/svg/analytics-posts-header.svg"
-                width={16}
-              />
-            }
             rightSlot={
               <div className="flex items-center gap-2">
                 <span className="inline-flex h-5 items-center justify-center rounded-[100px] bg-[rgba(21,128,61,0.1)] px-1.5 font-inter text-[12px] font-medium leading-[1.2] text-[#15803d]">

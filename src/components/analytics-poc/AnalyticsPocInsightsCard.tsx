@@ -47,11 +47,11 @@ function buildLegacySlides({
 
 function SparkleIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="dark:invert">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
       <path
         d="M8 1L9.79 6.21L15 8L9.79 9.79L8 15L6.21 9.79L1 8L6.21 6.21L8 1Z"
-        fill="#252525"
-        fillOpacity="0.5"
+        fill="currentColor"
+        className="text-foreground/70"
       />
     </svg>
   );
@@ -144,16 +144,37 @@ export function AnalyticsPocInsightsCard({
 
   return (
     <AnalyticsPocMediumCardBase
-      className={className}
+      className={cn("overflow-visible", className)}
       effectsLayer={
-        <div
-          className="absolute inset-0 rounded-2xl border-2 border-[#EC3EFF] dark:border-[#EC3EFF]"
-          style={{
-            opacity: 0.4,
-            filter: "blur(1px)",
-            transform: "matrix(-1, 0, 0, 1, 0, 0)",
-          }}
-        />
+        <>
+          {/* Pink/magenta gradient border */}
+          <div
+            className="pointer-events-none absolute inset-0 rounded-2xl"
+            style={{
+              opacity: 0.3,
+              filter: "blur(6px)",
+              transform: "matrix(-1, 0, 0, 1, 0, 0)",
+              background: "linear-gradient(95.54deg, rgba(255,63,213,0) 0%, #FF3FD5 25%, rgba(255,63,213,0) 50%, #FF3FD5 75%, rgba(255,63,213,0) 100%)",
+              mask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+              maskComposite: "exclude",
+              WebkitMaskComposite: "xor",
+              padding: 1.5,
+            }}
+          />
+          {/* Orange gradient border */}
+          <div
+            className="pointer-events-none absolute inset-0 rounded-2xl"
+            style={{
+              opacity: 0.3,
+              filter: "blur(6px)",
+              background: "linear-gradient(95.54deg, rgba(255,144,37,0) 0%, #FF9025 25%, rgba(255,144,37,0) 50%, #FF9025 75%, rgba(255,144,37,0) 100%)",
+              mask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+              maskComposite: "exclude",
+              WebkitMaskComposite: "xor",
+              padding: 1.5,
+            }}
+          />
+        </>
       }
     >
       <AnalyticsPocCardHeader

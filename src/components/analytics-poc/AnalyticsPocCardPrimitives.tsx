@@ -12,8 +12,8 @@ export const ANALYTICS_POC_INTERACTIVE_CARD_CLASS = cn(
 );
 
 export const ANALYTICS_POC_CARD_SURFACE_STYLE: CSSProperties = {
-  background: "var(--ap-surface)",
-  border: "1px solid var(--ap-surface-border)",
+  background: "var(--card-bg)",
+  border: "1px solid var(--border)",
   borderRadius: "16px",
 };
 

@@ -100,7 +100,6 @@ export function AnalyticsPocHealthCard({
   return (
     <AnalyticsPocMediumCardBase className={className}>
       <AnalyticsPocCardHeader
-        icon={<HeartbeatIcon />}
         title={title}
       />
 

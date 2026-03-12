@@ -13,10 +13,10 @@ const AP_THEME_STYLES = `
   --ap-card-shadow: 0 1px 2px rgba(0,0,0,0.035);
   --ap-card-shadow-hover: 0 5px 12px rgba(0,0,0,0.075), 0 1px 2px rgba(0,0,0,0.05);
   --ap-card-border-hover: oklch(0 0 0 / 0.12);
-  --ap-card-surface-hover: radial-gradient(60.93% 50% at 51.43% 0%, #FFF 0%, rgba(255,255,255,0.42) 100%), #EBEBEB;
+  --ap-card-surface-hover: var(--card-bg);
   --ap-bg: #FBFBFB;
-  --ap-surface: radial-gradient(60.93% 50% at 51.43% 0%, #FFF 0%, rgba(255,255,255,0.30) 100%), #EBEBEB;
-  --ap-surface-border: transparent;
+  --ap-surface: var(--card-bg);
+  --ap-surface-border: var(--border);
   --ap-text: oklch(0 0 0);
   --ap-text-secondary: oklch(0 0 0 / 0.56);
   --ap-text-tertiary: oklch(0 0 0 / 0.40);
@@ -39,7 +39,7 @@ const AP_THEME_STYLES = `
   --ap-select-bg: rgba(255,255,255,0.60);
   --ap-input-bg: #FFFFFF;
   --ap-badge-pill: rgba(255,255,255,0.60);
-  --ap-panel-surface: radial-gradient(60.93% 50% at 51.43% 0%, #FFF 0%, rgba(255,255,255,0.30) 100%), #EBEBEB;
+  --ap-panel-surface: var(--card-bg);
   --ap-inactive-surface: transparent;
   --ap-inactive-border: oklch(0 0 0 / 0.08);
   --ap-card-shine-opacity: 0;
@@ -56,11 +56,11 @@ html.dark {
   --ap-card-shadow: none;
   --ap-card-shadow-hover: 0 8px 18px rgba(0,0,0,0.34);
   --ap-card-border-hover: rgba(255,255,255,0.12);
-  --ap-card-surface-hover: #252525;
+  --ap-card-surface-hover: var(--card-bg);
   --ap-bg: #151515;
-  --ap-surface: #1e1e1e;
-  --ap-panel-surface: #1e1e1e;
-  --ap-surface-border: transparent;
+  --ap-surface: var(--card-bg);
+  --ap-panel-surface: var(--card-bg);
+  --ap-surface-border: var(--border);
   --ap-text: oklch(1 0 0 / 0.92);
   --ap-text-secondary: oklch(1 0 0 / 0.50);
   --ap-text-tertiary: oklch(1 0 0 / 0.34);

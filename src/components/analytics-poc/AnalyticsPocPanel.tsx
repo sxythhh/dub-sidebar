@@ -8,7 +8,7 @@ import type { AnalyticsPocPanelProps } from "./types";
 
 const ANALYTICS_POC_PANEL_SURFACE_STYLE: CSSProperties = {
   background: "var(--ap-panel-surface)",
-  border: "1px solid var(--ap-surface-border)",
+  border: "1px solid var(--border)",
   borderRadius: "16px",
 };
 

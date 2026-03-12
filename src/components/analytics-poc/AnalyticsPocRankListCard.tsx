@@ -132,18 +132,6 @@ export function AnalyticsPocRankListCard({
             transition={HEADER_TRANSITION}
           >
             <AnalyticsPocCardHeader
-              icon={
-                <Image
-                  alt=""
-                  className={cn(
-                    "shrink-0",
-                    ANALYTICS_POC_CARD_HEADING_IMAGE_ICON_CLASS,
-                  )}
-                  fill
-                  sizes="16px"
-                  src={iconSrc}
-                />
-              }
               title={title}
               tooltipText={infoTooltipText}
             />

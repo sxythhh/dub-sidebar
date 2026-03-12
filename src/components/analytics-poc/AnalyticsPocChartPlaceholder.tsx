@@ -506,6 +506,62 @@ function StackedBarSegmentShape({
   );
 }
 
+function OverlappingBarShape({
+  x,
+  y,
+  width,
+  height,
+  color,
+}: {
+  x?: number | string;
+  y?: number | string;
+  width?: number | string;
+  height?: number | string;
+  color: string;
+}) {
+  const nx = toFiniteNumber(x);
+  const ny = toFiniteNumber(y);
+  const nw = toFiniteNumber(width);
+  const nh = toFiniteNumber(height);
+  if (nx === undefined || ny === undefined || nw === undefined || nh === undefined || nw <= 0 || nh <= 0) return null;
+
+  const r = Math.min(nw / 2, 14);
+  const bottom = ny + nh;
+
+  const d = [
+    `M${nx},${bottom}`,
+    `L${nx},${ny + r}`,
+    `Q${nx},${ny} ${nx + r},${ny}`,
+    `L${nx + nw - r},${ny}`,
+    `Q${nx + nw},${ny} ${nx + nw},${ny + r}`,
+    `L${nx + nw},${bottom}`,
+    "Z",
+  ].join(" ");
+
+  return (
+    <g>
+      {/* White base fill */}
+      <path d={d} fill="var(--card-bg)" />
+      {/* Colored fill at 30% opacity */}
+      <path d={d} fill={color} fillOpacity={0.3} />
+      {/* White stroke border (only top + sides, not bottom) */}
+      <path
+        d={[
+          `M${nx},${bottom}`,
+          `L${nx},${ny + r}`,
+          `Q${nx},${ny} ${nx + r},${ny}`,
+          `L${nx + nw - r},${ny}`,
+          `Q${nx + nw},${ny} ${nx + nw},${ny + r}`,
+          `L${nx + nw},${bottom}`,
+        ].join(" ")}
+        fill="none"
+        stroke="var(--card-bg)"
+        strokeWidth={1}
+      />
+    </g>
+  );
+}
+
 function formatStackedTooltipValue(value: number) {
   if (!Number.isFinite(value)) {
     return "-";
@@ -697,9 +753,8 @@ function PerformanceMainLineChartBody({
           <div className="absolute inset-0 flex flex-col items-end justify-between">
             {animatedYLabels.map((label, i) => (
               <span
-                className="font-inter text-[10px] font-normal leading-[1.2] text-right"
+                className="font-inter text-[10px] font-normal leading-[1.2] text-right text-foreground/50"
                 key={`y-${i}`}
-                style={{ color: "rgba(37,37,37,0.5)" }}
               >
                 {label}
               </span>
@@ -711,7 +766,7 @@ function PerformanceMainLineChartBody({
           <ResponsiveContainer height="100%" width="100%">
             <LineChart
               data={dataset}
-              margin={{ bottom: 2, left: 0, right: 0, top: 0 }}
+              margin={{ bottom: 2, left: 0, right: 32, top: 0 }}
               onClick={handleLineChartClick}
               onMouseLeave={handleMouseLeave}
               onMouseMove={handleMouseMove}
@@ -858,6 +913,7 @@ function PerformanceMainLineChartBody({
           left: 36,
         }}
       >
+        {/* Dynamic hover line */}
         <div
           className="absolute top-0 bottom-0"
           style={{
@@ -868,13 +924,26 @@ function PerformanceMainLineChartBody({
             transition: "left 100ms cubic-bezier(0.22, 1, 0.36, 1), opacity 100ms ease-out",
           }}
         />
+        {/* Static end-date line */}
+        <div
+          className="absolute top-0 bottom-0"
+          style={{
+            right: 32,
+            width: 0,
+            borderLeft: "1px solid var(--foreground)",
+            opacity: 0.2,
+          }}
+        />
       </div>
 
       {/* X-axis labels + hover date pill */}
       <div className="absolute bottom-0 right-0 flex h-6 items-center justify-between gap-2" style={{ left: 36 }}>
-        {lineChart.xTicks.map((tick) => (
+        {lineChart.xTicks.map((tick, i) => (
           <span
-            className="font-inter text-[10px] font-normal leading-[1.2] tracking-[0.1px] text-[var(--ap-text-tertiary)]"
+            className={cn(
+              "font-inter text-[10px] font-normal leading-[1.2] tracking-[0.1px] text-[var(--ap-text-tertiary)]",
+              i === lineChart.xTicks.length - 1 && "invisible",
+            )}
             key={`x-${tick.index}-${tick.label}`}
           >
             {tick.label}
@@ -893,6 +962,13 @@ function PerformanceMainLineChartBody({
         >
           <span className="whitespace-nowrap rounded-full border border-card-border bg-card-bg px-[10px] py-[6px] font-inter text-[10px] font-medium leading-[1.2] tracking-[0.1px] text-page-text-muted">
             {activeHoverLabel}
+          </span>
+        </div>
+
+        {/* Static end-date pill */}
+        <div className="pointer-events-none absolute inset-y-0 z-10 flex items-center justify-center" style={{ right: 32, transform: "translateX(50%)" }}>
+          <span className="whitespace-nowrap rounded-full bg-foreground/[0.06] px-[10px] py-[6px] font-inter text-[10px] font-medium leading-[1.2] text-foreground/50">
+            {lineChart.xTicks[lineChart.xTicks.length - 1]?.label ?? "Today"}
           </span>
         </div>
       </div>

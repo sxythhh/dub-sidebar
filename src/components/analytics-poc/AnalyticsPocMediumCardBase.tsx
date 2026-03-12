@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import {
   ANALYTICS_POC_CARD_CONTAINER_CLASS,
@@ -10,12 +10,14 @@ interface AnalyticsPocMediumCardBaseProps {
   children: ReactNode;
   effectsLayer?: ReactNode;
   className?: string;
+  style?: CSSProperties;
 }
 
 export function AnalyticsPocMediumCardBase({
   children,
   effectsLayer,
   className,
+  style,
 }: AnalyticsPocMediumCardBaseProps) {
   return (
     <section
@@ -25,7 +27,7 @@ export function AnalyticsPocMediumCardBase({
         "min-h-[194px] p-4",
         className,
       )}
-      style={ANALYTICS_POC_CARD_SURFACE_STYLE}
+      style={{ ...ANALYTICS_POC_CARD_SURFACE_STYLE, ...style }}
     >
       {effectsLayer ? (
         <div className="pointer-events-none absolute inset-0 z-0">
